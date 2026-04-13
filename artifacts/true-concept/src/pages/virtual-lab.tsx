@@ -1,22 +1,29 @@
 import { useState } from "react";
 import { Link } from "wouter";
 import { useGetExperiments, getGetExperimentsQueryKey } from "@workspace/api-client-react";
-import { FlaskConical, Zap, Lightbulb, Magnet, Eye } from "lucide-react";
 
-const experimentIcons: Record<string, React.ElementType> = {
-  "light-reflection": Eye,
-  "light-refraction": Eye,
-  "electric-circuit": Zap,
-  "lens": Lightbulb,
-  "magnet": Magnet,
-  "custom": FlaskConical,
+const experimentEmojis: Record<string, string> = {
+  "light-reflection": "🪞",
+  "light-refraction": "🌈",
+  "electric-circuit": "⚡",
+  "lens": "🔭",
+  "magnet": "🧲",
+  "custom": "🔬",
 };
 
-const difficultyColors: Record<string, string> = {
-  easy: "bg-green-100 text-green-700",
-  medium: "bg-amber-100 text-amber-700",
-  hard: "bg-red-100 text-red-700",
+const difficultyConfig: Record<string, { label: string; bg: string; text: string; emoji: string }> = {
+  easy: { label: "Easy", bg: "bg-emerald-100", text: "text-emerald-700", emoji: "🟢" },
+  medium: { label: "Medium", bg: "bg-amber-100", text: "text-amber-700", emoji: "🟡" },
+  hard: { label: "Hard", bg: "bg-red-100", text: "text-red-700", emoji: "🔴" },
 };
+
+const cardGradients = [
+  "from-blue-400 to-indigo-600",
+  "from-emerald-400 to-teal-600",
+  "from-purple-400 to-violet-600",
+  "from-rose-400 to-pink-600",
+  "from-orange-400 to-amber-600",
+];
 
 const CLASS_LEVELS = ["All", "Class IX", "Class X"];
 
@@ -30,68 +37,79 @@ export default function VirtualLabPage() {
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
       {/* Header */}
-      <div className="bg-[hsl(222,47%,11%)] text-white rounded-2xl p-6 sm:p-8 mb-8">
-        <div className="flex items-center gap-3 mb-3">
-          <div className="w-10 h-10 bg-[hsl(45,93%,47%)]/20 rounded-xl flex items-center justify-center">
-            <FlaskConical className="w-5 h-5 text-[hsl(45,93%,47%)]" />
-          </div>
-          <h1 className="font-serif text-2xl sm:text-3xl font-bold" data-testid="heading-virtual-lab">
+      <div className="relative overflow-hidden rounded-3xl p-8 text-white mb-8"
+        style={{ background: "linear-gradient(135deg, #064e3b 0%, #065f46 30%, #047857 70%, #10b981 100%)" }}>
+        <div className="absolute top-0 right-0 text-[160px] opacity-10 leading-none">🔬</div>
+        <div className="absolute bottom-0 left-0 w-64 h-64 rounded-full opacity-20 blur-2xl"
+          style={{ background: "radial-gradient(circle, #34d399, transparent)" }} />
+        <div className="relative">
+          <div className="text-4xl mb-3">🔬</div>
+          <h1 className="font-black text-3xl sm:text-4xl mb-2" data-testid="heading-virtual-lab">
             Virtual Science Lab
           </h1>
+          <p className="text-emerald-200 font-semibold text-lg">
+            Do real science experiments — no lab needed! Just click and explore. 🚀
+          </p>
         </div>
-        <p className="text-blue-300">
-          Explore interactive science experiments without needing physical equipment. Click any experiment to begin.
-        </p>
       </div>
 
       {/* Class Filter */}
-      <div className="flex gap-2 mb-6">
+      <div className="flex gap-3 mb-6 overflow-x-auto pb-1">
         {CLASS_LEVELS.map((cl) => (
           <button
             key={cl}
             onClick={() => setSelectedClass(cl)}
             data-testid={`filter-${cl.toLowerCase().replace(/\s+/g, '-')}`}
-            className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+            className={`px-6 py-2.5 rounded-2xl text-sm font-black whitespace-nowrap transition-all border-2 ${
               selectedClass === cl
-                ? "bg-[hsl(222,47%,25%)] text-white"
-                : "bg-muted text-muted-foreground hover:bg-muted/80"
+                ? "text-white border-transparent shadow-lg scale-105"
+                : "bg-white border-gray-200 text-gray-600 hover:border-emerald-200"
             }`}
+            style={selectedClass === cl ? { background: "linear-gradient(135deg, #047857, #065f46)" } : {}}
           >
-            {cl}
+            {cl === "All" ? "🌟 All" : cl === "Class IX" ? "📗 Class IX" : "📘 Class X"}
           </button>
         ))}
       </div>
 
       {/* Experiments Grid */}
       {isLoading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {[1,2,3,4].map(i => <div key={i} className="h-40 bg-muted rounded-xl animate-pulse" />)}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          {[1,2,3,4].map(i => <div key={i} className="h-44 bg-gray-100 rounded-3xl animate-pulse" />)}
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {experiments?.map((exp) => {
-            const Icon = experimentIcons[exp.type] ?? FlaskConical;
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          {experiments?.map((exp, i) => {
+            const emoji = experimentEmojis[exp.type] ?? "🔬";
+            const diff = difficultyConfig[exp.difficulty];
+            const grad = cardGradients[i % cardGradients.length];
             return (
               <Link key={exp.id} href={`/virtual-lab/${exp.id}`}>
                 <div
                   data-testid={`card-experiment-${exp.id}`}
-                  className="group bg-card border border-border rounded-xl p-5 cursor-pointer hover:shadow-md hover:border-primary/30 transition-all"
+                  className="group bg-white border-2 border-gray-100 rounded-3xl overflow-hidden cursor-pointer card-hover shadow-sm"
                 >
-                  <div className="flex items-start gap-4">
-                    <div className="w-11 h-11 bg-[hsl(222,47%,11%)] rounded-xl flex items-center justify-center shrink-0">
-                      <Icon className="w-5 h-5 text-[hsl(45,93%,47%)]" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-                        <span className="text-xs font-medium text-muted-foreground">{exp.classLevel}</span>
-                        <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${difficultyColors[exp.difficulty]}`}>
-                          {exp.difficulty}
+                  <div className={`bg-gradient-to-r ${grad} p-5 flex items-center gap-4`}>
+                    <div className="text-5xl">{emoji}</div>
+                    <div className="flex-1 text-white">
+                      <h3 className="font-black text-lg leading-tight">{exp.title}</h3>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-white/80 text-xs font-bold">{exp.classLevel}</span>
+                        <span className="text-white/50">·</span>
+                        <span className={`text-xs font-black px-2 py-0.5 rounded-full ${diff.bg} ${diff.text}`}>
+                          {diff.emoji} {diff.label}
                         </span>
                       </div>
-                      <h3 className="font-semibold text-foreground mb-1 group-hover:text-primary transition-colors">
-                        {exp.title}
-                      </h3>
-                      <p className="text-sm text-muted-foreground line-clamp-2">{exp.objective}</p>
+                    </div>
+                  </div>
+                  <div className="p-4">
+                    <p className="text-sm text-gray-500 line-clamp-2 font-medium">{exp.objective}</p>
+                    <div className="mt-3 flex items-center justify-between">
+                      <span className="text-xs font-bold text-gray-400">Tap to start experiment</span>
+                      <div className="w-8 h-8 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform"
+                        style={{ background: `linear-gradient(135deg, ${grad.includes('blue') ? '#3b82f6' : grad.includes('emerald') ? '#10b981' : grad.includes('purple') ? '#7c3aed' : grad.includes('rose') ? '#f43f5e' : '#f59e0b'}, transparent)`, background: "linear-gradient(135deg, #7c3aed, #6d28d9)" }}>
+                        <span className="text-white text-xs">▶</span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -99,9 +117,9 @@ export default function VirtualLabPage() {
             );
           })}
           {!isLoading && !experiments?.length && (
-            <div className="col-span-2 text-center py-12">
-              <FlaskConical className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
-              <p className="text-foreground font-medium">No experiments available for {selectedClass}</p>
+            <div className="col-span-2 text-center py-16 bg-white rounded-3xl border-2 border-gray-100">
+              <div className="text-5xl mb-3">🔬</div>
+              <p className="font-black text-lg text-gray-900">No experiments for {selectedClass}</p>
             </div>
           )}
         </div>

@@ -1,116 +1,166 @@
 import { Link } from "wouter";
-import { Button } from "@/components/ui/button";
 import { useGetSubjects } from "@workspace/api-client-react";
-import { BookOpen, FlaskConical, TrendingUp, Play, CheckCircle, Zap, Award } from "lucide-react";
+import { BookOpen, Sparkles } from "lucide-react";
 
-const iconMap: Record<string, React.ElementType> = {
-  Calculator: TrendingUp,
-  FlaskConical,
-  TrendingUp,
-  BookOpen,
+const subjectGradients: Record<number, string> = {
+  1: "from-blue-500 to-indigo-600",
+  2: "from-emerald-500 to-teal-600",
+  3: "from-purple-500 to-violet-600",
+  4: "from-rose-500 to-pink-600",
+  5: "from-orange-500 to-amber-600",
 };
+
+const subjectBg: Record<number, string> = {
+  1: "bg-blue-50 border-blue-100",
+  2: "bg-emerald-50 border-emerald-100",
+  3: "bg-purple-50 border-purple-100",
+  4: "bg-rose-50 border-rose-100",
+  5: "bg-orange-50 border-orange-100",
+};
+
+const features = [
+  { icon: "📝", title: "Smart Notes", desc: "Chapter-wise study material that's easy to read and remember", color: "from-blue-400 to-blue-600", bg: "bg-blue-50" },
+  { icon: "🎯", title: "MCQ Practice", desc: "Test yourself with instant feedback and detailed explanations", color: "from-purple-400 to-purple-600", bg: "bg-purple-50" },
+  { icon: "🎬", title: "Video Lessons", desc: "Watch expert video explanations for every chapter", color: "from-rose-400 to-rose-600", bg: "bg-rose-50" },
+  { icon: "🔬", title: "Virtual Lab", desc: "Do science experiments right from your screen — no equipment needed!", color: "from-emerald-400 to-emerald-600", bg: "bg-emerald-50" },
+  { icon: "❓", title: "Q&A Bank", desc: "Important exam questions with step-by-step answers", color: "from-orange-400 to-orange-600", bg: "bg-orange-50" },
+  { icon: "📊", title: "Track Progress", desc: "See how much you've studied and how well you're doing", color: "from-pink-400 to-pink-600", bg: "bg-pink-50" },
+];
+
+const stats = [
+  { value: "14+", label: "Chapters", emoji: "📚" },
+  { value: "100+", label: "MCQs", emoji: "✅" },
+  { value: "5", label: "Lab Experiments", emoji: "🔬" },
+  { value: "2", label: "Boards (SEBA & CBSE)", emoji: "🏆" },
+];
 
 export default function HomePage() {
   const { data: subjects } = useGetSubjects();
 
-  const features = [
-    { icon: BookOpen, title: "Chapter-wise Notes", desc: "Comprehensive text notes for every chapter, organized clearly for quick revision." },
-    { icon: CheckCircle, title: "MCQ Practice", desc: "Instant feedback quizzes with detailed explanations to reinforce your learning." },
-    { icon: Play, title: "Video Explanations", desc: "YouTube video lessons linked to each chapter for visual learners." },
-    { icon: FlaskConical, title: "Virtual Science Lab", desc: "Interactive simulations of science experiments — no lab equipment needed." },
-    { icon: Zap, title: "Q&A Bank", desc: "Important exam questions with step-by-step detailed answers." },
-    { icon: Award, title: "Progress Tracking", desc: "Track which chapters you have studied and your MCQ scores." },
-  ];
-
   return (
-    <div className="bg-background">
+    <div className="bg-background overflow-hidden">
       {/* Hero Section */}
-      <section className="bg-[hsl(222,47%,11%)] text-white relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-[hsl(222,47%,8%)] via-[hsl(222,47%,11%)] to-[hsl(222,40%,16%)]" />
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-32">
+      <section className="relative overflow-hidden bg-hero text-white py-20 lg:py-32 px-4">
+        {/* Decorative floating blobs */}
+        <div className="absolute top-0 left-0 w-96 h-96 rounded-full opacity-20 blur-3xl"
+          style={{ background: "radial-gradient(circle, #8b5cf6, transparent)" }} />
+        <div className="absolute bottom-0 right-0 w-80 h-80 rounded-full opacity-20 blur-3xl"
+          style={{ background: "radial-gradient(circle, #f59e0b, transparent)" }} />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full opacity-10 blur-3xl"
+          style={{ background: "radial-gradient(circle, #ec4899, transparent)" }} />
+
+        <div className="relative max-w-7xl mx-auto">
           <div className="max-w-3xl">
-            <div className="inline-flex items-center gap-2 bg-[hsl(45,93%,47%)]/20 border border-[hsl(45,93%,47%)]/30 rounded-full px-4 py-1.5 mb-6">
-              <span className="w-2 h-2 rounded-full bg-[hsl(45,93%,47%)]" />
-              <span className="text-[hsl(45,93%,47%)] text-sm font-medium">SEBA / CBSE Board Courses</span>
+            {/* Badge */}
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-6 text-sm font-bold"
+              style={{ background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.2)" }}>
+              <span>🎓</span>
+              <span className="text-yellow-300">SEBA & CBSE Board — Class IX & X</span>
+              <span>✨</span>
             </div>
-            <h1 className="font-serif text-5xl sm:text-6xl lg:text-7xl font-bold leading-tight mb-6" data-testid="heading-hero">
-              TRUE
-              <span className="block text-[hsl(45,93%,47%)]">CONCEPT</span>
+
+            <h1 className="font-black text-5xl sm:text-6xl lg:text-7xl leading-tight mb-4" data-testid="heading-hero">
+              <span className="block text-white">Learn Smarter,</span>
+              <span className="block" style={{
+                background: "linear-gradient(135deg, #f59e0b, #fbbf24, #fcd34d)",
+                WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text"
+              }}>Score Higher!</span>
+              <span className="block text-purple-200 text-4xl sm:text-5xl mt-2">🚀 TRUE CONCEPT</span>
             </h1>
-            <p className="text-xl sm:text-2xl text-blue-200 font-light mb-2 italic">
-              Concepts. Clarity. Confidence.
+
+            <p className="text-xl text-purple-200 mb-10 max-w-xl leading-relaxed">
+              Your all-in-one study buddy for Class IX & X. Notes, quizzes, videos, and even a virtual science lab — all in one place!
             </p>
-            <p className="text-blue-300 text-lg mb-10 max-w-xl">
-              A premium digital learning portal for Class IX and X students. Study smarter with organized notes, interactive quizzes, and virtual science labs.
-            </p>
+
             <div className="flex flex-col sm:flex-row gap-4">
               <Link href="/login">
-                <Button
-                  size="lg"
-                  className="w-full sm:w-auto bg-[hsl(45,93%,47%)] text-[hsl(222,47%,11%)] hover:bg-[hsl(45,93%,40%)] font-bold text-base px-8 h-12"
+                <button
+                  className="w-full sm:w-auto font-black text-base px-8 py-4 rounded-2xl text-purple-900 shadow-xl hover:scale-105 transition-transform"
+                  style={{ background: "linear-gradient(135deg, #f59e0b, #fbbf24)" }}
                   data-testid="button-get-started"
                 >
-                  Get Started
-                </Button>
+                  🚀 Get Started Free
+                </button>
               </Link>
               <Link href="/subjects">
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="w-full sm:w-auto border-white/30 text-white hover:bg-white/10 font-medium text-base px-8 h-12"
+                <button
+                  className="w-full sm:w-auto font-bold text-base px-8 py-4 rounded-2xl text-white hover:scale-105 transition-transform"
+                  style={{ background: "rgba(255,255,255,0.15)", border: "2px solid rgba(255,255,255,0.3)" }}
                   data-testid="button-explore"
                 >
-                  Explore Subjects
-                </Button>
+                  📚 Explore Subjects
+                </button>
               </Link>
             </div>
           </div>
         </div>
+
+        {/* Floating emoji decorations */}
+        <div className="absolute top-16 right-8 text-4xl opacity-70 hidden lg:block animate-bounce">🧪</div>
+        <div className="absolute top-32 right-32 text-3xl opacity-50 hidden lg:block" style={{ animationDelay: "0.3s" }}>⚡</div>
+        <div className="absolute bottom-20 right-16 text-4xl opacity-60 hidden lg:block animate-bounce" style={{ animationDelay: "0.6s" }}>📐</div>
+        <div className="absolute top-24 right-64 text-2xl opacity-40 hidden lg:block">🌟</div>
+      </section>
+
+      {/* Stats Row */}
+      <section className="py-8 px-4" style={{ background: "linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)" }}>
+        <div className="max-w-4xl mx-auto grid grid-cols-2 sm:grid-cols-4 gap-4">
+          {stats.map(({ value, label, emoji }) => (
+            <div key={label} className="text-center text-white">
+              <div className="text-2xl mb-1">{emoji}</div>
+              <div className="text-3xl font-black">{value}</div>
+              <div className="text-purple-200 text-sm font-semibold">{label}</div>
+            </div>
+          ))}
+        </div>
       </section>
 
       {/* Subjects Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+      <section className="py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         <div className="text-center mb-12">
-          <h2 className="font-serif text-3xl sm:text-4xl font-bold text-foreground mb-3">
-            Available Subjects
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-100 text-purple-700 font-bold text-sm mb-4">
+            <BookOpen className="w-4 h-4" /> Available Subjects
+          </div>
+          <h2 className="font-black text-3xl sm:text-4xl text-gray-900 mb-3">
+            Pick Your{" "}
+            <span style={{
+              background: "linear-gradient(135deg, #7c3aed, #db2777)",
+              WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text"
+            }}>Subject</span> 📖
           </h2>
-          <p className="text-muted-foreground text-lg">
-            Covering Class IX and X curriculum as per SEBA and CBSE boards
-          </p>
+          <p className="text-gray-500 text-lg">Covering the full SEBA and CBSE syllabus for Class IX & X</p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {subjects?.map((subject) => {
-            const Icon = iconMap[subject.icon] ?? BookOpen;
+          {subjects?.map((subject, idx) => {
+            const gradClass = subjectGradients[(idx % 5) + 1];
+            const bgClass = subjectBg[(idx % 5) + 1];
             return (
               <Link key={subject.id} href={`/subjects/${subject.id}`}>
                 <div
                   data-testid={`card-subject-${subject.id}`}
-                  className="group bg-card border border-border rounded-2xl p-6 cursor-pointer hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200"
+                  className={`group bg-white border-2 rounded-2xl overflow-hidden cursor-pointer card-hover shadow-sm ${bgClass}`}
                 >
-                  <div
-                    className="w-12 h-12 rounded-xl flex items-center justify-center mb-4"
-                    style={{ backgroundColor: `${subject.color}20` }}
-                  >
-                    <Icon className="w-6 h-6" style={{ color: subject.color }} />
-                  </div>
-                  <h3 className="text-lg font-semibold text-foreground mb-2 group-hover:text-primary transition-colors">
-                    {subject.name}
-                  </h3>
-                  <p className="text-sm text-muted-foreground mb-4 leading-relaxed">{subject.description}</p>
-                  <div className="flex items-center justify-between">
-                    <div className="flex gap-2">
-                      {subject.classLevels.map((cl) => (
-                        <span
-                          key={cl}
-                          className="text-xs font-medium px-2 py-1 rounded-full bg-primary/10 text-primary"
-                        >
-                          {cl}
-                        </span>
-                      ))}
+                  <div className={`h-2 bg-gradient-to-r ${gradClass}`} />
+                  <div className="p-6">
+                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-4 bg-gradient-to-br ${gradClass} shadow-lg text-2xl`}>
+                      {idx === 0 ? "🔢" : idx === 1 ? "🔬" : idx === 2 ? "📐" : "📚"}
                     </div>
-                    {subject.chapterCount !== undefined && (
-                      <span className="text-xs text-muted-foreground">{subject.chapterCount} chapters</span>
-                    )}
+                    <h3 className="text-lg font-black text-gray-900 mb-2 group-hover:text-purple-700 transition-colors">
+                      {subject.name}
+                    </h3>
+                    <p className="text-sm text-gray-500 mb-4 leading-relaxed line-clamp-2">{subject.description}</p>
+                    <div className="flex items-center justify-between">
+                      <div className="flex gap-2 flex-wrap">
+                        {subject.classLevels.map((cl) => (
+                          <span key={cl} className={`text-xs font-bold px-3 py-1 rounded-full bg-gradient-to-r ${gradClass} text-white`}>
+                            {cl}
+                          </span>
+                        ))}
+                      </div>
+                      {subject.chapterCount !== undefined && (
+                        <span className="text-xs font-semibold text-gray-400">{subject.chapterCount} chapters</span>
+                      )}
+                    </div>
                   </div>
                 </div>
               </Link>
@@ -118,11 +168,11 @@ export default function HomePage() {
           })}
           {!subjects && (
             [1, 2, 3].map((i) => (
-              <div key={i} className="bg-card border border-border rounded-2xl p-6 animate-pulse">
-                <div className="w-12 h-12 bg-muted rounded-xl mb-4" />
-                <div className="h-5 bg-muted rounded mb-2 w-3/4" />
-                <div className="h-4 bg-muted rounded mb-1 w-full" />
-                <div className="h-4 bg-muted rounded w-2/3" />
+              <div key={i} className="bg-white border-2 border-gray-100 rounded-2xl p-6 animate-pulse">
+                <div className="w-14 h-14 bg-gray-200 rounded-2xl mb-4" />
+                <div className="h-5 bg-gray-200 rounded-lg mb-2 w-3/4" />
+                <div className="h-4 bg-gray-100 rounded mb-1 w-full" />
+                <div className="h-4 bg-gray-100 rounded w-2/3" />
               </div>
             ))
           )}
@@ -130,25 +180,29 @@ export default function HomePage() {
       </section>
 
       {/* Features Section */}
-      <section className="bg-[hsl(222,47%,11%)] text-white py-20 px-4 sm:px-6 lg:px-8">
+      <section className="py-16 px-4 sm:px-6 lg:px-8" style={{ background: "linear-gradient(135deg, #faf5ff 0%, #ede9fe 50%, #ddd6fe 100%)" }}>
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
-            <h2 className="font-serif text-3xl sm:text-4xl font-bold mb-3">
-              Everything You Need to
-              <span className="text-[hsl(45,93%,47%)]"> Excel</span>
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white text-purple-700 font-bold text-sm mb-4 shadow-sm">
+              <Sparkles className="w-4 h-4" /> Everything you need
+            </div>
+            <h2 className="font-black text-3xl sm:text-4xl text-gray-900 mb-3">
+              Your Complete Study{" "}
+              <span style={{
+                background: "linear-gradient(135deg, #7c3aed, #db2777)",
+                WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text"
+              }}>Kit 🎒</span>
             </h2>
-            <p className="text-blue-300 text-lg">
-              A complete digital study companion for board exam preparation
-            </p>
+            <p className="text-gray-500 text-lg">Everything your board exams need, in one app</p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {features.map(({ icon: Icon, title, desc }) => (
-              <div key={title} className="bg-white/5 border border-white/10 rounded-2xl p-6">
-                <div className="w-10 h-10 rounded-lg bg-[hsl(45,93%,47%)]/20 flex items-center justify-center mb-4">
-                  <Icon className="w-5 h-5 text-[hsl(45,93%,47%)]" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {features.map(({ icon, title, desc, color, bg }) => (
+              <div key={title} className={`${bg} rounded-2xl p-6 border border-white shadow-sm`}>
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 bg-gradient-to-br ${color} shadow-md text-xl`}>
+                  {icon}
                 </div>
-                <h3 className="font-semibold text-white mb-2">{title}</h3>
-                <p className="text-blue-300 text-sm leading-relaxed">{desc}</p>
+                <h3 className="font-black text-gray-900 mb-2 text-lg">{title}</h3>
+                <p className="text-gray-500 text-sm leading-relaxed">{desc}</p>
               </div>
             ))}
           </div>
@@ -156,22 +210,29 @@ export default function HomePage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto text-center">
-        <h2 className="font-serif text-3xl sm:text-4xl font-bold text-foreground mb-4">
-          Ready to Start Learning?
-        </h2>
-        <p className="text-muted-foreground text-lg mb-8 max-w-xl mx-auto">
-          Join students who are already learning smarter with TRUE CONCEPT. Login to access all study materials.
-        </p>
-        <Link href="/login">
-          <Button
-            size="lg"
-            className="bg-[hsl(222,47%,25%)] text-white hover:bg-[hsl(222,47%,20%)] font-semibold px-10 h-12"
-            data-testid="button-cta-login"
-          >
-            Login to Your Account
-          </Button>
-        </Link>
+      <section className="py-20 px-4 text-center bg-hero relative overflow-hidden">
+        <div className="absolute inset-0 opacity-30">
+          <div className="absolute top-0 left-0 w-64 h-64 rounded-full blur-3xl" style={{ background: "radial-gradient(circle, #a78bfa, transparent)" }} />
+          <div className="absolute bottom-0 right-0 w-64 h-64 rounded-full blur-3xl" style={{ background: "radial-gradient(circle, #f59e0b, transparent)" }} />
+        </div>
+        <div className="relative max-w-2xl mx-auto">
+          <div className="text-5xl mb-4">🎉</div>
+          <h2 className="font-black text-4xl text-white mb-4">
+            Ready to Ace Your Exams?
+          </h2>
+          <p className="text-purple-200 text-lg mb-8">
+            Join students across Assam who are studying smarter with TRUE CONCEPT. Login now — it's free!
+          </p>
+          <Link href="/login">
+            <button
+              className="font-black text-lg px-10 py-4 rounded-2xl text-purple-900 shadow-xl hover:scale-105 transition-transform"
+              style={{ background: "linear-gradient(135deg, #f59e0b, #fbbf24)" }}
+              data-testid="button-cta-login"
+            >
+              🚀 Start Learning Now!
+            </button>
+          </Link>
+        </div>
       </section>
     </div>
   );
