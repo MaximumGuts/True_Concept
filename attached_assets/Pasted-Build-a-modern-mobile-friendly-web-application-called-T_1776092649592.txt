@@ -1,0 +1,285 @@
+Build a modern mobile-friendly web application called TRUE CONCEPT Learning Portal for a tuition institute.
+
+The purpose of the app is to provide digital study material, MCQs, explanations, and a virtual science lab for Class IX and X students (SEBA / CBSE).
+
+The platform should work smoothly on mobile devices first and then desktop.
+
+Use a clean, modern UI with a minimal design, suitable for students.
+
+CORE FEATURES
+
+The system should have two roles
+
+Admin (Teacher)
+Student
+
+Students can only access study materials.
+Admin can upload and manage content.
+
+STRUCTURE OF THE PLATFORM
+
+The app should have the following sections:
+
+Home Page
+
+Display:
+
+TRUE CONCEPT logo/title
+Short tagline: “Concepts. Clarity. Confidence.”
+
+Sections on homepage:
+
+• Subjects available
+• Features of the platform
+• Login button
+• Student dashboard preview
+
+The design should look clean, premium and modern.
+
+SUBJECT STRUCTURE
+
+Content should be organized in the following hierarchy:
+
+Subject → Class → Chapter → Content
+
+Subjects:
+
+Mathematics
+Science
+Advanced Mathematics
+
+Classes:
+
+Class IX
+Class X
+
+Each chapter should contain:
+
+Notes
+MCQ Quiz
+Question & Answer
+Explanation Video
+
+NOTES SYSTEM
+
+Admin can upload chapter-wise notes.
+
+Supported formats:
+
+PDF
+Text notes
+Images of notes
+
+Students should be able to:
+
+View notes
+Download notes
+Open notes in mobile friendly viewer
+
+MCQ PRACTICE SYSTEM
+
+Each chapter should have a MCQ practice section.
+
+Features:
+
+Multiple choice questions
+Instant answer checking
+Explanation after answering
+Score calculation
+Attempt again option
+
+Show results like:
+
+Correct answers
+Wrong answers
+Percentage score
+
+QUESTION ANSWER SECTION
+
+Each chapter should have:
+
+Important exam questions
+Detailed answers
+Step-by-step explanation
+
+This should be displayed in a clean readable format.
+
+YOUTUBE EXPLANATION VIDEOS
+
+Admin should be able to attach a YouTube video link to each chapter.
+
+Students should see:
+
+Embedded YouTube player
+Video title
+Short description
+
+Videos should open inside the app page.
+
+VIRTUAL SCIENCE LAB
+
+Create a Virtual Science Lab section for Class IX and X science experiments.
+
+Students should be able to interact with simulations.
+
+Examples:
+
+Light reflection experiment
+Refraction through glass slab
+Electric circuit simulation
+Lens experiment
+Magnet experiment
+
+Each experiment page should include:
+
+Experiment objective
+Interactive simulation area
+Step-by-step procedure
+Expected result
+Explanation
+
+Simulations should be interactive and visual.
+
+Use HTML Canvas or interactive components to simulate experiments.
+
+The interface should feel like a small digital lab.
+
+STUDENT DASHBOARD
+
+After login, students should see:
+
+Subjects available
+Progress tracking
+Recently opened chapters
+MCQ scores
+
+Each subject card should open chapters.
+
+ADMIN PANEL
+
+Admin should have a dashboard to manage content.
+
+Admin capabilities:
+
+Add subjects
+Add chapters
+Upload notes
+Add MCQs
+Add questions and answers
+Attach YouTube video links
+Manage virtual lab experiments
+
+Admin should also be able to:
+
+Edit content
+Delete content
+
+DATABASE STRUCTURE
+
+Use a simple database to store:
+
+Subjects
+Classes
+Chapters
+Notes
+MCQs
+Questions
+Video links
+Student progress
+
+The database should be structured clearly.
+
+USER INTERFACE DESIGN
+
+Design style:
+
+Minimal
+Elegant
+Education focused
+
+Color theme suggestion:
+
+Deep blue
+White
+Gold accents
+
+UI components should include:
+
+Subject cards
+Chapter lists
+Expandable content sections
+MCQ quiz interface
+
+Everything must be mobile responsive.
+
+MOBILE FRIENDLY REQUIREMENTS
+
+The app must work smoothly on mobile.
+
+Requirements:
+
+Large readable fonts
+Touch friendly buttons
+Scrollable chapter lists
+Fast loading pages
+
+Avoid heavy elements.
+
+PERFORMANCE
+
+Ensure:
+
+Fast page loading
+Optimized media
+Lazy loading for videos
+
+SECURITY
+
+Students should only access learning materials.
+
+Admin authentication should be secure.
+
+FUTURE READY STRUCTURE
+
+Design the system so future features can be added such as:
+
+Student progress analytics
+Online tests
+Leaderboard
+Live classes
+Assignments
+
+EXTRA FEATURE
+
+Add a search feature so students can search:
+
+Chapter names
+Questions
+Topics
+
+FINAL GOAL
+
+Build a clean, fast, and mobile-friendly learning platform where students can:
+
+Read notes
+Practice MCQs
+Watch explanation videos
+Perform virtual science experiments
+
+The experience should feel like a modern digital learning portal.
+
+VERY IMPORTANT (For your use)
+
+Since you are building this on Replit, I recommend the stack:
+
+Frontend
+React + Tailwind
+
+Backend
+Node.js
+
+Database
+SQLite or Supabase
+
+Virtual Lab
+Canvas / interactive components

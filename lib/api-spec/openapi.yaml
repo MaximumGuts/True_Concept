@@ -3,20 +3,38 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: TRUE CONCEPT Learning Portal API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: auth
+    description: Authentication operations
+  - name: subjects
+    description: Subject operations
+  - name: chapters
+    description: Chapter operations
+  - name: notes
+    description: Notes operations
+  - name: mcqs
+    description: MCQ operations
+  - name: qa
+    description: Q&A operations
+  - name: videos
+    description: Video operations
+  - name: experiments
+    description: Virtual science lab experiments
+  - name: progress
+    description: Student progress tracking
+
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +42,712 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /auth/login:
+    post:
+      operationId: login
+      tags: [auth]
+      summary: Login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+        "401":
+          description: Unauthorized
+
+  /auth/logout:
+    post:
+      operationId: logout
+      tags: [auth]
+      summary: Logout
+      responses:
+        "200":
+          description: Success
+
+  /auth/me:
+    get:
+      operationId: getMe
+      tags: [auth]
+      summary: Get current user
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          description: Unauthorized
+
+  /subjects:
+    get:
+      operationId: getSubjects
+      tags: [subjects]
+      summary: List all subjects
+      responses:
+        "200":
+          description: List of subjects
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Subject"
+    post:
+      operationId: createSubject
+      tags: [subjects]
+      summary: Create a subject (admin only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateSubjectBody"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Subject"
+
+  /subjects/{subjectId}:
+    get:
+      operationId: getSubject
+      tags: [subjects]
+      summary: Get a subject
+      parameters:
+        - name: subjectId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Subject
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Subject"
+    put:
+      operationId: updateSubject
+      tags: [subjects]
+      summary: Update a subject (admin only)
+      parameters:
+        - name: subjectId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateSubjectBody"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Subject"
+    delete:
+      operationId: deleteSubject
+      tags: [subjects]
+      summary: Delete a subject (admin only)
+      parameters:
+        - name: subjectId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /chapters:
+    get:
+      operationId: getChapters
+      tags: [chapters]
+      summary: List chapters (optionally filtered)
+      parameters:
+        - name: subjectId
+          in: query
+          schema:
+            type: integer
+        - name: classLevel
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of chapters
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Chapter"
+    post:
+      operationId: createChapter
+      tags: [chapters]
+      summary: Create a chapter (admin only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateChapterBody"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Chapter"
+
+  /chapters/{chapterId}:
+    get:
+      operationId: getChapter
+      tags: [chapters]
+      summary: Get a chapter
+      parameters:
+        - name: chapterId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Chapter
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Chapter"
+    put:
+      operationId: updateChapter
+      tags: [chapters]
+      summary: Update a chapter (admin only)
+      parameters:
+        - name: chapterId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateChapterBody"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Chapter"
+    delete:
+      operationId: deleteChapter
+      tags: [chapters]
+      summary: Delete a chapter (admin only)
+      parameters:
+        - name: chapterId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /notes:
+    get:
+      operationId: getNotes
+      tags: [notes]
+      summary: List notes for a chapter
+      parameters:
+        - name: chapterId
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of notes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Note"
+    post:
+      operationId: createNote
+      tags: [notes]
+      summary: Create a note (admin only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateNoteBody"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Note"
+
+  /notes/{noteId}:
+    put:
+      operationId: updateNote
+      tags: [notes]
+      summary: Update a note (admin only)
+      parameters:
+        - name: noteId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateNoteBody"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Note"
+    delete:
+      operationId: deleteNote
+      tags: [notes]
+      summary: Delete a note (admin only)
+      parameters:
+        - name: noteId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /mcqs:
+    get:
+      operationId: getMcqs
+      tags: [mcqs]
+      summary: List MCQs for a chapter
+      parameters:
+        - name: chapterId
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of MCQs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Mcq"
+    post:
+      operationId: createMcq
+      tags: [mcqs]
+      summary: Create an MCQ (admin only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateMcqBody"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Mcq"
+
+  /mcqs/{mcqId}:
+    put:
+      operationId: updateMcq
+      tags: [mcqs]
+      summary: Update an MCQ (admin only)
+      parameters:
+        - name: mcqId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateMcqBody"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Mcq"
+    delete:
+      operationId: deleteMcq
+      tags: [mcqs]
+      summary: Delete an MCQ (admin only)
+      parameters:
+        - name: mcqId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /qa:
+    get:
+      operationId: getQa
+      tags: [qa]
+      summary: List Q&A for a chapter
+      parameters:
+        - name: chapterId
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of Q&A items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/QaItem"
+    post:
+      operationId: createQa
+      tags: [qa]
+      summary: Create a Q&A item (admin only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateQaBody"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QaItem"
+
+  /qa/{qaId}:
+    put:
+      operationId: updateQa
+      tags: [qa]
+      summary: Update a Q&A item (admin only)
+      parameters:
+        - name: qaId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateQaBody"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QaItem"
+    delete:
+      operationId: deleteQa
+      tags: [qa]
+      summary: Delete a Q&A item (admin only)
+      parameters:
+        - name: qaId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /videos:
+    get:
+      operationId: getVideos
+      tags: [videos]
+      summary: Get video for a chapter
+      parameters:
+        - name: chapterId
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Video info
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Video"
+    post:
+      operationId: createVideo
+      tags: [videos]
+      summary: Attach YouTube video to chapter (admin only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateVideoBody"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Video"
+
+  /videos/{videoId}:
+    put:
+      operationId: updateVideo
+      tags: [videos]
+      summary: Update a video (admin only)
+      parameters:
+        - name: videoId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateVideoBody"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Video"
+    delete:
+      operationId: deleteVideo
+      tags: [videos]
+      summary: Delete a video (admin only)
+      parameters:
+        - name: videoId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /experiments:
+    get:
+      operationId: getExperiments
+      tags: [experiments]
+      summary: List virtual lab experiments
+      parameters:
+        - name: classLevel
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of experiments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Experiment"
+    post:
+      operationId: createExperiment
+      tags: [experiments]
+      summary: Create an experiment (admin only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateExperimentBody"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Experiment"
+
+  /experiments/{experimentId}:
+    get:
+      operationId: getExperiment
+      tags: [experiments]
+      summary: Get a single experiment
+      parameters:
+        - name: experimentId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Experiment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Experiment"
+    put:
+      operationId: updateExperiment
+      tags: [experiments]
+      summary: Update an experiment (admin only)
+      parameters:
+        - name: experimentId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateExperimentBody"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Experiment"
+    delete:
+      operationId: deleteExperiment
+      tags: [experiments]
+      summary: Delete an experiment (admin only)
+      parameters:
+        - name: experimentId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /progress:
+    get:
+      operationId: getProgress
+      tags: [progress]
+      summary: Get student progress
+      responses:
+        "200":
+          description: Student progress
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Progress"
+
+  /progress/mcq-score:
+    post:
+      operationId: saveMcqScore
+      tags: [progress]
+      summary: Save MCQ quiz score
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SaveMcqScoreBody"
+      responses:
+        "200":
+          description: Saved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Progress"
+
+  /progress/mark-chapter:
+    post:
+      operationId: markChapterVisited
+      tags: [progress]
+      summary: Mark chapter as visited
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MarkChapterBody"
+      responses:
+        "200":
+          description: Marked
+
+  /dashboard/summary:
+    get:
+      operationId: getDashboardSummary
+      tags: [progress]
+      summary: Get student dashboard summary
+      responses:
+        "200":
+          description: Dashboard summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummary"
+
+  /search:
+    get:
+      operationId: search
+      tags: [chapters]
+      summary: Search chapters, notes and questions
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Search results
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SearchResults"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +758,510 @@ components:
       required:
         - status
 
+    LoginRequest:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+      required:
+        - username
+        - password
+
+    LoginResponse:
+      type: object
+      properties:
+        user:
+          $ref: "#/components/schemas/User"
+        token:
+          type: string
+      required:
+        - user
+        - token
+
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        username:
+          type: string
+        role:
+          type: string
+          enum: [admin, student]
+        name:
+          type: string
+      required:
+        - id
+        - username
+        - role
+        - name
+
+    Subject:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        icon:
+          type: string
+        classLevels:
+          type: array
+          items:
+            type: string
+        color:
+          type: string
+        chapterCount:
+          type: integer
+      required:
+        - id
+        - name
+        - description
+        - icon
+        - classLevels
+        - color
+
+    CreateSubjectBody:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        icon:
+          type: string
+        classLevels:
+          type: array
+          items:
+            type: string
+        color:
+          type: string
+      required:
+        - name
+        - description
+        - icon
+        - classLevels
+        - color
+
+    Chapter:
+      type: object
+      properties:
+        id:
+          type: integer
+        subjectId:
+          type: integer
+        subjectName:
+          type: string
+        classLevel:
+          type: string
+        title:
+          type: string
+        chapterNumber:
+          type: integer
+        description:
+          type: string
+        hasNotes:
+          type: boolean
+        hasMcqs:
+          type: boolean
+        hasQa:
+          type: boolean
+        hasVideo:
+          type: boolean
+      required:
+        - id
+        - subjectId
+        - classLevel
+        - title
+        - chapterNumber
+        - description
+        - hasNotes
+        - hasMcqs
+        - hasQa
+        - hasVideo
+
+    CreateChapterBody:
+      type: object
+      properties:
+        subjectId:
+          type: integer
+        classLevel:
+          type: string
+          enum: ["Class IX", "Class X"]
+        title:
+          type: string
+        chapterNumber:
+          type: integer
+        description:
+          type: string
+      required:
+        - subjectId
+        - classLevel
+        - title
+        - chapterNumber
+        - description
+
+    Note:
+      type: object
+      properties:
+        id:
+          type: integer
+        chapterId:
+          type: integer
+        title:
+          type: string
+        content:
+          type: string
+        type:
+          type: string
+          enum: [text, pdf, image]
+        fileUrl:
+          type: string
+        order:
+          type: integer
+      required:
+        - id
+        - chapterId
+        - title
+        - content
+        - type
+        - order
+
+    CreateNoteBody:
+      type: object
+      properties:
+        chapterId:
+          type: integer
+        title:
+          type: string
+        content:
+          type: string
+        type:
+          type: string
+          enum: [text, pdf, image]
+        fileUrl:
+          type: string
+        order:
+          type: integer
+      required:
+        - chapterId
+        - title
+        - content
+        - type
+        - order
+
+    Mcq:
+      type: object
+      properties:
+        id:
+          type: integer
+        chapterId:
+          type: integer
+        question:
+          type: string
+        options:
+          type: array
+          items:
+            type: string
+        correctIndex:
+          type: integer
+        explanation:
+          type: string
+        order:
+          type: integer
+      required:
+        - id
+        - chapterId
+        - question
+        - options
+        - correctIndex
+        - explanation
+        - order
+
+    CreateMcqBody:
+      type: object
+      properties:
+        chapterId:
+          type: integer
+        question:
+          type: string
+        options:
+          type: array
+          items:
+            type: string
+        correctIndex:
+          type: integer
+        explanation:
+          type: string
+        order:
+          type: integer
+      required:
+        - chapterId
+        - question
+        - options
+        - correctIndex
+        - explanation
+        - order
+
+    QaItem:
+      type: object
+      properties:
+        id:
+          type: integer
+        chapterId:
+          type: integer
+        question:
+          type: string
+        answer:
+          type: string
+        explanation:
+          type: string
+        isImportant:
+          type: boolean
+        order:
+          type: integer
+      required:
+        - id
+        - chapterId
+        - question
+        - answer
+        - explanation
+        - isImportant
+        - order
+
+    CreateQaBody:
+      type: object
+      properties:
+        chapterId:
+          type: integer
+        question:
+          type: string
+        answer:
+          type: string
+        explanation:
+          type: string
+        isImportant:
+          type: boolean
+        order:
+          type: integer
+      required:
+        - chapterId
+        - question
+        - answer
+        - explanation
+        - isImportant
+        - order
+
+    Video:
+      type: object
+      properties:
+        id:
+          type: integer
+        chapterId:
+          type: integer
+        youtubeId:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+      required:
+        - id
+        - chapterId
+        - youtubeId
+        - title
+        - description
+
+    CreateVideoBody:
+      type: object
+      properties:
+        chapterId:
+          type: integer
+        youtubeId:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+      required:
+        - chapterId
+        - youtubeId
+        - title
+        - description
+
+    Experiment:
+      type: object
+      properties:
+        id:
+          type: integer
+        classLevel:
+          type: string
+        title:
+          type: string
+        objective:
+          type: string
+        procedure:
+          type: string
+        expectedResult:
+          type: string
+        explanation:
+          type: string
+        type:
+          type: string
+          enum: [light-reflection, light-refraction, electric-circuit, lens, magnet, custom]
+        difficulty:
+          type: string
+          enum: [easy, medium, hard]
+      required:
+        - id
+        - classLevel
+        - title
+        - objective
+        - procedure
+        - expectedResult
+        - explanation
+        - type
+        - difficulty
+
+    CreateExperimentBody:
+      type: object
+      properties:
+        classLevel:
+          type: string
+          enum: ["Class IX", "Class X"]
+        title:
+          type: string
+        objective:
+          type: string
+        procedure:
+          type: string
+        expectedResult:
+          type: string
+        explanation:
+          type: string
+        type:
+          type: string
+          enum: [light-reflection, light-refraction, electric-circuit, lens, magnet, custom]
+        difficulty:
+          type: string
+          enum: [easy, medium, hard]
+      required:
+        - classLevel
+        - title
+        - objective
+        - procedure
+        - expectedResult
+        - explanation
+        - type
+        - difficulty
+
+    Progress:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: integer
+        chapterId:
+          type: integer
+        chapterTitle:
+          type: string
+        subjectName:
+          type: string
+        mcqScore:
+          type: integer
+        mcqTotal:
+          type: integer
+        visited:
+          type: boolean
+        lastAccessedAt:
+          type: string
+      required:
+        - id
+        - userId
+        - chapterId
+        - chapterTitle
+        - subjectName
+        - visited
+
+    SaveMcqScoreBody:
+      type: object
+      properties:
+        chapterId:
+          type: integer
+        score:
+          type: integer
+        total:
+          type: integer
+      required:
+        - chapterId
+        - score
+        - total
+
+    MarkChapterBody:
+      type: object
+      properties:
+        chapterId:
+          type: integer
+      required:
+        - chapterId
+
+    DashboardSummary:
+      type: object
+      properties:
+        totalChapters:
+          type: integer
+        visitedChapters:
+          type: integer
+        totalMcqAttempts:
+          type: integer
+        averageScore:
+          type: number
+        recentChapters:
+          type: array
+          items:
+            $ref: "#/components/schemas/Progress"
+        subjectProgress:
+          type: array
+          items:
+            type: object
+            properties:
+              subjectId:
+                type: integer
+              subjectName:
+                type: string
+              chaptersTotal:
+                type: integer
+              chaptersVisited:
+                type: integer
+            required:
+              - subjectId
+              - subjectName
+              - chaptersTotal
+              - chaptersVisited
+      required:
+        - totalChapters
+        - visitedChapters
+        - totalMcqAttempts
+        - averageScore
+        - recentChapters
+        - subjectProgress
+
+    SearchResults:
+      type: object
+      properties:
+        chapters:
+          type: array
+          items:
+            $ref: "#/components/schemas/Chapter"
+        questions:
+          type: array
+          items:
+            $ref: "#/components/schemas/QaItem"
+      required:
+        - chapters
+        - questions

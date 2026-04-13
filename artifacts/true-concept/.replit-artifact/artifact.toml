@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "TRUE CONCEPT Learning Portal"
+version = "1.0.0"
+id = "artifacts/true-concept"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 18418
+
+[services.development]
+run = "pnpm --filter @workspace/true-concept run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/true-concept", "run", "build" ]
+publicDir = "artifacts/true-concept/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "18418"
+BASE_PATH = "/"
