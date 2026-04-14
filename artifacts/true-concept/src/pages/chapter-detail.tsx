@@ -35,6 +35,47 @@ function YouTubeEmbed({ youtubeId }: { youtubeId: string }) {
   );
 }
 
+function NoteAccordion({ note, defaultOpen }: { note: { id: number; title: string; content: string; youtubeId?: string | null }; defaultOpen: boolean }) {
+  const [open, setOpen] = useState(defaultOpen);
+
+  return (
+    <div data-testid={`note-${note.id}`}>
+      {/* Clickable header */}
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center gap-3 px-7 py-5 text-left hover:bg-gray-50 transition-colors group"
+      >
+        <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-sm font-black shadow-sm shrink-0"
+          style={{ background: "linear-gradient(135deg, #7c3aed, #6d28d9)" }}>
+          📝
+        </div>
+        <h2 className="flex-1 text-lg font-black text-gray-900 leading-tight assamese-text">{note.title}</h2>
+        <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 transition-all ${open ? "bg-purple-100" : "bg-gray-100 group-hover:bg-gray-200"}`}>
+          <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${open ? "rotate-180 text-purple-600" : "text-gray-500"}`} />
+        </div>
+      </button>
+
+      {/* Expandable body */}
+      <div className={`overflow-hidden transition-all duration-300 ${open ? "max-h-[9999px] opacity-100" : "max-h-0 opacity-0"}`}>
+        <div className="px-7 pb-7 pt-1 note-reading-prose" style={{ borderTop: "1px solid #f3f4f6" }}>
+          <ReactMarkdown
+            remarkPlugins={[remarkMath, remarkGfm, remarkBreaks]}
+            rehypePlugins={[rehypeKatex]}
+          >
+            {note.content}
+          </ReactMarkdown>
+        </div>
+        {note.youtubeId && (
+          <div className="px-7 pb-7">
+            <p className="text-xs font-black text-gray-400 uppercase tracking-wider mb-2">🎬 Related Video</p>
+            <YouTubeEmbed youtubeId={note.youtubeId} />
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function NotesTab({ chapterId }: { chapterId: number }) {
   const { data: notes, isLoading } = useGetNotes(
     { chapterId },
@@ -42,12 +83,15 @@ function NotesTab({ chapterId }: { chapterId: number }) {
   );
 
   if (isLoading) return (
-    <div className="animate-pulse space-y-5">
-      {[1, 2].map(i => (
-        <div key={i} className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
-          <div className="h-7 bg-gray-100 rounded-lg w-2/3 mb-4" />
+    <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden animate-pulse">
+      {[1, 2].map((i) => (
+        <div key={i} className={`p-7 ${i > 1 ? "border-t border-gray-100" : ""}`}>
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-8 h-8 bg-purple-100 rounded-lg" />
+            <div className="h-5 bg-gray-100 rounded-lg w-2/5" />
+          </div>
           <div className="space-y-2">
-            {[1,2,3,4].map(j => <div key={j} className="h-4 bg-gray-50 rounded w-full" />)}
+            {[1,2,3].map(j => <div key={j} className="h-4 bg-gray-50 rounded w-full" />)}
           </div>
         </div>
       ))}
@@ -63,37 +107,10 @@ function NotesTab({ chapterId }: { chapterId: number }) {
   );
 
   return (
-    <div className="space-y-6">
-      {notes.map((note) => (
-        <div key={note.id} className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden" data-testid={`note-${note.id}`}>
-          {/* Note header strip */}
-          <div className="px-8 pt-7 pb-4 border-b border-gray-50">
-            <div className="flex items-center gap-3 mb-1">
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-sm font-black shadow-sm"
-                style={{ background: "linear-gradient(135deg, #7c3aed, #6d28d9)" }}>
-                📝
-              </div>
-              <h2 className="text-xl font-black text-gray-900 leading-tight">{note.title}</h2>
-            </div>
-          </div>
-
-          {/* Note body — full professional reading area */}
-          <div className="px-8 py-7 note-reading-prose">
-            <ReactMarkdown
-              remarkPlugins={[remarkMath, remarkGfm, remarkBreaks]}
-              rehypePlugins={[rehypeKatex]}
-            >
-              {note.content}
-            </ReactMarkdown>
-          </div>
-
-          {/* Embedded YouTube if present */}
-          {note.youtubeId && (
-            <div className="px-8 pb-8">
-              <p className="text-xs font-black text-gray-400 uppercase tracking-wider mb-2">🎬 Related Video</p>
-              <YouTubeEmbed youtubeId={note.youtubeId} />
-            </div>
-          )}
+    <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+      {notes.map((note, idx) => (
+        <div key={note.id} className={idx > 0 ? "border-t border-gray-100" : ""}>
+          <NoteAccordion note={note} defaultOpen={idx === 0} />
         </div>
       ))}
     </div>
