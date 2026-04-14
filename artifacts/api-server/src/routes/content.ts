@@ -18,19 +18,19 @@ router.get("/notes", async (req: Request, res: Response): Promise<void> => {
 });
 
 router.post("/notes", requireAdmin as (req: Request, res: Response, next: () => void) => void, async (req: Request, res: Response): Promise<void> => {
-  const { chapterId, title, content, type, fileUrl, order } = req.body;
+  const { chapterId, title, content, type, fileUrl, youtubeId, order } = req.body;
   if (!chapterId || !title || content == null || !type) {
     res.status(400).json({ error: "Missing required fields" });
     return;
   }
-  const [note] = await db.insert(notesTable).values({ chapterId, title, content, type, fileUrl, order: order ?? 0 }).returning();
+  const [note] = await db.insert(notesTable).values({ chapterId, title, content, type, fileUrl, youtubeId: youtubeId || null, order: order ?? 0 }).returning();
   res.status(201).json(note);
 });
 
 router.put("/notes/:noteId", requireAdmin as (req: Request, res: Response, next: () => void) => void, async (req: Request, res: Response): Promise<void> => {
   const id = parseInt(Array.isArray(req.params.noteId) ? req.params.noteId[0] : req.params.noteId, 10);
-  const { chapterId, title, content, type, fileUrl, order } = req.body;
-  const [note] = await db.update(notesTable).set({ chapterId, title, content, type, fileUrl, order }).where(eq(notesTable.id, id)).returning();
+  const { chapterId, title, content, type, fileUrl, youtubeId, order } = req.body;
+  const [note] = await db.update(notesTable).set({ chapterId, title, content, type, fileUrl, youtubeId: youtubeId || null, order }).where(eq(notesTable.id, id)).returning();
   if (!note) {
     res.status(404).json({ error: "Note not found" });
     return;
@@ -94,19 +94,19 @@ router.get("/qa", async (req: Request, res: Response): Promise<void> => {
 });
 
 router.post("/qa", requireAdmin as (req: Request, res: Response, next: () => void) => void, async (req: Request, res: Response): Promise<void> => {
-  const { chapterId, question, answer, explanation, isImportant, order } = req.body;
+  const { chapterId, question, answer, explanation, youtubeId, isImportant, order } = req.body;
   if (!chapterId || !question || !answer || explanation == null) {
     res.status(400).json({ error: "Missing required fields" });
     return;
   }
-  const [item] = await db.insert(qaTable).values({ chapterId, question, answer, explanation, isImportant: isImportant ?? false, order: order ?? 0 }).returning();
+  const [item] = await db.insert(qaTable).values({ chapterId, question, answer, explanation, youtubeId: youtubeId || null, isImportant: isImportant ?? false, order: order ?? 0 }).returning();
   res.status(201).json(item);
 });
 
 router.put("/qa/:qaId", requireAdmin as (req: Request, res: Response, next: () => void) => void, async (req: Request, res: Response): Promise<void> => {
   const id = parseInt(Array.isArray(req.params.qaId) ? req.params.qaId[0] : req.params.qaId, 10);
-  const { chapterId, question, answer, explanation, isImportant, order } = req.body;
-  const [item] = await db.update(qaTable).set({ chapterId, question, answer, explanation, isImportant, order }).where(eq(qaTable.id, id)).returning();
+  const { chapterId, question, answer, explanation, youtubeId, isImportant, order } = req.body;
+  const [item] = await db.update(qaTable).set({ chapterId, question, answer, explanation, youtubeId: youtubeId || null, isImportant, order }).where(eq(qaTable.id, id)).returning();
   if (!item) {
     res.status(404).json({ error: "Q&A not found" });
     return;

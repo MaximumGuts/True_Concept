@@ -9,6 +9,7 @@ export const qaTable = pgTable("qa", {
   question: text("question").notNull(),
   answer: text("answer").notNull(),
   explanation: text("explanation").notNull(),
+  youtubeId: text("youtube_id"),
   isImportant: boolean("is_important").notNull().default(false),
   order: integer("order").notNull().default(0),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),

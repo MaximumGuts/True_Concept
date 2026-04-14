@@ -10,6 +10,7 @@ export const notesTable = pgTable("notes", {
   content: text("content").notNull(),
   type: text("type", { enum: ["text", "pdf", "image"] }).notNull().default("text"),
   fileUrl: text("file_url"),
+  youtubeId: text("youtube_id"),
   order: integer("order").notNull().default(0),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });

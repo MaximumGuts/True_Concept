@@ -1,48 +1,98 @@
 import { useState, useEffect } from "react";
 import { useRoute, Link } from "wouter";
+import ReactMarkdown from "react-markdown";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
+import remarkGfm from "remark-gfm";
+import "katex/dist/katex.min.css";
 import {
   useGetChapter, getGetChapterQueryKey,
   useGetNotes, getGetNotesQueryKey,
   useGetMcqs, getGetMcqsQueryKey,
   useGetQa, getGetQaQueryKey,
-  useGetVideos, getGetVideosQueryKey,
   useMarkChapterVisited, useSaveMcqScore,
 } from "@workspace/api-client-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { ArrowLeft, ChevronDown, ChevronUp } from "lucide-react";
 
-type Tab = "notes" | "mcq" | "qa" | "video";
+type Tab = "notes" | "mcq" | "qa";
+
+function YouTubeEmbed({ youtubeId }: { youtubeId: string }) {
+  return (
+    <div className="mt-6 rounded-2xl overflow-hidden shadow-lg" style={{ background: "#000" }}>
+      <div className="relative w-full" style={{ paddingTop: "56.25%" }}>
+        <iframe
+          className="absolute inset-0 w-full h-full"
+          src={`https://www.youtube.com/embed/${youtubeId}`}
+          title="Lecture Video"
+          frameBorder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+        />
+      </div>
+    </div>
+  );
+}
 
 function NotesTab({ chapterId }: { chapterId: number }) {
   const { data: notes, isLoading } = useGetNotes(
     { chapterId },
     { query: { enabled: !!chapterId, queryKey: getGetNotesQueryKey({ chapterId }) } }
   );
-  if (isLoading) return <div className="animate-pulse space-y-4">{[1,2].map(i => <div key={i} className="h-40 liquid-card rounded-2xl" />)}</div>;
-  if (!notes?.length) return (
-    <div className="liquid-panel rounded-3xl text-center py-16">
-      <div className="text-5xl mb-3">📭</div>
-      <p className="font-black text-lg text-gray-900">No notes yet — check back soon!</p>
+
+  if (isLoading) return (
+    <div className="animate-pulse space-y-5">
+      {[1, 2].map(i => (
+        <div key={i} className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
+          <div className="h-7 bg-gray-100 rounded-lg w-2/3 mb-4" />
+          <div className="space-y-2">
+            {[1,2,3,4].map(j => <div key={j} className="h-4 bg-gray-50 rounded w-full" />)}
+          </div>
+        </div>
+      ))}
     </div>
   );
+
+  if (!notes?.length) return (
+    <div className="bg-white rounded-3xl shadow-sm border border-gray-100 text-center py-20">
+      <div className="text-5xl mb-4">📭</div>
+      <p className="font-black text-lg text-gray-700">No notes yet — check back soon!</p>
+      <p className="text-gray-400 text-sm mt-1 font-medium">Your teacher will upload notes for this chapter.</p>
+    </div>
+  );
+
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       {notes.map((note) => (
-        <div key={note.id} className="liquid-panel rounded-3xl overflow-hidden" data-testid={`note-${note.id}`}>
-          <div className="px-6 py-4 border-b border-white/40" style={{ background: "linear-gradient(135deg, rgba(124,58,237,0.08), rgba(168,85,247,0.05))" }}>
-            <h3 className="text-lg font-black text-purple-900">📝 {note.title}</h3>
+        <div key={note.id} className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden" data-testid={`note-${note.id}`}>
+          {/* Note header strip */}
+          <div className="px-8 pt-7 pb-4 border-b border-gray-50">
+            <div className="flex items-center gap-3 mb-1">
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-sm font-black shadow-sm"
+                style={{ background: "linear-gradient(135deg, #7c3aed, #6d28d9)" }}>
+                📝
+              </div>
+              <h2 className="text-xl font-black text-gray-900 leading-tight">{note.title}</h2>
+            </div>
           </div>
-          <div className="p-6 prose-content" dangerouslySetInnerHTML={{
-            __html: note.content
-              .replace(/^# (.+)$/gm, '<h1>$1</h1>')
-              .replace(/^## (.+)$/gm, '<h2>$1</h2>')
-              .replace(/^### (.+)$/gm, '<h3>$1</h3>')
-              .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-              .replace(/\*(.+?)\*/g, '<em>$1</em>')
-              .replace(/`(.+?)`/g, '<code>$1</code>')
-              .replace(/\n\n/g, '</p><p>')
-              .replace(/^(.+)$/gm, (line) => line.startsWith('<') ? line : `<p>${line}</p>`)
-          }} />
+
+          {/* Note body — full professional reading area */}
+          <div className="px-8 py-7 note-reading-prose">
+            <ReactMarkdown
+              remarkPlugins={[remarkMath, remarkGfm]}
+              rehypePlugins={[rehypeKatex]}
+            >
+              {note.content}
+            </ReactMarkdown>
+          </div>
+
+          {/* Embedded YouTube if present */}
+          {note.youtubeId && (
+            <div className="px-8 pb-8">
+              <p className="text-xs font-black text-gray-400 uppercase tracking-wider mb-2">🎬 Related Video</p>
+              <YouTubeEmbed youtubeId={note.youtubeId} />
+            </div>
+          )}
         </div>
       ))}
     </div>
@@ -98,122 +148,88 @@ function McqTab({ chapterId }: { chapterId: number }) {
   );
 
   if (quizComplete) {
-    const score = answers.filter((a, i) => a === mcqs[i].correctIndex).length;
+    const score = answers.filter((a, i) => a === mcqs![i].correctIndex).length;
     const pct = Math.round((score / mcqs.length) * 100);
     return (
-      <div className="liquid-panel rounded-3xl text-center py-10 px-6" data-testid="mcq-results">
-        <div className="text-6xl mb-4">{pct >= 80 ? "🏆" : pct >= 60 ? "🌟" : pct >= 40 ? "💪" : "📚"}</div>
-        <div className="text-6xl font-black mb-2" style={{
-          background: pct >= 70 ? "linear-gradient(135deg, #10b981, #14b8a6)" : "linear-gradient(135deg, #f59e0b, #f97316)",
-          WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text"
-        }}>{pct}%</div>
-        <p className="text-xl font-black text-gray-900 mb-1">{score} of {mcqs.length} correct!</p>
-        <p className="font-bold text-sm mb-8 text-gray-500">
-          {pct >= 80 ? "Excellent! You're a genius! 🎉" : pct >= 60 ? "Good job! Keep it up! 💪" : pct >= 40 ? "Nice try! Review and retry! 📖" : "Keep practicing! You've got this! 🚀"}
+      <div className="liquid-panel rounded-3xl p-8 text-center" data-testid="quiz-complete">
+        <div className="text-6xl mb-4">{pct >= 80 ? "🏆" : pct >= 50 ? "💪" : "📚"}</div>
+        <h3 className="font-black text-2xl text-gray-900 mb-2">Quiz Complete!</h3>
+        <p className="text-4xl font-black mb-1" style={{ background: "linear-gradient(135deg, #7c3aed, #6d28d9)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+          {score}/{mcqs.length}
         </p>
-        <div className="grid grid-cols-3 gap-4 mb-8 max-w-xs mx-auto">
-          <div className="liquid-card rounded-2xl p-3 text-center">
-            <div className="text-2xl font-black text-emerald-600">{score}</div>
-            <div className="text-xs font-black text-gray-500">Correct ✅</div>
-          </div>
-          <div className="liquid-card rounded-2xl p-3 text-center">
-            <div className="text-2xl font-black text-red-500">{mcqs.length - score}</div>
-            <div className="text-xs font-black text-gray-500">Wrong ❌</div>
-          </div>
-          <div className="liquid-card rounded-2xl p-3 text-center">
-            <div className="text-2xl font-black text-blue-600">{mcqs.length}</div>
-            <div className="text-xs font-black text-gray-500">Total 📊</div>
-          </div>
-        </div>
-        <button onClick={resetQuiz} className="px-8 py-3 rounded-2xl font-black text-white shadow-xl hover:opacity-90 transition-opacity"
-          data-testid="button-retry-mcq"
-          style={{ background: "linear-gradient(135deg, #7c3aed, #6d28d9)" }}>🔄 Try Again</button>
+        <p className="text-gray-600 font-semibold mb-6">{pct}% correct</p>
+        <button onClick={resetQuiz} className="px-8 py-3 rounded-2xl text-white font-black shadow-xl hover:opacity-90 transition-opacity"
+          style={{ background: "linear-gradient(135deg, #7c3aed, #6d28d9)" }} data-testid="button-retry-quiz">
+          Try Again 🔄
+        </button>
       </div>
     );
   }
 
   const current = mcqs[currentIdx];
+  const optLabels = ["A", "B", "C", "D"];
   const isCorrect = selectedAnswer === current.correctIndex;
 
   return (
-    <div className="space-y-4" data-testid="mcq-quiz">
-      {/* Progress */}
-      <div className="liquid-card rounded-2xl p-4">
-        <div className="flex items-center justify-between text-sm font-black text-gray-500 mb-3">
-          <span>Question {currentIdx + 1} of {mcqs.length}</span>
-          <span className="liquid-inner text-purple-700 px-3 py-1 rounded-full text-xs font-black"
-            >🎯 {Math.round(((currentIdx + 1) / mcqs.length) * 100)}%</span>
-        </div>
-        <div className="h-3 rounded-full overflow-hidden" style={{ background: "rgba(0,0,0,0.06)" }}>
-          <div className="h-full rounded-full transition-all duration-500"
-            style={{ width: `${((currentIdx + 1) / mcqs.length) * 100}%`, background: "linear-gradient(90deg, #7c3aed, #a855f7)" }} />
+    <div className="liquid-panel rounded-3xl p-6" data-testid="mcq-question">
+      <div className="flex items-center justify-between mb-6">
+        <span className="text-sm font-black text-gray-500">Question {currentIdx + 1} of {mcqs.length}</span>
+        <div className="flex gap-1.5">
+          {mcqs.map((_, i) => (
+            <div key={i} className={`h-1.5 rounded-full transition-all ${
+              i < currentIdx ? "w-5 bg-emerald-400" :
+              i === currentIdx ? "w-8 bg-purple-500" : "w-5 bg-gray-200"
+            }`} />
+          ))}
         </div>
       </div>
 
-      {/* Question */}
-      <div className="liquid-panel rounded-3xl p-6">
-        <div className="flex items-start gap-3 mb-5">
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-black text-sm shrink-0 shadow-md"
-            style={{ background: "linear-gradient(135deg, #7c3aed, #6d28d9)" }}>Q{currentIdx + 1}</div>
-          <p className="text-base font-black text-gray-900 leading-relaxed pt-1.5" data-testid="text-question">{current.question}</p>
-        </div>
+      <p className="text-lg font-black text-gray-900 leading-relaxed mb-6" data-testid="text-question">{current.question}</p>
 
-        <div className="space-y-3">
-          {current.options.map((opt, i) => {
-            let bgStyle: React.CSSProperties = {};
-            let borderStyle: React.CSSProperties = { border: "1px solid rgba(255,255,255,0.4)" };
-            let textCls = "text-gray-700";
-            let label = String.fromCharCode(65 + i);
-
-            if (selectedAnswer !== null) {
-              if (i === current.correctIndex) {
-                bgStyle = { background: "rgba(16,185,129,0.15)", border: "1.5px solid rgba(16,185,129,0.5)" };
-                textCls = "text-emerald-800"; label = "✅";
-              } else if (i === selectedAnswer) {
-                bgStyle = { background: "rgba(244,63,94,0.12)", border: "1.5px solid rgba(244,63,94,0.4)" };
-                textCls = "text-red-700"; label = "❌";
-              } else {
-                bgStyle = { background: "rgba(0,0,0,0.03)" };
-                textCls = "text-gray-400 opacity-60";
-              }
-            } else {
-              bgStyle = { background: "rgba(255,255,255,0.4)", backdropFilter: "blur(12px)" };
-            }
-
-            return (
-              <button
-                key={i}
-                onClick={() => handleSelect(i)}
-                disabled={selectedAnswer !== null}
-                data-testid={`option-${i}`}
-                className={`w-full text-left p-4 rounded-2xl transition-all text-sm font-semibold flex items-start gap-3 ${
-                  selectedAnswer === null ? "hover:scale-[1.01] cursor-pointer" : "cursor-default"
-                } ${textCls}`}
-                style={{ ...bgStyle, ...borderStyle }}
-              >
-                <span className="w-7 h-7 rounded-xl flex items-center justify-center text-xs font-black shrink-0 mt-0.5 liquid-inner">{label}</span>
+      <div className="space-y-3 mb-4">
+        {current.options.map((opt, i) => {
+          const chosen = selectedAnswer === i;
+          const correct = i === current.correctIndex;
+          let style: React.CSSProperties = {};
+          let cls = "w-full text-left p-4 rounded-2xl border-2 transition-all font-semibold text-base ";
+          if (selectedAnswer === null) {
+            cls += "border-transparent liquid-card hover:border-purple-300 hover:scale-[1.01]";
+          } else if (correct) {
+            cls += "border-emerald-400 text-emerald-900"; style = { background: "rgba(16,185,129,0.1)" };
+          } else if (chosen) {
+            cls += "border-red-300 text-red-700"; style = { background: "rgba(239,68,68,0.08)" };
+          } else {
+            cls += "border-transparent liquid-inner text-gray-400";
+          }
+          return (
+            <button key={i} onClick={() => handleSelect(i)} className={cls} style={style} data-testid={`option-${i}`}>
+              <span className="flex items-center gap-3">
+                <span className="w-7 h-7 rounded-lg flex items-center justify-center text-white text-xs font-black shrink-0 shadow-sm"
+                  style={{ background: correct && selectedAnswer !== null ? "linear-gradient(135deg,#10b981,#14b8a6)" : "linear-gradient(135deg,#9ca3af,#6b7280)" }}>
+                  {optLabels[i]}
+                </span>
                 {opt}
-              </button>
-            );
-          })}
-        </div>
-
-        {showExplanation && (
-          <div className={`mt-4 p-4 rounded-2xl text-sm font-semibold liquid-inner ${isCorrect ? "text-emerald-800" : "text-amber-800"}`}
-            data-testid="text-explanation">
-            <p className="font-black mb-1">{isCorrect ? "🎉 Correct!" : "💡 Not quite!"}</p>
-            <p>{current.explanation}</p>
-          </div>
-        )}
-
-        {selectedAnswer !== null && (
-          <button className="mt-4 w-full py-3.5 rounded-2xl font-black text-white shadow-xl hover:opacity-90 transition-opacity"
-            onClick={handleNext} data-testid="button-next-question"
-            style={{ background: "linear-gradient(135deg, #7c3aed, #6d28d9)" }}>
-            {currentIdx < mcqs.length - 1 ? "Next Question →" : "View Results 🏆"}
-          </button>
-        )}
+              </span>
+            </button>
+          );
+        })}
       </div>
+
+      {showExplanation && (
+        <div className={`mt-4 p-4 rounded-2xl text-sm font-semibold liquid-inner ${isCorrect ? "text-emerald-800" : "text-amber-800"}`}
+          data-testid="text-explanation">
+          <p className="font-black mb-1">{isCorrect ? "🎉 Correct!" : "💡 Not quite!"}</p>
+          <p>{current.explanation}</p>
+        </div>
+      )}
+
+      {selectedAnswer !== null && (
+        <button className="mt-4 w-full py-3.5 rounded-2xl font-black text-white shadow-xl hover:opacity-90 transition-opacity"
+          onClick={handleNext} data-testid="button-next-question"
+          style={{ background: "linear-gradient(135deg, #7c3aed, #6d28d9)" }}>
+          {currentIdx < mcqs.length - 1 ? "Next Question →" : "View Results 🏆"}
+        </button>
+      )}
     </div>
   );
 }
@@ -239,32 +255,51 @@ function QaTab({ chapterId }: { chapterId: number }) {
   return (
     <div className="space-y-3" data-testid="qa-list">
       {qa.map((item, i) => (
-        <div key={item.id} className="liquid-card rounded-2xl overflow-hidden" data-testid={`qa-${item.id}`}>
+        <div key={item.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden" data-testid={`qa-${item.id}`}>
           <button
             onClick={() => toggle(item.id)}
-            className="w-full text-left p-4 sm:p-5 flex items-start justify-between gap-3 hover:bg-white/30 transition-colors"
+            className="w-full text-left p-4 sm:p-5 flex items-start justify-between gap-3 hover:bg-gray-50 transition-colors"
           >
             <div className="flex items-start gap-3 flex-1">
               <div className="w-8 h-8 rounded-xl flex items-center justify-center text-white font-black text-xs shrink-0 mt-0.5 shadow-md"
                 style={{ background: "linear-gradient(135deg, #7c3aed, #6d28d9)" }}>{i + 1}</div>
               <div className="flex-1">
                 {item.isImportant && (
-                  <span className="inline-block text-xs font-black liquid-inner text-amber-700 px-2 py-0.5 rounded-full mb-1.5">⭐ Important</span>
+                  <span className="inline-block text-xs font-black text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full mb-1.5">⭐ Important</span>
                 )}
                 <p className="font-black text-gray-900 text-sm leading-relaxed">{item.question}</p>
               </div>
             </div>
-            <div className="w-8 h-8 rounded-xl flex items-center justify-center liquid-inner shrink-0">
+            <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-gray-100 shrink-0">
               {expanded.has(item.id) ? <ChevronUp className="w-4 h-4 text-gray-500" /> : <ChevronDown className="w-4 h-4 text-gray-500" />}
             </div>
           </button>
+
           {expanded.has(item.id) && (
-            <div className="px-5 pb-5 border-t border-white/30 pt-4" style={{ background: "rgba(124,58,237,0.04)" }}>
-              <div className="prose-content mb-2" dangerouslySetInnerHTML={{ __html: `<p>${item.answer.replace(/\n/g, '</p><p>')}</p>` }} />
+            <div className="border-t border-gray-100 bg-gray-50">
+              {/* Answer */}
+              <div className="px-5 pt-5 pb-4 note-reading-prose">
+                <ReactMarkdown
+                  remarkPlugins={[remarkMath, remarkGfm]}
+                  rehypePlugins={[rehypeKatex]}
+                >
+                  {item.answer}
+                </ReactMarkdown>
+              </div>
+
+              {/* Explanation */}
               {item.explanation && (
-                <div className="liquid-inner rounded-xl p-3 mt-2">
-                  <p className="text-xs font-black text-blue-700 mb-1">💡 Extra Explanation</p>
-                  <p className="text-sm text-blue-800 font-medium">{item.explanation}</p>
+                <div className="mx-5 mb-4 bg-blue-50 border border-blue-100 rounded-xl p-4">
+                  <p className="text-xs font-black text-blue-600 uppercase tracking-wide mb-1">💡 Extra Explanation</p>
+                  <p className="text-sm text-blue-800 font-medium leading-relaxed">{item.explanation}</p>
+                </div>
+              )}
+
+              {/* Embedded YouTube video for Q&A */}
+              {item.youtubeId && (
+                <div className="px-5 pb-5">
+                  <p className="text-xs font-black text-gray-400 uppercase tracking-wider mb-2">🎬 Video Explanation</p>
+                  <YouTubeEmbed youtubeId={item.youtubeId} />
                 </div>
               )}
             </div>
@@ -275,46 +310,10 @@ function QaTab({ chapterId }: { chapterId: number }) {
   );
 }
 
-function VideoTab({ chapterId }: { chapterId: number }) {
-  const { data: videos, isLoading } = useGetVideos(
-    { chapterId },
-    { query: { enabled: !!chapterId, queryKey: getGetVideosQueryKey({ chapterId }) } }
-  );
-  if (isLoading) return <div className="h-48 liquid-card rounded-2xl animate-pulse" />;
-  if (!videos?.length) return (
-    <div className="liquid-panel rounded-3xl text-center py-16">
-      <div className="text-5xl mb-3">🎬</div><p className="font-black text-lg text-gray-900">No videos yet</p>
-    </div>
-  );
-  return (
-    <div className="space-y-6" data-testid="video-list">
-      {videos.map((video) => (
-        <div key={video.id} className="liquid-panel rounded-3xl overflow-hidden" data-testid={`video-${video.id}`}>
-          <div className="relative w-full" style={{ paddingTop: "56.25%" }}>
-            <iframe
-              className="absolute inset-0 w-full h-full"
-              src={`https://www.youtube.com/embed/${video.youtubeId}`}
-              title={video.title}
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-            />
-          </div>
-          <div className="p-5">
-            <h3 className="font-black text-gray-900 mb-1">🎬 {video.title}</h3>
-            <p className="text-sm text-gray-600 font-medium">{video.description}</p>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
 const TABS = [
   { id: "notes" as Tab, label: "Notes", emoji: "📝", grad: "linear-gradient(135deg, #3b82f6, #6366f1)" },
   { id: "mcq" as Tab, label: "Quiz", emoji: "🎯", grad: "linear-gradient(135deg, #8b5cf6, #a855f7)" },
   { id: "qa" as Tab, label: "Q&A", emoji: "❓", grad: "linear-gradient(135deg, #10b981, #14b8a6)" },
-  { id: "video" as Tab, label: "Video", emoji: "🎬", grad: "linear-gradient(135deg, #f43f5e, #fb7185)" },
 ];
 
 export default function ChapterDetailPage() {
@@ -367,21 +366,20 @@ export default function ChapterDetailPage() {
         </div>
       </div>
 
-      {/* Tab Buttons */}
-      <div className="grid grid-cols-4 gap-2 mb-6">
+      {/* Tab Buttons — 3 tabs now */}
+      <div className="grid grid-cols-3 gap-2 mb-6">
         {TABS.map(({ id, label, emoji, grad }) => (
           <button
             key={id}
             onClick={() => setActiveTab(id)}
             data-testid={`tab-${id}`}
-            className={`flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 py-3 px-2 rounded-2xl text-xs sm:text-sm font-black transition-all ${
+            className={`flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 py-3.5 px-2 rounded-2xl text-xs sm:text-sm font-black transition-all ${
               activeTab === id ? "text-white shadow-lg scale-105" : "liquid-card text-gray-600 hover:scale-105"
             }`}
             style={activeTab === id ? { background: grad } : {}}
           >
             <span className="text-lg sm:text-base">{emoji}</span>
-            <span className="hidden sm:inline">{label}</span>
-            <span className="sm:hidden text-[10px]">{label}</span>
+            <span>{label}</span>
           </button>
         ))}
       </div>
@@ -390,7 +388,6 @@ export default function ChapterDetailPage() {
       {activeTab === "notes" && <NotesTab chapterId={chapterId} />}
       {activeTab === "mcq" && <McqTab chapterId={chapterId} />}
       {activeTab === "qa" && <QaTab chapterId={chapterId} />}
-      {activeTab === "video" && <VideoTab chapterId={chapterId} />}
     </div>
   );
 }

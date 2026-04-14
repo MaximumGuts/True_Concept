@@ -301,4 +301,28 @@
   .prose-content strong { @apply font-bold text-foreground; }
   .prose-content code { @apply bg-muted px-1.5 py-0.5 rounded text-sm font-mono; }
   .prose-content blockquote { @apply border-l-4 border-primary pl-4 italic text-muted-foreground my-4; }
+
+  /* Professional Note Reading — clean white, no glass */
+  .note-reading-prose h1 { font-size: 1.75rem; font-weight: 900; color: #111827; margin-bottom: 0.75rem; margin-top: 1.5rem; line-height: 1.25; }
+  .note-reading-prose h2 { font-size: 1.35rem; font-weight: 800; color: #1f2937; margin-bottom: 0.6rem; margin-top: 1.5rem; padding-bottom: 0.4rem; border-bottom: 2px solid #f3f4f6; line-height: 1.3; }
+  .note-reading-prose h3 { font-size: 1.1rem; font-weight: 800; color: #374151; margin-bottom: 0.5rem; margin-top: 1.25rem; }
+  .note-reading-prose p { font-size: 1.05rem; line-height: 1.85; color: #374151; margin-bottom: 1rem; font-weight: 400; }
+  .note-reading-prose ul { list-style: disc; padding-left: 1.5rem; margin-bottom: 1rem; }
+  .note-reading-prose ol { list-style: decimal; padding-left: 1.5rem; margin-bottom: 1rem; }
+  .note-reading-prose li { font-size: 1.05rem; line-height: 1.8; color: #374151; margin-bottom: 0.3rem; }
+  .note-reading-prose strong { font-weight: 800; color: #111827; }
+  .note-reading-prose em { font-style: italic; color: #4b5563; }
+  .note-reading-prose code { background: #f3f4f6; color: #7c3aed; padding: 0.15rem 0.5rem; border-radius: 0.375rem; font-size: 0.9em; font-family: 'JetBrains Mono', 'Fira Code', monospace; font-weight: 600; }
+  .note-reading-prose pre { background: #1e1e2e; border-radius: 0.75rem; padding: 1.25rem; margin-bottom: 1.25rem; overflow-x: auto; }
+  .note-reading-prose pre code { background: transparent; color: #cdd6f4; padding: 0; font-size: 0.9rem; }
+  .note-reading-prose blockquote { border-left: 4px solid #7c3aed; padding-left: 1rem; color: #6b7280; font-style: italic; margin: 1rem 0; background: #faf5ff; border-radius: 0 0.5rem 0.5rem 0; padding: 0.75rem 1rem; }
+  .note-reading-prose table { width: 100%; border-collapse: collapse; margin-bottom: 1.25rem; font-size: 0.95rem; }
+  .note-reading-prose th { background: #7c3aed; color: white; font-weight: 800; text-align: left; padding: 0.6rem 0.9rem; }
+  .note-reading-prose td { padding: 0.6rem 0.9rem; border-bottom: 1px solid #e5e7eb; color: #374151; }
+  .note-reading-prose tr:nth-child(even) td { background: #f9fafb; }
+  .note-reading-prose a { color: #7c3aed; text-decoration: underline; }
+  /* KaTeX display math centering */
+  .note-reading-prose .math-display { overflow-x: auto; padding: 1rem 0; text-align: center; }
+  .note-reading-prose .katex-display { margin: 1rem 0; overflow-x: auto; }
+  .note-reading-prose .katex { font-size: 1.15em; }
 }
