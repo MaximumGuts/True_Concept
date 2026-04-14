@@ -4,6 +4,7 @@ import ReactMarkdown from "react-markdown";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 import remarkGfm from "remark-gfm";
+import remarkBreaks from "remark-breaks";
 import "katex/dist/katex.min.css";
 import {
   useGetChapter, getGetChapterQueryKey,
@@ -79,7 +80,7 @@ function NotesTab({ chapterId }: { chapterId: number }) {
           {/* Note body — full professional reading area */}
           <div className="px-8 py-7 note-reading-prose">
             <ReactMarkdown
-              remarkPlugins={[remarkMath, remarkGfm]}
+              remarkPlugins={[remarkMath, remarkGfm, remarkBreaks]}
               rehypePlugins={[rehypeKatex]}
             >
               {note.content}
@@ -280,7 +281,7 @@ function QaTab({ chapterId }: { chapterId: number }) {
               {/* Answer */}
               <div className="px-5 pt-5 pb-4 note-reading-prose">
                 <ReactMarkdown
-                  remarkPlugins={[remarkMath, remarkGfm]}
+                  remarkPlugins={[remarkMath, remarkGfm, remarkBreaks]}
                   rehypePlugins={[rehypeKatex]}
                 >
                   {item.answer}

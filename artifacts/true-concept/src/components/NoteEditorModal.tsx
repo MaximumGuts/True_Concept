@@ -3,6 +3,7 @@ import ReactMarkdown from "react-markdown";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 import remarkGfm from "remark-gfm";
+import remarkBreaks from "remark-breaks";
 import { X, Eye, Edit3, Youtube, Image, Bold, Italic, List, Hash, Calculator } from "lucide-react";
 import "katex/dist/katex.min.css";
 
@@ -277,7 +278,7 @@ export default function NoteEditorModal({
             <div className="h-full overflow-y-auto px-8 py-6 bg-white note-reading-prose">
               {content ? (
                 <ReactMarkdown
-                  remarkPlugins={[remarkMath, remarkGfm]}
+                  remarkPlugins={[remarkMath, remarkGfm, remarkBreaks]}
                   rehypePlugins={[rehypeKatex]}
                 >
                   {content}
