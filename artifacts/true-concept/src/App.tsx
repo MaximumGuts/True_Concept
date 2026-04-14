@@ -19,6 +19,7 @@ import AdminDashboard from "@/pages/admin/index";
 import AdminSubjectsPage from "@/pages/admin/subjects";
 import AdminChaptersPage from "@/pages/admin/chapters";
 import AdminExperimentsPage from "@/pages/admin/experiments";
+import ChapterContentPage from "@/pages/admin/chapter-content";
 import NotFound from "@/pages/not-found";
 
 const queryClient = new QueryClient({
@@ -128,6 +129,13 @@ function AppRoutes() {
           {() => (
             <ProtectedRoute adminOnly>
               <AdminExperimentsPage />
+            </ProtectedRoute>
+          )}
+        </Route>
+        <Route path="/admin/chapters/:chapterId/content">
+          {() => (
+            <ProtectedRoute adminOnly>
+              <ChapterContentPage />
             </ProtectedRoute>
           )}
         </Route>

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "wouter";
 import {
   useGetSubjects,
   useGetChapters, getGetChaptersQueryKey,
@@ -6,7 +7,7 @@ import {
   useUpdateChapter,
   useDeleteChapter,
 } from "@workspace/api-client-react";
-import { Plus, Edit2, Trash2, X, Check, ChevronDown } from "lucide-react";
+import { Plus, Edit2, Trash2, X, Check, ChevronDown, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -144,6 +145,11 @@ export default function AdminChaptersPage() {
                 <p className="text-sm text-muted-foreground truncate">{ch.description}</p>
               </div>
               <div className="flex gap-2 shrink-0">
+                <Link href={`/admin/chapters/${ch.id}/content`}>
+                  <Button size="sm" className="text-xs font-black gap-1.5 bg-purple-600 hover:bg-purple-700 text-white border-0" data-testid={`button-manage-content-${ch.id}`}>
+                    <BookOpen className="w-3.5 h-3.5" /> Content
+                  </Button>
+                </Link>
                 <Button
                   size="sm"
                   variant="outline"
