@@ -3,6 +3,8 @@ import { Switch, Route, Redirect, Router as WouterRouter } from "wouter";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { StudentPrefsProvider } from "@/contexts/StudentPrefsContext";
+import StudentPrefsModal from "@/components/StudentPrefsModal";
 import Layout from "@/components/Layout";
 
 // Pages
@@ -42,7 +44,7 @@ function ProtectedRoute({ children, adminOnly = false }: { children: React.React
     );
   }
   if (!user) return <Redirect to="/login" />;
-  if (adminOnly && user.role !== "admin") return <Redirect to="/dashboard" />;
+  if (adminOnly && user.role !== "admin") return <Redirect to="/subjects" />;
   if (!adminOnly && user.role === "admin") return <Redirect to="/admin" />;
   return children;
 }
@@ -50,6 +52,7 @@ function ProtectedRoute({ children, adminOnly = false }: { children: React.React
 function AppRoutes() {
   return (
     <Layout>
+      <StudentPrefsModal />
       <Switch>
         <Route path="/" component={HomePage} />
         <Route path="/login" component={LoginPage} />
@@ -152,7 +155,9 @@ export default function App() {
       <TooltipProvider>
         <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
           <AuthProvider>
-            <AppRoutes />
+            <StudentPrefsProvider>
+              <AppRoutes />
+            </StudentPrefsProvider>
           </AuthProvider>
         </WouterRouter>
         <Toaster />

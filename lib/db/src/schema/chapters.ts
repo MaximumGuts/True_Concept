@@ -7,6 +7,7 @@ export const chaptersTable = pgTable("chapters", {
   id: serial("id").primaryKey(),
   subjectId: integer("subject_id").notNull().references(() => subjectsTable.id, { onDelete: "cascade" }),
   classLevel: text("class_level", { enum: ["Class IX", "Class X"] }).notNull(),
+  medium: text("medium", { enum: ["Assamese", "English", "Both"] }).notNull().default("Both"),
   title: text("title").notNull(),
   chapterNumber: integer("chapter_number").notNull(),
   description: text("description").notNull(),

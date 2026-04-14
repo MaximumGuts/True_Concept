@@ -189,7 +189,7 @@ export default function NoteEditorModal({
             value={title}
             onChange={e => setTitle(e.target.value)}
             placeholder="Note title..."
-            className="w-full text-xl font-black text-gray-900 border-0 outline-none bg-transparent placeholder-gray-300"
+            className="w-full text-xl font-black text-gray-900 border-0 outline-none bg-transparent placeholder-gray-300 assamese-input"
             data-testid="input-note-title"
           />
           <div className="flex flex-wrap items-center gap-3">
@@ -270,7 +270,7 @@ export default function NoteEditorModal({
               onChange={e => setContent(e.target.value)}
               placeholder={PLACEHOLDER}
               className="w-full h-full px-6 py-5 text-sm font-mono text-gray-800 leading-relaxed resize-none border-0 outline-none bg-white"
-              style={{ fontFamily: "'JetBrains Mono', 'Fira Code', 'Courier New', monospace", fontSize: "13.5px", lineHeight: "1.75" }}
+              style={{ fontFamily: "'JetBrains Mono', 'Fira Code', 'Noto Sans Bengali', 'Courier New', monospace", fontSize: "13.5px", lineHeight: "1.75" }}
               data-testid="input-note-content"
               spellCheck
             />

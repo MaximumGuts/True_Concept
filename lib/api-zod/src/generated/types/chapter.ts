@@ -11,6 +11,7 @@ export interface Chapter {
   subjectId: number;
   subjectName?: string;
   classLevel: string;
+  medium: string;
   title: string;
   chapterNumber: number;
   description: string;

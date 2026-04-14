@@ -302,6 +302,17 @@
   .prose-content code { @apply bg-muted px-1.5 py-0.5 rounded text-sm font-mono; }
   .prose-content blockquote { @apply border-l-4 border-primary pl-4 italic text-muted-foreground my-4; }
 
+  /* Assamese / Bengali script support */
+  .assamese-text {
+    font-family: "Noto Sans Bengali", "Noto Sans", "Inter", system-ui, sans-serif;
+  }
+  .assamese-input {
+    font-family: "Noto Sans Bengali", "Noto Sans", "Inter", system-ui, sans-serif;
+  }
+  .note-reading-prose, .note-reading-prose * {
+    font-family: "Noto Sans Bengali", "Noto Sans", "Inter", system-ui, sans-serif;
+  }
+
   /* Professional Note Reading — clean white, no glass */
   .note-reading-prose h1 { font-size: 1.75rem; font-weight: 900; color: #111827; margin-bottom: 0.75rem; margin-top: 1.5rem; line-height: 1.25; }
   .note-reading-prose h2 { font-size: 1.35rem; font-weight: 800; color: #1f2937; margin-bottom: 0.6rem; margin-top: 1.5rem; padding-bottom: 0.4rem; border-bottom: 2px solid #f3f4f6; line-height: 1.3; }

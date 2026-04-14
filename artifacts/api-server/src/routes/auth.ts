@@ -26,6 +26,23 @@ router.post("/auth/login", async (req: Request, res: Response): Promise<void> =>
   res.json({ user: authUser, token });
 });
 
+router.post("/auth/student-login", (req: Request, res: Response): void => {
+  const { name } = req.body;
+  if (!name || typeof name !== "string" || !name.trim()) {
+    res.status(400).json({ error: "Name is required" });
+    return;
+  }
+  const trimmedName = name.trim();
+  const authUser: AuthUser = {
+    id: 0,
+    username: trimmedName,
+    role: "student",
+    name: trimmedName,
+  };
+  const token = signToken(authUser);
+  res.json({ user: authUser, token });
+});
+
 router.post("/auth/logout", (_req: Request, res: Response): void => {
   res.json({ ok: true });
 });

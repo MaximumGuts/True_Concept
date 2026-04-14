@@ -1,7 +1,8 @@
-import { useState } from "react";
 import { Link } from "wouter";
 import { useGetSubjects } from "@workspace/api-client-react";
 import { ChevronRight } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useStudentPrefs } from "@/contexts/StudentPrefsContext";
 
 const subjectColors = [
   { grad: "linear-gradient(135deg, #3b82f6, #6366f1)", glow: "rgba(99,102,241,0.3)", badge: "linear-gradient(135deg, #3b82f6, #6366f1)" },
@@ -12,45 +13,34 @@ const subjectColors = [
 ];
 
 const subjectEmojis = ["🔢", "🔬", "📐", "📖", "🧬", "⚛️"];
-const CLASS_LEVELS = ["All", "Class IX", "Class X"];
 
 export default function SubjectsPage() {
   const { data: subjects, isLoading } = useGetSubjects();
-  const [selectedClass, setSelectedClass] = useState("All");
+  const { user } = useAuth();
+  const { prefs } = useStudentPrefs();
 
-  const filtered = subjects?.filter((s) =>
-    selectedClass === "All" || s.classLevels.includes(selectedClass)
-  );
+  const isStudent = user?.role === "student";
+
+  const filtered = subjects?.filter((s) => {
+    if (!isStudent || !prefs) return true;
+    return s.classLevels.includes(prefs.class);
+  });
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 blob-bg">
-      {/* Header */}
       <div className="text-center mb-10">
         <div className="text-4xl mb-3">📚</div>
-        <h1 className="font-black text-4xl text-gray-900 mb-2" data-testid="heading-subjects">All Subjects</h1>
+        <h1 className="font-black text-4xl text-gray-900 mb-2" data-testid="heading-subjects">
+          {isStudent && prefs ? `${prefs.class} · ${prefs.medium} Medium` : "All Subjects"}
+        </h1>
         <p className="text-gray-600 font-bold">Choose your subject and start studying!</p>
+        {isStudent && prefs && (
+          <p className="text-sm text-gray-400 font-medium mt-1">
+            Showing subjects for your class and medium
+          </p>
+        )}
       </div>
 
-      {/* Class Filter */}
-      <div className="flex gap-3 mb-8 justify-center overflow-x-auto pb-1">
-        {CLASS_LEVELS.map((cl) => (
-          <button
-            key={cl}
-            onClick={() => setSelectedClass(cl)}
-            data-testid={`filter-${cl.toLowerCase().replace(/\s+/g, '-')}`}
-            className={`px-6 py-2.5 rounded-2xl text-sm font-black whitespace-nowrap transition-all ${
-              selectedClass === cl
-                ? "text-white shadow-lg scale-105"
-                : "liquid-card text-gray-700 hover:scale-105"
-            }`}
-            style={selectedClass === cl ? { background: "linear-gradient(135deg, #7c3aed, #6d28d9)" } : {}}
-          >
-            {cl === "All" ? "🌟 All" : cl === "Class IX" ? "📗 Class IX" : "📘 Class X"}
-          </button>
-        ))}
-      </div>
-
-      {/* Subjects Grid */}
       {isLoading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {[1, 2, 3].map((i) => (
@@ -73,25 +63,20 @@ export default function SubjectsPage() {
                   data-testid={`card-subject-${subject.id}`}
                   className="group liquid-card rounded-3xl overflow-hidden card-hover"
                 >
-                  {/* Gradient top stripe */}
                   <div className="h-2" style={{ background: col.grad }} />
-
                   <div className="p-6">
-                    {/* Icon */}
                     <div className="relative w-16 h-16 rounded-2xl mb-5 flex items-center justify-center text-3xl shadow-lg"
                       style={{ background: col.grad }}>
                       <div className="absolute inset-0 rounded-2xl blur-md opacity-50"
                         style={{ background: col.glow }} />
                       <span className="relative">{emoji}</span>
                     </div>
-
                     <h3 className="text-lg font-black text-gray-900 mb-2 group-hover:text-purple-700 transition-colors">
                       {subject.name}
                     </h3>
-                    <p className="text-sm text-gray-600 mb-5 leading-relaxed line-clamp-2 font-medium">
+                    <p className="text-sm text-gray-600 mb-5 leading-relaxed line-clamp-2 font-medium assamese-text">
                       {subject.description}
                     </p>
-
                     <div className="flex items-center justify-between">
                       <div className="flex gap-2 flex-wrap">
                         {subject.classLevels.map((cl) => (

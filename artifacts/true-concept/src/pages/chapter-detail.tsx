@@ -132,7 +132,7 @@ function McqTab({ chapterId }: { chapterId: number }) {
     } else {
       const score = answers.filter((a, i) => a === mcqs[i].correctIndex).length;
       setQuizComplete(true);
-      if (user && !scoreSaved) { saveScore.mutate({ data: { chapterId, score, total: mcqs.length } }); setScoreSaved(true); }
+      if (user && user.id !== 0 && !scoreSaved) { saveScore.mutate({ data: { chapterId, score, total: mcqs.length } }); setScoreSaved(true); }
     }
   };
 
@@ -321,13 +321,14 @@ export default function ChapterDetailPage() {
   const [, params] = useRoute("/chapters/:chapterId");
   const chapterId = parseInt(params?.chapterId ?? "0", 10);
   const [activeTab, setActiveTab] = useState<Tab>("notes");
+  const { user } = useAuth();
   const markVisited = useMarkChapterVisited();
 
   const { data: chapter, isLoading } = useGetChapter(chapterId, {
     query: { enabled: !!chapterId, queryKey: getGetChapterQueryKey(chapterId) },
   });
 
-  useEffect(() => { if (chapterId) markVisited.mutate({ data: { chapterId } }); }, [chapterId]);
+  useEffect(() => { if (chapterId && user && user.id !== 0) markVisited.mutate({ data: { chapterId } }); }, [chapterId]);
 
   if (isLoading) {
     return (

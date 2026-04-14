@@ -53,6 +53,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = useCallback(() => {
     localStorage.removeItem("trueconcept_token");
+    localStorage.removeItem("trueconcept_student_prefs");
     setToken(null);
     setUser(null);
   }, []);

@@ -18,6 +18,9 @@ pnpm workspace monorepo using TypeScript.
 - **API codegen**: Orval (from OpenAPI spec at `lib/api-spec/openapi.yaml`)
 - **Frontend**: React + Vite + Tailwind CSS v4 + shadcn/ui
 - **Auth**: JWT (jsonwebtoken), stored in localStorage as `trueconcept_token`
+- **Student Auth**: Name-only login (no DB lookup) — JWT with `id: 0, role: "student"`
+- **Student Prefs**: Class IX/X + Assamese/English medium stored in `trueconcept_student_prefs` localStorage
+- **Fonts**: Inter + Noto Sans Bengali (Assamese script support) via Google Fonts
 
 ## Key Commands
 
@@ -35,7 +38,7 @@ pnpm workspace monorepo using TypeScript.
 - `artifacts/mockup-sandbox` — Component preview server for design work
 
 ### Database (lib/db)
-Tables: `users`, `subjects`, `chapters`, `notes`, `mcqs`, `qa` (questions & answers), `videos`, `experiments`, `progress`
+Tables: `users`, `subjects`, `chapters` (with `medium` column: Assamese/English/Both), `notes`, `mcqs`, `qa` (questions & answers), `videos`, `experiments`, `progress`
 
 ### API Client (lib/api-client-react)
 Auto-generated React Query hooks from OpenAPI spec. Auth token injected via `setAuthTokenGetter()`.

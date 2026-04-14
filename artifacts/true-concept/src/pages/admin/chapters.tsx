@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { useQueryClient } from "@tanstack/react-query";
 
 const CLASS_LEVELS = ["Class IX", "Class X"] as const;
+const MEDIUMS = ["Both", "Assamese", "English"] as const;
 
 export default function AdminChaptersPage() {
   const queryClient = useQueryClient();
@@ -32,11 +33,15 @@ export default function AdminChaptersPage() {
 
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState<number | null>(null);
-  const [form, setForm] = useState({ title: "", description: "", chapterNumber: 1, classLevel: "Class IX" as "Class IX" | "Class X" });
+  const [form, setForm] = useState({
+    title: "", description: "", chapterNumber: 1,
+    classLevel: "Class IX" as "Class IX" | "Class X",
+    medium: "Both" as "Both" | "Assamese" | "English",
+  });
   const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
 
   const resetForm = () => {
-    setForm({ title: "", description: "", chapterNumber: 1, classLevel: selectedClass });
+    setForm({ title: "", description: "", chapterNumber: 1, classLevel: selectedClass, medium: "Both" });
     setShowForm(false);
     setEditId(null);
   };
@@ -44,11 +49,17 @@ export default function AdminChaptersPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (editId) {
-      updateChapter.mutate({ id: editId, data: form });
+      updateChapter.mutate({ id: editId, data: { ...form, subjectId: selectedSubjectId } as any });
     } else {
-      createChapter.mutate({ data: { ...form, subjectId: selectedSubjectId } });
+      createChapter.mutate({ data: { ...form, subjectId: selectedSubjectId } as any });
     }
     resetForm();
+  };
+
+  const mediumBadgeColor = (med: string) => {
+    if (med === "Assamese") return "bg-indigo-50 text-indigo-700 border border-indigo-200";
+    if (med === "English") return "bg-sky-50 text-sky-700 border border-sky-200";
+    return "bg-gray-50 text-gray-600 border border-gray-200";
   };
 
   return (
@@ -102,7 +113,8 @@ export default function AdminChaptersPage() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label>Title</Label>
-              <Input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} required placeholder="Chapter title" className="mt-1" data-testid="input-chapter-title" />
+              <Input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} required
+                placeholder="Chapter title (supports Assamese অসমীয়া)" className="mt-1 assamese-input" data-testid="input-chapter-title" />
             </div>
             <div>
               <Label>Chapter Number</Label>
@@ -111,8 +123,32 @@ export default function AdminChaptersPage() {
           </div>
           <div>
             <Label>Description</Label>
-            <Input value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} placeholder="Brief description" className="mt-1" data-testid="input-chapter-description" />
+            <Input value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
+              placeholder="Brief description (Assamese supported)" className="mt-1 assamese-input" data-testid="input-chapter-description" />
           </div>
+
+          {/* Medium selector */}
+          <div>
+            <Label>Medium</Label>
+            <div className="flex gap-2 mt-1.5">
+              {MEDIUMS.map(med => (
+                <button
+                  key={med}
+                  type="button"
+                  onClick={() => setForm(f => ({ ...f, medium: med }))}
+                  className={`px-4 py-2 rounded-lg text-sm font-black transition-colors border ${
+                    form.medium === med ? "bg-primary text-primary-foreground border-primary" : "bg-muted text-muted-foreground border-border hover:border-primary/40"
+                  }`}
+                >
+                  {med === "Assamese" ? "🇮🇳 অসমীয়া" : med === "English" ? "🌐 English" : "🔀 Both"}
+                </button>
+              ))}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1.5">
+              "Both" = shown to all students regardless of medium
+            </p>
+          </div>
+
           <div className="flex gap-3">
             <Button type="submit" data-testid="button-submit-chapter">
               <Check className="w-4 h-4 mr-1" /> {editId ? "Update" : "Create"}
@@ -141,8 +177,15 @@ export default function AdminChaptersPage() {
                 {ch.chapterNumber}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="font-medium text-foreground">{ch.title}</p>
-                <p className="text-sm text-muted-foreground truncate">{ch.description}</p>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <p className="font-medium text-foreground assamese-text">{ch.title}</p>
+                  {ch.medium && (
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-black ${mediumBadgeColor(ch.medium)}`}>
+                      {ch.medium === "Assamese" ? "🇮🇳 অসমীয়া" : ch.medium === "English" ? "🌐 Eng" : "🔀 Both"}
+                    </span>
+                  )}
+                </div>
+                <p className="text-sm text-muted-foreground truncate assamese-text">{ch.description}</p>
               </div>
               <div className="flex gap-2 shrink-0">
                 <Link href={`/admin/chapters/${ch.id}/content`}>
@@ -153,7 +196,17 @@ export default function AdminChaptersPage() {
                 <Button
                   size="sm"
                   variant="outline"
-                  onClick={() => { setEditId(ch.id); setForm({ title: ch.title, description: ch.description ?? "", chapterNumber: ch.chapterNumber, classLevel: ch.classLevel as "Class IX" | "Class X" }); setShowForm(true); }}
+                  onClick={() => {
+                    setEditId(ch.id);
+                    setForm({
+                      title: ch.title,
+                      description: ch.description ?? "",
+                      chapterNumber: ch.chapterNumber,
+                      classLevel: ch.classLevel as "Class IX" | "Class X",
+                      medium: (ch.medium as "Both" | "Assamese" | "English") ?? "Both",
+                    });
+                    setShowForm(true);
+                  }}
                   data-testid={`button-edit-chapter-${ch.id}`}
                 >
                   <Edit2 className="w-3.5 h-3.5" />

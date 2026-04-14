@@ -50,12 +50,14 @@ router.get("/chapters", async (req: Request, res: Response): Promise<void> => {
 });
 
 router.post("/chapters", requireAdmin as (req: Request, res: Response, next: () => void) => void, async (req: Request, res: Response): Promise<void> => {
-  const { subjectId, classLevel, title, chapterNumber, description } = req.body;
+  const { subjectId, classLevel, medium, title, chapterNumber, description } = req.body;
   if (!subjectId || !classLevel || !title || !description) {
     res.status(400).json({ error: "Missing required fields" });
     return;
   }
-  const [chapter] = await db.insert(chaptersTable).values({ subjectId, classLevel, title, chapterNumber: chapterNumber ?? 1, description }).returning();
+  const [chapter] = await db.insert(chaptersTable).values({
+    subjectId, classLevel, medium: medium ?? "Both", title, chapterNumber: chapterNumber ?? 1, description,
+  }).returning();
   const enriched = await enrichChapters([chapter]);
   res.status(201).json(enriched[0]);
 });
@@ -73,8 +75,10 @@ router.get("/chapters/:chapterId", async (req: Request, res: Response): Promise<
 
 router.put("/chapters/:chapterId", requireAdmin as (req: Request, res: Response, next: () => void) => void, async (req: Request, res: Response): Promise<void> => {
   const id = parseInt(Array.isArray(req.params.chapterId) ? req.params.chapterId[0] : req.params.chapterId, 10);
-  const { subjectId, classLevel, title, chapterNumber, description } = req.body;
-  const [chapter] = await db.update(chaptersTable).set({ subjectId, classLevel, title, chapterNumber, description }).where(eq(chaptersTable.id, id)).returning();
+  const { subjectId, classLevel, medium, title, chapterNumber, description } = req.body;
+  const [chapter] = await db.update(chaptersTable).set({
+    subjectId, classLevel, medium: medium ?? "Both", title, chapterNumber, description,
+  }).where(eq(chaptersTable.id, id)).returning();
   if (!chapter) {
     res.status(404).json({ error: "Chapter not found" });
     return;
