@@ -39,11 +39,14 @@ function NoteAccordion({ note, defaultOpen }: { note: { id: number; title: strin
   const [open, setOpen] = useState(defaultOpen);
 
   return (
-    <div data-testid={`note-${note.id}`}>
+    <div data-testid={`note-${note.id}`} style={{ background: "#ffffff" }}>
       {/* Clickable header */}
       <button
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center gap-3 px-7 py-5 text-left hover:bg-gray-50 transition-colors group"
+        className="w-full flex items-center gap-3 px-7 py-5 text-left transition-colors group"
+        style={{ background: open ? "#fff" : "#fff" }}
+        onMouseEnter={e => (e.currentTarget.style.background = "#f9fafb")}
+        onMouseLeave={e => (e.currentTarget.style.background = "#fff")}
       >
         <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-sm font-black shadow-sm shrink-0"
           style={{ background: "linear-gradient(135deg, #7c3aed, #6d28d9)" }}>
@@ -56,8 +59,9 @@ function NoteAccordion({ note, defaultOpen }: { note: { id: number; title: strin
       </button>
 
       {/* Expandable body */}
-      <div className={`overflow-hidden transition-all duration-300 ${open ? "max-h-[9999px] opacity-100" : "max-h-0 opacity-0"}`}>
-        <div className="px-7 pb-7 pt-1 note-reading-prose" style={{ borderTop: "1px solid #f3f4f6" }}>
+      <div className={`overflow-hidden transition-all duration-300 ${open ? "max-h-[9999px] opacity-100" : "max-h-0 opacity-0"}`}
+        style={{ background: "#ffffff" }}>
+        <div className="px-7 pb-7 pt-5 note-reading-prose" style={{ borderTop: "1px solid #f3f4f6", background: "#ffffff" }}>
           <ReactMarkdown
             remarkPlugins={[remarkMath, remarkGfm, remarkBreaks]}
             rehypePlugins={[rehypeKatex]}
@@ -107,7 +111,8 @@ function NotesTab({ chapterId }: { chapterId: number }) {
   );
 
   return (
-    <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+    <div className="rounded-3xl border border-gray-200 overflow-hidden"
+      style={{ background: "#ffffff", boxShadow: "0 1px 3px 0 rgba(0,0,0,0.07), 0 1px 2px -1px rgba(0,0,0,0.07)", isolation: "isolate" }}>
       {notes.map((note, idx) => (
         <div key={note.id} className={idx > 0 ? "border-t border-gray-100" : ""}>
           <NoteAccordion note={note} defaultOpen={idx === 0} />
