@@ -1,7 +1,6 @@
 import { Router, type IRouter } from "express";
 import { eq } from "drizzle-orm";
 import { db, usersTable } from "@workspace/db";
-import { logger } from "../lib/logger";
 import { signToken, requireAuth, type AuthUser } from "../middlewares/auth";
 import type { Request, Response } from "express";
 
@@ -27,17 +26,11 @@ router.post("/auth/login", async (req: Request, res: Response): Promise<void> =>
 });
 
 router.post("/auth/student-login", (req: Request, res: Response): void => {
-  const { name } = req.body;
-  if (!name || typeof name !== "string" || !name.trim()) {
-    res.status(400).json({ error: "Name is required" });
-    return;
-  }
-  const trimmedName = name.trim();
   const authUser: AuthUser = {
     id: 0,
-    username: trimmedName,
+    username: "student",
     role: "student",
-    name: trimmedName,
+    name: "Student",
   };
   const token = signToken(authUser);
   res.json({ user: authUser, token });

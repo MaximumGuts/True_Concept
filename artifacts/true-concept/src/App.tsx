@@ -10,7 +10,6 @@ import Layout from "@/components/Layout";
 // Pages
 import HomePage from "@/pages/home";
 import LoginPage from "@/pages/login";
-import DashboardPage from "@/pages/dashboard";
 import SubjectsPage from "@/pages/subjects";
 import SubjectDetailPage from "@/pages/subject-detail";
 import ChapterDetailPage from "@/pages/chapter-detail";
@@ -79,11 +78,7 @@ function AppRoutes() {
           )}
         </Route>
         <Route path="/dashboard">
-          {() => (
-            <ProtectedRoute>
-              <DashboardPage />
-            </ProtectedRoute>
-          )}
+          {() => <Redirect to="/subjects" />}
         </Route>
         <Route path="/virtual-lab">
           {() => (

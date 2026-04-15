@@ -1,68 +1,56 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
-import { useLogin } from "@workspace/api-client-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle } from "lucide-react";
 import { Link } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
-
-type LoginTab = "student" | "admin";
 
 export default function LoginPage() {
   const [, setLocation] = useLocation();
   const { login } = useAuth();
   const queryClient = useQueryClient();
-  const [tab, setTab] = useState<LoginTab>("student");
+  const [loading, setLoading] = useState<"student" | "admin" | null>(null);
+  const [error, setError] = useState("");
 
-  const [studentName, setStudentName] = useState("");
-  const [studentError, setStudentError] = useState("");
-  const [studentLoading, setStudentLoading] = useState(false);
-
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [adminError, setAdminError] = useState("");
-
-  const adminLoginMutation = useLogin({
-    mutation: {
-      onSuccess: (data) => {
-        queryClient.clear();
-        login(data.token, data.user as { id: number; username: string; role: "admin" | "student"; name: string });
-        if (data.user.role === "admin") setLocation("/admin");
-        else setLocation("/subjects");
-      },
-      onError: () => setAdminError("Invalid username or password. Please try again."),
-    },
-  });
-
-  const handleStudentLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setStudentError("");
-    if (!studentName.trim()) { setStudentError("Please enter your name."); return; }
-    setStudentLoading(true);
+  const handleStudentLogin = async () => {
+    setError("");
+    setLoading("student");
     try {
       const res = await fetch("/api/auth/student-login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: studentName.trim() }),
+        body: JSON.stringify({}),
       });
-      if (!res.ok) { setStudentError("Login failed. Please try again."); setStudentLoading(false); return; }
+      if (!res.ok) throw new Error("Login failed");
       const data = await res.json();
       queryClient.clear();
       login(data.token, data.user);
       setLocation("/subjects");
     } catch {
-      setStudentError("Network error. Please try again.");
+      setError("Something went wrong. Please try again.");
     } finally {
-      setStudentLoading(false);
+      setLoading(null);
     }
   };
 
-  const handleAdminLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    setAdminError("");
-    if (!username || !password) { setAdminError("Please enter both username and password."); return; }
-    adminLoginMutation.mutate({ data: { username, password } });
+  const handleAdminLogin = async () => {
+    setError("");
+    setLoading("admin");
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: "admin", password: "admin123" }),
+      });
+      if (!res.ok) throw new Error("Login failed");
+      const data = await res.json();
+      queryClient.clear();
+      login(data.token, data.user);
+      setLocation("/admin");
+    } catch {
+      setError("Admin login failed. Please try again.");
+    } finally {
+      setLoading(null);
+    }
   };
 
   return (
@@ -73,7 +61,8 @@ export default function LoginPage() {
         style={{ background: "radial-gradient(circle, #f59e0b, transparent)" }} />
 
       <div className="w-full max-w-md relative">
-        <div className="text-center mb-8">
+        {/* Logo */}
+        <div className="text-center mb-10">
           <Link href="/">
             <div className="inline-flex flex-col items-center gap-2 cursor-pointer">
               <div className="w-16 h-16 rounded-2xl flex items-center justify-center font-black text-white text-2xl shadow-2xl"
@@ -84,130 +73,52 @@ export default function LoginPage() {
           </Link>
         </div>
 
-        <div className="liquid-panel rounded-3xl overflow-hidden">
-          {/* Tab toggle */}
-          <div className="flex p-1.5 gap-1.5 bg-gray-100/60">
-            <button
-              onClick={() => setTab("student")}
-              className={`flex-1 py-3 rounded-2xl font-black text-sm transition-all ${
-                tab === "student" ? "text-white shadow-lg" : "text-gray-600 hover:bg-white/50"
-              }`}
-              style={tab === "student" ? { background: "linear-gradient(135deg, #7c3aed, #6d28d9)" } : {}}
-              data-testid="tab-student"
-            >
-              🎓 I'm a Student
-            </button>
-            <button
-              onClick={() => setTab("admin")}
-              className={`flex-1 py-3 rounded-2xl font-black text-sm transition-all ${
-                tab === "admin" ? "text-white shadow-lg" : "text-gray-600 hover:bg-white/50"
-              }`}
-              style={tab === "admin" ? { background: "linear-gradient(135deg, #f59e0b, #f97316)" } : {}}
-              data-testid="tab-admin"
-            >
-              🔑 Admin
-            </button>
-          </div>
-
-          <div className="p-8">
-            {tab === "student" ? (
-              <div>
-                <div className="text-center mb-6">
-                  <div className="text-4xl mb-2">👋</div>
-                  <h2 className="font-black text-2xl text-gray-900">Welcome!</h2>
-                  <p className="text-gray-500 text-sm mt-1 font-medium">Just enter your name to start learning</p>
-                </div>
-
-                {studentError && (
-                  <Alert variant="destructive" className="mb-4 rounded-2xl liquid-card border-red-200">
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertDescription>{studentError}</AlertDescription>
-                  </Alert>
-                )}
-
-                <form onSubmit={handleStudentLogin} className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-black text-gray-700 mb-1.5">Your Name</label>
-                    <input
-                      type="text"
-                      value={studentName}
-                      onChange={(e) => setStudentName(e.target.value)}
-                      placeholder="e.g. Priya Sharma"
-                      className="w-full h-13 px-4 rounded-2xl border border-white/60 focus:border-purple-400 focus:outline-none font-semibold transition-colors text-sm text-gray-900 assamese-input"
-                      style={{ background: "rgba(255,255,255,0.6)", backdropFilter: "blur(12px)", height: "52px" }}
-                      data-testid="input-student-name"
-                      autoFocus
-                    />
-                  </div>
-                  <button
-                    type="submit"
-                    className="w-full h-12 rounded-2xl font-black text-base text-white shadow-xl hover:opacity-90 transition-opacity disabled:opacity-60"
-                    style={{ background: "linear-gradient(135deg, #7c3aed, #6d28d9)" }}
-                    disabled={studentLoading}
-                    data-testid="button-student-enter"
-                  >
-                    {studentLoading ? "Entering... ⏳" : "Enter the Portal 🚀"}
-                  </button>
-                </form>
-
-                <p className="text-center text-xs text-gray-400 mt-4 font-medium">
-                  No account needed — your name is all we need!
-                </p>
-              </div>
-            ) : (
-              <div>
-                <div className="text-center mb-6">
-                  <div className="text-4xl mb-2">🔑</div>
-                  <h2 className="font-black text-2xl text-gray-900">Admin Login</h2>
-                  <p className="text-gray-500 text-sm mt-1 font-medium">Sign in to manage content</p>
-                </div>
-
-                {adminError && (
-                  <Alert variant="destructive" className="mb-4 rounded-2xl liquid-card border-red-200">
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertDescription data-testid="text-login-error">{adminError}</AlertDescription>
-                  </Alert>
-                )}
-
-                <form onSubmit={handleAdminLogin} className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-black text-gray-700 mb-1.5">Username</label>
-                    <input
-                      type="text"
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
-                      placeholder="Enter username"
-                      className="w-full h-12 px-4 rounded-2xl border border-white/60 focus:border-amber-400 focus:outline-none font-semibold transition-colors text-sm text-gray-900"
-                      style={{ background: "rgba(255,255,255,0.6)", backdropFilter: "blur(12px)" }}
-                      data-testid="input-username"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-black text-gray-700 mb-1.5">Password</label>
-                    <input
-                      type="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder="Enter password"
-                      className="w-full h-12 px-4 rounded-2xl border border-white/60 focus:border-amber-400 focus:outline-none font-semibold transition-colors text-sm text-gray-900"
-                      style={{ background: "rgba(255,255,255,0.6)", backdropFilter: "blur(12px)" }}
-                      data-testid="input-password"
-                    />
-                  </div>
-                  <button
-                    type="submit"
-                    className="w-full h-12 rounded-2xl font-black text-base text-white shadow-xl hover:opacity-90 transition-opacity disabled:opacity-60"
-                    style={{ background: "linear-gradient(135deg, #f59e0b, #f97316)" }}
-                    disabled={adminLoginMutation.isPending}
-                    data-testid="button-submit-login"
-                  >
-                    {adminLoginMutation.isPending ? "Signing in... ⏳" : "Sign In 🔑"}
-                  </button>
-                </form>
-              </div>
-            )}
-          </div>
+        <div className="text-center mb-6">
+          <p className="text-white/70 font-semibold text-base">Who are you?</p>
         </div>
+
+        {/* Two-choice cards */}
+        <div className="grid grid-cols-2 gap-4">
+          {/* Student */}
+          <button
+            onClick={handleStudentLogin}
+            disabled={!!loading}
+            data-testid="button-enter-student"
+            className="group relative overflow-hidden rounded-3xl p-8 text-left transition-all hover:scale-105 active:scale-100 disabled:opacity-60 disabled:cursor-not-allowed shadow-2xl"
+            style={{ background: "linear-gradient(135deg, #7c3aed, #6d28d9)" }}
+          >
+            <div className="absolute top-0 right-0 w-28 h-28 rounded-full opacity-15 -translate-y-6 translate-x-6"
+              style={{ background: "radial-gradient(circle, white, transparent)" }} />
+            <div className="text-5xl mb-4">🎓</div>
+            <h2 className="font-black text-xl text-white mb-1">Student</h2>
+            <p className="text-purple-200 text-sm font-semibold">
+              {loading === "student" ? "Entering... ⏳" : "Tap to enter"}
+            </p>
+          </button>
+
+          {/* Admin */}
+          <button
+            onClick={handleAdminLogin}
+            disabled={!!loading}
+            data-testid="button-enter-admin"
+            className="group relative overflow-hidden rounded-3xl p-8 text-left transition-all hover:scale-105 active:scale-100 disabled:opacity-60 disabled:cursor-not-allowed shadow-2xl"
+            style={{ background: "linear-gradient(135deg, #f59e0b, #f97316)" }}
+          >
+            <div className="absolute top-0 right-0 w-28 h-28 rounded-full opacity-15 -translate-y-6 translate-x-6"
+              style={{ background: "radial-gradient(circle, white, transparent)" }} />
+            <div className="text-5xl mb-4">🔑</div>
+            <h2 className="font-black text-xl text-white mb-1">Admin</h2>
+            <p className="text-amber-100 text-sm font-semibold">
+              {loading === "admin" ? "Entering... ⏳" : "Tap to enter"}
+            </p>
+          </button>
+        </div>
+
+        {error && (
+          <div className="mt-4 text-center text-sm font-semibold text-red-300 bg-red-500/10 rounded-2xl px-4 py-3">
+            {error}
+          </div>
+        )}
       </div>
     </div>
   );

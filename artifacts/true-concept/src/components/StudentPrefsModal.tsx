@@ -21,9 +21,9 @@ export default function StudentPrefsModal() {
         {/* Header */}
         <div className="px-6 pt-7 pb-4 text-center"
           style={{ background: "linear-gradient(135deg, #7c3aed, #6d28d9)" }}>
-          <div className="text-4xl mb-3">👋</div>
-          <h2 className="font-black text-2xl text-white mb-1">Welcome, {user.name}!</h2>
-          <p className="text-purple-200 text-sm font-semibold">Let us show you the right content</p>
+          <div className="text-4xl mb-3">📚</div>
+          <h2 className="font-black text-2xl text-white mb-1">Quick Setup</h2>
+          <p className="text-purple-200 text-sm font-semibold">Tell us about your class so we show the right content</p>
         </div>
 
         <div className="px-6 py-6 space-y-5">

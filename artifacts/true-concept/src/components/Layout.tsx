@@ -1,7 +1,7 @@
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/contexts/AuthContext";
 import { useState } from "react";
-import { BookOpen, FlaskConical, LayoutDashboard, LogOut, Menu, Search, X, ChevronRight } from "lucide-react";
+import { BookOpen, FlaskConical, LogOut, Menu, Search, X, ChevronRight, LayoutDashboard } from "lucide-react";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -20,7 +20,6 @@ export default function Layout({ children }: LayoutProps) {
         { href: "/admin/experiments", label: "Lab", icon: FlaskConical },
       ]
     : [
-        { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
         { href: "/subjects", label: "Subjects", icon: BookOpen },
         { href: "/virtual-lab", label: "Virtual Lab", icon: FlaskConical },
         { href: "/search", label: "Search", icon: Search },
@@ -35,7 +34,7 @@ export default function Layout({ children }: LayoutProps) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
-            <Link href={user ? (user.role === "admin" ? "/admin" : "/dashboard") : "/"}>
+            <Link href={user ? (user.role === "admin" ? "/admin" : "/subjects") : "/"}>
               <div className="flex items-center gap-2.5 cursor-pointer" data-testid="logo">
                 <div className="w-9 h-9 rounded-xl flex items-center justify-center font-black text-white text-sm shadow-lg"
                   style={{ background: "linear-gradient(135deg, #7c3aed, #6d28d9)" }}>TC</div>
@@ -52,7 +51,7 @@ export default function Layout({ children }: LayoutProps) {
                 {navLinks.map(({ href, label, icon: Icon }) => (
                   <Link key={href} href={href}>
                     <button
-                      data-testid={`nav-${label.toLowerCase()}`}
+                      data-testid={`nav-${label.toLowerCase().replace(/\s+/g, '-')}`}
                       className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-black transition-all duration-200 ${
                         isActive(href)
                           ? "text-white shadow-md"
@@ -75,9 +74,9 @@ export default function Layout({ children }: LayoutProps) {
                   <div className="hidden sm:flex items-center gap-2 liquid-inner rounded-xl px-3 py-1.5">
                     <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-black text-white"
                       style={{ background: "linear-gradient(135deg, #f59e0b, #f97316)" }}>
-                      {user.name.charAt(0)}
+                      {user.name.charAt(0).toUpperCase()}
                     </div>
-                    <span className="text-sm font-bold text-gray-700">{user.name.split(" ")[0]}</span>
+                    <span className="text-sm font-bold text-gray-700">{user.role === "admin" ? "Admin" : "Student"}</span>
                   </div>
                   <button
                     onClick={logout}
