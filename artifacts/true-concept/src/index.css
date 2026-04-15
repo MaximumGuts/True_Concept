@@ -265,6 +265,7 @@
   .blob-bg {
     position: relative;
     overflow: hidden;
+    isolation: isolate;
   }
   .blob-bg::before {
     content: '';
@@ -275,6 +276,7 @@
     height: 100%;
     background: radial-gradient(circle, rgba(167,139,250,0.2) 0%, transparent 65%);
     pointer-events: none;
+    z-index: -1;
   }
   .blob-bg::after {
     content: '';
@@ -285,6 +287,7 @@
     height: 100%;
     background: radial-gradient(circle, rgba(251,113,133,0.15) 0%, transparent 65%);
     pointer-events: none;
+    z-index: -1;
   }
 
   /* Prose styles */
