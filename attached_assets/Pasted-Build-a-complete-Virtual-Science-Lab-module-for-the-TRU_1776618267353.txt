@@ -1,0 +1,366 @@
+Build a complete Virtual Science Lab module for the TRUE CONCEPT Learning Portal web app.
+
+The Virtual Lab must support interactive physics and chemistry experiments for Class IX and Class X based on NCERT concepts.
+
+The system must be mobile-friendly, interactive, and educational.
+
+VIRTUAL LAB STRUCTURE
+
+Create a new main section in the platform called:
+
+Virtual Lab
+
+Inside it organize experiments by subject.
+
+Structure:
+
+Virtual Lab
+→ Physics Lab
+→ Chemistry Lab
+
+Each subject should contain experiment cards.
+
+Each card opens a dedicated experiment page.
+
+EXPERIMENT PAGE STRUCTURE
+
+Each experiment page must contain the following sections:
+
+Experiment Title
+Objective
+Theory
+Apparatus
+Procedure
+Interactive Simulation Area
+Observation Table
+Result Section
+Explanation Video (YouTube embed)
+
+The design must be clean and mobile friendly.
+
+SIMULATION ENGINE
+
+Build a reusable simulation framework so experiments can reuse components.
+
+The simulation system should support:
+
+Interactive sliders
+Draggable objects
+Angle controls
+Measurement tools
+Graph plotting
+Dynamic calculations
+
+Use visual animations and interactive components so students feel they are performing a real experiment.
+
+PHYSICS EXPERIMENTS TO IMPLEMENT
+
+Implement the following experiments inside Physics Lab.
+
+Experiment 1
+
+Distance–Time Graph Simulation
+
+Students control object speed and observe distance–time graph.
+
+Simulation features:
+
+Speed control slider
+Real time graph plotting
+Start / pause motion
+
+Experiment 2
+
+Velocity–Time Graph Simulation
+
+Students adjust acceleration and observe velocity graph.
+
+Simulation features:
+
+Acceleration slider
+Graph plotting
+Time counter
+
+Experiment 3
+
+Free Fall Simulation
+
+Simulate object falling under gravity.
+
+Features:
+
+Height selection
+Timer
+Velocity display
+
+Show relation between height, time and velocity.
+
+Experiment 4
+
+Motion with Constant Acceleration
+
+Students change:
+
+Initial velocity
+Acceleration
+Time
+
+Simulation shows displacement and motion animation.
+
+Experiment 5
+
+Universal Law of Gravitation
+
+Students change:
+
+Mass of object 1
+Mass of object 2
+Distance between them
+
+Simulation calculates gravitational force dynamically.
+
+Experiment 6
+
+Archimedes Principle
+
+Simulate object dropped into water.
+
+Features:
+
+Water level indicator
+Volume displacement animation
+
+Calculate buoyant force.
+
+Experiment 7
+
+Density Determination
+
+Students measure:
+
+Mass of object
+Volume displacement
+
+Density calculated automatically.
+
+Experiment 8
+
+Kinetic Energy Simulation
+
+Students adjust:
+
+Mass
+Velocity
+
+Display kinetic energy change visually.
+
+Experiment 9
+
+Potential Energy Simulation
+
+Students change height of object.
+
+Show gravitational potential energy calculation.
+
+Experiment 10
+
+Law of Conservation of Energy
+
+Use pendulum simulation.
+
+Display conversion between kinetic energy and potential energy.
+
+Experiment 11
+
+Laws of Reflection
+
+Mirror simulation.
+
+Students adjust incident ray angle.
+
+Display reflected ray automatically.
+
+Show angle equality.
+
+Experiment 12
+
+Image Formation by Plane Mirror
+
+Students move object position.
+
+Observe image formation behind mirror.
+
+Experiment 13
+
+Convex Lens Image Formation
+
+Simulation includes:
+
+Lens
+Object
+Image
+
+Students move object along principal axis.
+
+Show ray diagram.
+
+Experiment 14
+
+Refraction Through Glass Slab
+
+Light ray enters glass slab.
+
+Students change angle of incidence.
+
+Observe refracted and emergent rays.
+
+Experiment 15
+
+Power of Lens Simulation
+
+Students change focal length.
+
+Observe change in image formation.
+
+Experiment 16
+
+Ohm’s Law Verification
+
+Create interactive circuit simulation.
+
+Components:
+
+Battery
+Resistor
+Ammeter
+Voltmeter
+
+Students adjust voltage and observe current.
+
+Include graph plotting for V vs I.
+
+Experiment 17
+
+Series Circuit Simulation
+
+Students connect resistors in series.
+
+Observe total resistance.
+
+Experiment 18
+
+Parallel Circuit Simulation
+
+Students connect resistors in parallel.
+
+Observe current distribution.
+
+Experiment 19
+
+Heating Effect of Current
+
+Simulate electric heater wire.
+
+Show temperature increase with current.
+
+Experiment 20
+
+Sound Wave Simulation
+
+Visualize sound waves.
+
+Students change:
+
+Frequency
+Amplitude
+
+Display waveform animation.
+
+Experiment 21
+
+Frequency and Pitch Simulation
+
+Generate tones with different frequencies.
+
+Students hear pitch change.
+
+Experiment 22
+
+Echo Simulation
+
+Students change distance between sound source and reflecting surface.
+
+Calculate echo delay.
+
+CHEMISTRY LAB EXPERIMENTS
+Experiment 23
+
+Separation of Mixture by Filtration
+
+Simulation includes:
+
+Beaker
+Funnel
+Filter paper
+
+Students pour mixture and observe filtration.
+
+Experiment 24
+
+Crystallization of Copper Sulphate
+
+Simulate heating solution and cooling.
+
+Crystals gradually form.
+
+Experiment 25
+
+pH Testing Using Indicators
+
+Provide chemicals:
+
+HCl
+NaOH
+Water
+Soap solution
+
+Indicators:
+
+Litmus
+Phenolphthalein
+Universal indicator
+
+Students select solution and indicator.
+
+Color change animation appears.
+
+INTERACTIVE FEATURES
+
+Each experiment must support:
+
+Reset experiment button
+Step-by-step experiment mode
+Observation table input
+Automatic result generation
+
+STUDENT LEARNING FEATURES
+
+Include:
+
+Hints for students
+Explanation tooltips
+Concept summary after experiment
+
+MOBILE FRIENDLY REQUIREMENTS
+
+Ensure:
+
+Simulations work on mobile screens
+Controls are touch friendly
+Animations are lightweight
+
+PERFORMANCE
+
+Load simulations only when experiment page opens.
+
+Avoid heavy graphics.
