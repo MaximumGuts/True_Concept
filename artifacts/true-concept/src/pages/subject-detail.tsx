@@ -107,15 +107,15 @@ export default function SubjectDetailPage() {
       )}
 
       {chaptersLoading ? (
-        <div className="space-y-3">
+        <div className="space-y-4">
           {[1,2,3].map(i => <div key={i} className="h-24 liquid-card rounded-2xl animate-pulse" />)}
         </div>
       ) : filteredChapters && filteredChapters.length > 0 ? (
-        <div className="space-y-3">
+        <div className="space-y-4">
           {filteredChapters.map((chapter, i) => {
             const col = chapterColors[i % chapterColors.length];
             return (
-              <Link key={chapter.id} href={`/chapters/${chapter.id}`}>
+              <Link key={chapter.id} href={`/chapters/${chapter.id}`} className="block">
                 <div
                   data-testid={`card-chapter-${chapter.id}`}
                   className="group liquid-card rounded-2xl p-4 sm:p-5 card-hover"
