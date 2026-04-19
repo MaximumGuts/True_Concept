@@ -3,6 +3,7 @@ import { useRoute, Link } from "wouter";
 import ReactMarkdown from "react-markdown";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
+import rehypeRaw from "rehype-raw";
 import remarkGfm from "remark-gfm";
 import remarkBreaks from "remark-breaks";
 import "katex/dist/katex.min.css";
@@ -64,7 +65,7 @@ function NoteAccordion({ note, defaultOpen }: { note: { id: number; title: strin
         <div className="px-7 pb-7 pt-5 note-reading-prose" style={{ borderTop: "1px solid #f3f4f6", background: "#ffffff" }}>
           <ReactMarkdown
             remarkPlugins={[remarkMath, remarkGfm, remarkBreaks]}
-            rehypePlugins={[rehypeKatex]}
+            rehypePlugins={[rehypeRaw, rehypeKatex]}
           >
             {note.content}
           </ReactMarkdown>
@@ -207,7 +208,9 @@ function McqTab({ chapterId }: { chapterId: number }) {
         </div>
       </div>
 
-      <p className="text-lg font-black text-gray-900 leading-relaxed mb-6" data-testid="text-question">{current.question}</p>
+      <div className="text-lg font-black text-gray-900 leading-relaxed mb-6 note-reading-prose" data-testid="text-question">
+        <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]} rehypePlugins={[rehypeRaw]}>{current.question}</ReactMarkdown>
+      </div>
 
       <div className="space-y-3 mb-4">
         {current.options.map((opt, i) => {
@@ -242,7 +245,9 @@ function McqTab({ chapterId }: { chapterId: number }) {
         <div className={`mt-4 p-4 rounded-2xl text-sm font-semibold liquid-inner ${isCorrect ? "text-emerald-800" : "text-amber-800"}`}
           data-testid="text-explanation">
           <p className="font-black mb-1">{isCorrect ? "🎉 Correct!" : "💡 Not quite!"}</p>
-          <p>{current.explanation}</p>
+          <div className="note-reading-prose">
+            <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]} rehypePlugins={[rehypeRaw]}>{current.explanation}</ReactMarkdown>
+          </div>
         </div>
       )}
 
@@ -290,7 +295,9 @@ function QaTab({ chapterId }: { chapterId: number }) {
                 {item.isImportant && (
                   <span className="inline-block text-xs font-black text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full mb-1.5">⭐ Important</span>
                 )}
-                <p className="font-black text-gray-900 text-sm leading-relaxed">{item.question}</p>
+                <div className="font-black text-gray-900 text-sm leading-relaxed note-reading-prose">
+                  <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]} rehypePlugins={[rehypeRaw]}>{item.question}</ReactMarkdown>
+                </div>
               </div>
             </div>
             <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-gray-100 shrink-0">
@@ -304,7 +311,7 @@ function QaTab({ chapterId }: { chapterId: number }) {
               <div className="px-5 pt-5 pb-4 note-reading-prose">
                 <ReactMarkdown
                   remarkPlugins={[remarkMath, remarkGfm, remarkBreaks]}
-                  rehypePlugins={[rehypeKatex]}
+                  rehypePlugins={[rehypeRaw, rehypeKatex]}
                 >
                   {item.answer}
                 </ReactMarkdown>

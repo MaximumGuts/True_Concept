@@ -7,6 +7,7 @@ import contentRouter from "./content";
 import experimentsRouter from "./experiments";
 import progressRouter from "./progress";
 import searchRouter from "./search";
+import storageRouter from "./storage";
 
 const router: IRouter = Router();
 
@@ -18,5 +19,6 @@ router.use(contentRouter);
 router.use(experimentsRouter);
 router.use(progressRouter);
 router.use(searchRouter);
+router.use(storageRouter);
 
 export default router;

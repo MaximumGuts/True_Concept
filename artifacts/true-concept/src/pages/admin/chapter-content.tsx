@@ -9,6 +9,7 @@ import {
 } from "@workspace/api-client-react";
 import { ArrowLeft, Plus, Edit2, Trash2, X, Check, Youtube } from "lucide-react";
 import NoteEditorModal from "@/components/NoteEditorModal";
+import ImageUploadButton from "@/components/ImageUploadButton";
 
 type ContentTab = "notes" | "mcq" | "qa";
 
@@ -239,7 +240,10 @@ function McqSection({ chapterId }: { chapterId: number }) {
       {showForm && (
         <FormCard title={editId ? "Edit MCQ" : "Add MCQ"} onCancel={cancel} onSubmit={handleSubmit} isPending={create.isPending || update.isPending}>
           <div>
-            <FieldLabel>Question *</FieldLabel>
+            <div className="flex items-center justify-between mb-1.5">
+              <FieldLabel>Question *</FieldLabel>
+              <ImageUploadButton compact onInsert={html => setForm(f => ({ ...f, question: f.question + html }))} />
+            </div>
             <TextArea value={form.question} onChange={v => setForm(f => ({ ...f, question: v }))} rows={2} required
               placeholder="e.g. What is the value of π (pi) to 2 decimal places?" testId="input-mcq-question" />
           </div>
@@ -268,7 +272,10 @@ function McqSection({ chapterId }: { chapterId: number }) {
           </div>
 
           <div>
-            <FieldLabel>Explanation * (shown after answering)</FieldLabel>
+            <div className="flex items-center justify-between mb-1.5">
+              <FieldLabel>Explanation * (shown after answering)</FieldLabel>
+              <ImageUploadButton compact onInsert={html => setForm(f => ({ ...f, explanation: f.explanation + html }))} />
+            </div>
             <TextArea value={form.explanation} onChange={v => setForm(f => ({ ...f, explanation: v }))} rows={3} required
               placeholder="Explain why the correct answer is correct..." testId="input-mcq-explanation" />
           </div>
@@ -373,18 +380,27 @@ function QaSection({ chapterId }: { chapterId: number }) {
       {showForm && (
         <FormCard title={editId ? "Edit Q&A" : "Add Q&A"} onCancel={cancel} onSubmit={handleSubmit} isPending={create.isPending || update.isPending}>
           <div>
-            <FieldLabel>Question *</FieldLabel>
+            <div className="flex items-center justify-between mb-1.5">
+              <FieldLabel>Question *</FieldLabel>
+              <ImageUploadButton compact onInsert={html => setForm(f => ({ ...f, question: f.question + html }))} />
+            </div>
             <TextArea value={form.question} onChange={v => setForm(f => ({ ...f, question: v }))} rows={2} required
               placeholder="e.g. What is the difference between distance and displacement?" testId="input-qa-question" />
           </div>
           <div>
-            <FieldLabel>Answer * (markdown + math supported: $formula$, $$block$$)</FieldLabel>
+            <div className="flex items-center justify-between mb-1.5">
+              <FieldLabel>Answer * (markdown + math: $formula$, $$block$$)</FieldLabel>
+              <ImageUploadButton compact onInsert={html => setForm(f => ({ ...f, answer: f.answer + html }))} />
+            </div>
             <TextArea value={form.answer} onChange={v => setForm(f => ({ ...f, answer: v }))} rows={6} required
               placeholder={"Write a detailed answer...\n\nYou can use math: $E = mc^2$\n\nOr block math:\n$$\\frac{1}{f} = \\frac{1}{v} - \\frac{1}{u}$$"}
               testId="input-qa-answer" />
           </div>
           <div>
-            <FieldLabel>Explanation (optional — memory tip or extra detail)</FieldLabel>
+            <div className="flex items-center justify-between mb-1.5">
+              <FieldLabel>Explanation (optional — memory tip or extra detail)</FieldLabel>
+              <ImageUploadButton compact onInsert={html => setForm(f => ({ ...f, explanation: f.explanation + html }))} />
+            </div>
             <TextArea value={form.explanation} onChange={v => setForm(f => ({ ...f, explanation: v }))} rows={2}
               placeholder="Add a tip, example, or extra explanation..." testId="input-qa-explanation" />
           </div>

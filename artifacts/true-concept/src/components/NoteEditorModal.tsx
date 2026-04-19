@@ -2,10 +2,12 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
+import rehypeRaw from "rehype-raw";
 import remarkGfm from "remark-gfm";
 import remarkBreaks from "remark-breaks";
-import { X, Eye, Edit3, Youtube, Image, Bold, Italic, List, Hash, Calculator } from "lucide-react";
+import { X, Eye, Edit3, Youtube, Bold, Italic, List, Hash, Calculator } from "lucide-react";
 import "katex/dist/katex.min.css";
+import ImageUploadButton from "./ImageUploadButton";
 
 interface NoteEditorModalProps {
   isOpen: boolean;
@@ -148,6 +150,17 @@ export default function NoteEditorModal({
     setTimeout(() => { el.focus(); el.setSelectionRange(pos + 5, pos + 14); }, 0);
   }, []);
 
+  const insertImageHtml = useCallback((html: string) => {
+    const el = textareaRef.current;
+    if (!el) {
+      setContent(c => c + html);
+      return;
+    }
+    const pos = el.selectionStart;
+    setContent(c => c.slice(0, pos) + html + c.slice(pos));
+    setTimeout(() => { el.focus(); el.setSelectionRange(pos + html.length, pos + html.length); }, 0);
+  }, []);
+
   const handleSubmit = () => {
     if (!title.trim() || !content.trim()) return;
     onSave({ title: title.trim(), content, type, youtubeId, order });
@@ -240,6 +253,8 @@ export default function NoteEditorModal({
             >
               $$
             </button>
+            <div className="w-px h-4 bg-gray-200 mx-1" />
+            <ImageUploadButton onInsert={insertImageHtml} />
           </div>
           <div className="flex items-center gap-1 bg-white rounded-lg border border-gray-200 p-0.5">
             <button
@@ -279,7 +294,7 @@ export default function NoteEditorModal({
               {content ? (
                 <ReactMarkdown
                   remarkPlugins={[remarkMath, remarkGfm, remarkBreaks]}
-                  rehypePlugins={[rehypeKatex]}
+                  rehypePlugins={[rehypeRaw, rehypeKatex]}
                 >
                   {content}
                 </ReactMarkdown>

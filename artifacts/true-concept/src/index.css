@@ -337,6 +337,8 @@
   .note-reading-prose a { color: #7c3aed; text-decoration: underline; }
   /* KaTeX display math centering */
   .note-reading-prose .math-display { overflow-x: auto; padding: 1rem 0; text-align: center; }
+  /* Images inside notes — responsive, rounded, subtle shadow */
+  .note-reading-prose img { max-width: 100%; height: auto; border-radius: 0.75rem; box-shadow: 0 2px 12px rgba(0,0,0,0.08); margin-top: 0.75rem; margin-bottom: 0.75rem; }
   .note-reading-prose .katex-display { margin: 1rem 0; overflow-x: auto; }
   .note-reading-prose .katex { font-size: 1.15em; }
 }
