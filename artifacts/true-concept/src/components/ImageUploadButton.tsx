@@ -121,25 +121,40 @@ export default function ImageUploadButton({ onInsert, compact = false }: Props) 
       )}
 
       {uploaded && (
-        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4"
-          style={{ background: "rgba(0,0,0,0.6)", backdropFilter: "blur(6px)" }}>
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
-            <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-100">
+        <div
+          className="fixed inset-0 z-[99999] flex items-end sm:items-center justify-center p-0 sm:p-4"
+          style={{ background: "rgba(0,0,0,0.6)", backdropFilter: "blur(6px)" }}
+        >
+          <div
+            className="bg-white w-full sm:rounded-2xl shadow-2xl sm:max-w-md flex flex-col"
+            style={{ maxHeight: "92vh" }}
+          >
+            {/* Fixed header */}
+            <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-100 shrink-0 rounded-t-2xl">
               <h3 className="font-black text-gray-900 text-base">Configure Image</h3>
-              <button onClick={handleCancel} className="p-1.5 rounded-xl hover:bg-gray-100 transition-colors">
+              <button
+                onClick={handleCancel}
+                className="p-1.5 rounded-xl hover:bg-gray-100 transition-colors"
+              >
                 <X className="w-4 h-4 text-gray-500" />
               </button>
             </div>
 
-            <div className="p-5 space-y-4">
-              <div className="rounded-xl overflow-hidden border border-gray-100 bg-gray-50 flex items-center justify-center" style={{ minHeight: 160, maxHeight: 240 }}>
+            {/* Scrollable body */}
+            <div className="overflow-y-auto flex-1 p-5 space-y-4">
+              {/* Upload preview — capped height */}
+              <div
+                className="rounded-xl border border-gray-100 bg-gray-50 flex items-center justify-center overflow-hidden"
+                style={{ height: 160 }}
+              >
                 <img
                   src={uploaded.previewUrl}
                   alt="preview"
-                  className="max-w-full max-h-60 object-contain"
+                  style={{ maxWidth: "100%", maxHeight: 160, objectFit: "contain" }}
                 />
               </div>
 
+              {/* Width */}
               <div>
                 <p className="text-xs font-black text-gray-600 mb-2">Width</p>
                 <div className="flex gap-2 flex-wrap">
@@ -153,7 +168,11 @@ export default function ImageUploadButton({ onInsert, compact = false }: Props) 
                           ? "text-white shadow-md"
                           : "text-gray-600 border border-gray-200 hover:border-purple-300"
                       }`}
-                      style={width === p.value ? { background: "linear-gradient(135deg,#7c3aed,#6d28d9)" } : {}}
+                      style={
+                        width === p.value
+                          ? { background: "linear-gradient(135deg,#7c3aed,#6d28d9)" }
+                          : {}
+                      }
                     >
                       {p.label}
                     </button>
@@ -161,11 +180,13 @@ export default function ImageUploadButton({ onInsert, compact = false }: Props) 
                 </div>
               </div>
 
+              {/* Alignment */}
               <div>
                 <p className="text-xs font-black text-gray-600 mb-2">Alignment</p>
                 <div className="flex gap-2">
                   {(["left", "center", "right"] as Alignment[]).map(a => {
-                    const Icon = a === "left" ? AlignLeft : a === "center" ? AlignCenter : AlignRight;
+                    const Icon =
+                      a === "left" ? AlignLeft : a === "center" ? AlignCenter : AlignRight;
                     return (
                       <button
                         key={a}
@@ -176,7 +197,11 @@ export default function ImageUploadButton({ onInsert, compact = false }: Props) 
                             ? "text-white shadow-md"
                             : "text-gray-600 border border-gray-200 hover:border-purple-300"
                         }`}
-                        style={align === a ? { background: "linear-gradient(135deg,#7c3aed,#6d28d9)" } : {}}
+                        style={
+                          align === a
+                            ? { background: "linear-gradient(135deg,#7c3aed,#6d28d9)" }
+                            : {}
+                        }
                       >
                         <Icon className="w-3.5 h-3.5" /> {a}
                       </button>
@@ -185,28 +210,49 @@ export default function ImageUploadButton({ onInsert, compact = false }: Props) 
                 </div>
               </div>
 
-              <div className="rounded-xl border border-gray-100 bg-gray-50 p-3 flex items-center justify-center" style={{ minHeight: 80 }}>
-                <img
-                  src={uploaded.previewUrl}
-                  alt="aligned preview"
-                  style={{
-                    width,
-                    maxWidth: "100%",
-                    display: "block",
-                    margin: align === "center" ? "0 auto" : align === "right" ? "0 0 0 auto" : "0 auto 0 0",
-                  }}
-                />
+              {/* Live alignment preview — capped height */}
+              <div>
+                <p className="text-xs font-black text-gray-400 mb-2">Preview</p>
+                <div
+                  className="rounded-xl border border-gray-100 bg-gray-50 p-2 overflow-hidden"
+                  style={{ height: 100 }}
+                >
+                  <img
+                    src={uploaded.previewUrl}
+                    alt="aligned preview"
+                    style={{
+                      width,
+                      maxWidth: "100%",
+                      maxHeight: 90,
+                      objectFit: "contain",
+                      display: "block",
+                      margin:
+                        align === "center"
+                          ? "0 auto"
+                          : align === "right"
+                          ? "0 0 0 auto"
+                          : "0",
+                    }}
+                  />
+                </div>
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-3 px-5 py-3.5 border-t border-gray-100 bg-gray-50">
-              <button type="button" onClick={handleCancel}
-                className="px-4 py-2 rounded-xl border border-gray-200 text-sm font-black text-gray-600 hover:bg-gray-100 transition-colors">
+            {/* Fixed footer — always visible */}
+            <div className="flex items-center justify-end gap-3 px-5 py-3.5 border-t border-gray-100 bg-gray-50 shrink-0 rounded-b-2xl">
+              <button
+                type="button"
+                onClick={handleCancel}
+                className="px-4 py-2 rounded-xl border border-gray-200 text-sm font-black text-gray-600 hover:bg-gray-100 transition-colors"
+              >
                 Cancel
               </button>
-              <button type="button" onClick={handleInsert}
+              <button
+                type="button"
+                onClick={handleInsert}
                 className="flex items-center gap-2 px-5 py-2 rounded-xl text-white text-sm font-black shadow-md hover:opacity-90 transition-opacity"
-                style={{ background: "linear-gradient(135deg,#7c3aed,#6d28d9)" }}>
+                style={{ background: "linear-gradient(135deg,#7c3aed,#6d28d9)" }}
+              >
                 <Check className="w-4 h-4" /> Insert Image
               </button>
             </div>
@@ -214,9 +260,7 @@ export default function ImageUploadButton({ onInsert, compact = false }: Props) 
         </div>
       )}
 
-      {error && (
-        <span className="text-xs text-red-500 font-bold">{error}</span>
-      )}
+      {error && <span className="text-xs text-red-500 font-bold">{error}</span>}
     </>
   );
 }
