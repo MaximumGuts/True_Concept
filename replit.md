@@ -59,6 +59,7 @@ Auto-generated React Query hooks from OpenAPI spec. Auth token injected via `set
   - Electric Circuit (toggle switch, Ohm's law)
   - Convex Lens (object distance slider, lens formula)
   - Bar Magnet field lines
+- **Virtual Lab v2** — Split into Physics Lab (`/virtual-lab/physics`) and Chemistry Lab (`/virtual-lab/chemistry`); 25 interactive simulations under `src/components/lab/sims/` (motion, gravitation-fluids, optics, electricity, sound, chemistry); shared primitives in `sim-ui.tsx`; lazy-loaded via `sim-registry.ts`. Experiment schema includes `subject`, `theory`, `apparatus`, `videoUrl`, `hints`, `summary`. Detail page renders 9 sections (Objective, Theory, Apparatus, Procedure, Simulation, Result, Explanation, Video, Summary). Seed: `artifacts/api-server/src/seed-experiments.ts`.
 - **Student Progress Tracking** — Dashboard with chapter visits, MCQ scores, subject progress
 - **Admin CMS** — CRUD for subjects, chapters, experiments
 - **Role-based Auth** — `admin` and `student` roles with route protection

@@ -13,6 +13,5 @@ export interface CreateNoteBody {
   content: string;
   type: CreateNoteBodyType;
   fileUrl?: string;
-  youtubeId?: string;
   order: number;
 }

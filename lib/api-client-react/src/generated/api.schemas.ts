@@ -170,10 +170,43 @@ export interface CreateVideoBody {
   description: string;
 }
 
+export type ExperimentSubject =
+  (typeof ExperimentSubject)[keyof typeof ExperimentSubject];
+
+export const ExperimentSubject = {
+  Physics: "Physics",
+  Chemistry: "Chemistry",
+} as const;
+
 export type ExperimentType =
   (typeof ExperimentType)[keyof typeof ExperimentType];
 
 export const ExperimentType = {
+  "distance-time": "distance-time",
+  "velocity-time": "velocity-time",
+  "free-fall": "free-fall",
+  "motion-accel": "motion-accel",
+  gravitation: "gravitation",
+  archimedes: "archimedes",
+  density: "density",
+  "kinetic-energy": "kinetic-energy",
+  "potential-energy": "potential-energy",
+  pendulum: "pendulum",
+  reflection: "reflection",
+  "plane-mirror": "plane-mirror",
+  "convex-lens": "convex-lens",
+  refraction: "refraction",
+  "power-of-lens": "power-of-lens",
+  "ohms-law": "ohms-law",
+  "series-circuit": "series-circuit",
+  "parallel-circuit": "parallel-circuit",
+  "heating-effect": "heating-effect",
+  "sound-wave": "sound-wave",
+  pitch: "pitch",
+  echo: "echo",
+  filtration: "filtration",
+  crystallization: "crystallization",
+  "ph-testing": "ph-testing",
   "light-reflection": "light-reflection",
   "light-refraction": "light-refraction",
   "electric-circuit": "electric-circuit",
@@ -193,15 +226,29 @@ export const ExperimentDifficulty = {
 
 export interface Experiment {
   id: number;
+  subject: ExperimentSubject;
   classLevel: string;
   title: string;
   objective: string;
+  theory: string;
+  apparatus: string;
   procedure: string;
   expectedResult: string;
   explanation: string;
+  videoUrl?: string | null;
+  hints?: string | null;
+  summary?: string | null;
   type: ExperimentType;
   difficulty: ExperimentDifficulty;
 }
+
+export type CreateExperimentBodySubject =
+  (typeof CreateExperimentBodySubject)[keyof typeof CreateExperimentBodySubject];
+
+export const CreateExperimentBodySubject = {
+  Physics: "Physics",
+  Chemistry: "Chemistry",
+} as const;
 
 export type CreateExperimentBodyClassLevel =
   (typeof CreateExperimentBodyClassLevel)[keyof typeof CreateExperimentBodyClassLevel];
@@ -215,6 +262,31 @@ export type CreateExperimentBodyType =
   (typeof CreateExperimentBodyType)[keyof typeof CreateExperimentBodyType];
 
 export const CreateExperimentBodyType = {
+  "distance-time": "distance-time",
+  "velocity-time": "velocity-time",
+  "free-fall": "free-fall",
+  "motion-accel": "motion-accel",
+  gravitation: "gravitation",
+  archimedes: "archimedes",
+  density: "density",
+  "kinetic-energy": "kinetic-energy",
+  "potential-energy": "potential-energy",
+  pendulum: "pendulum",
+  reflection: "reflection",
+  "plane-mirror": "plane-mirror",
+  "convex-lens": "convex-lens",
+  refraction: "refraction",
+  "power-of-lens": "power-of-lens",
+  "ohms-law": "ohms-law",
+  "series-circuit": "series-circuit",
+  "parallel-circuit": "parallel-circuit",
+  "heating-effect": "heating-effect",
+  "sound-wave": "sound-wave",
+  pitch: "pitch",
+  echo: "echo",
+  filtration: "filtration",
+  crystallization: "crystallization",
+  "ph-testing": "ph-testing",
   "light-reflection": "light-reflection",
   "light-refraction": "light-refraction",
   "electric-circuit": "electric-circuit",
@@ -233,12 +305,18 @@ export const CreateExperimentBodyDifficulty = {
 } as const;
 
 export interface CreateExperimentBody {
+  subject: CreateExperimentBodySubject;
   classLevel: CreateExperimentBodyClassLevel;
   title: string;
   objective: string;
+  theory?: string;
+  apparatus?: string;
   procedure: string;
   expectedResult: string;
   explanation: string;
+  videoUrl?: string | null;
+  hints?: string | null;
+  summary?: string | null;
   type: CreateExperimentBodyType;
   difficulty: CreateExperimentBodyDifficulty;
 }

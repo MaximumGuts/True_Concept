@@ -10,21 +10,31 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useQueryClient } from "@tanstack/react-query";
+import { SIM_TYPE_LABELS } from "@/components/lab/sim-registry";
 
-const EXPERIMENT_TYPES = ["light-reflection", "light-refraction", "electric-circuit", "lens", "magnet", "custom"];
+const EXPERIMENT_TYPES = Object.keys(SIM_TYPE_LABELS);
 const DIFFICULTIES = ["easy", "medium", "hard"];
 const CLASS_LEVELS = ["Class IX", "Class X"];
+const SUBJECTS = ["Physics", "Chemistry"];
 
 const emptyForm = {
   title: "",
   type: "custom",
+  subject: "Physics",
   classLevel: "Class IX",
   difficulty: "medium",
   objective: "",
+  theory: "",
+  apparatus: "",
   procedure: "",
   expectedResult: "",
   explanation: "",
+  videoUrl: "",
+  hints: "",
+  summary: "",
 };
+
+type FormShape = typeof emptyForm;
 
 export default function AdminExperimentsPage() {
   const queryClient = useQueryClient();
@@ -35,31 +45,53 @@ export default function AdminExperimentsPage() {
 
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState<number | null>(null);
-  const [form, setForm] = useState(emptyForm);
+  const [form, setForm] = useState<FormShape>(emptyForm);
   const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
 
   const resetForm = () => { setForm(emptyForm); setShowForm(false); setEditId(null); };
 
-  const handleEdit = (exp: typeof experiments extends (infer T)[] | undefined ? T : never) => {
-    if (!exp) return;
-    const e = exp as Record<string, string>;
-    setEditId(Number(e.id));
-    setForm({ title: e.title, type: e.type, classLevel: e.classLevel, difficulty: e.difficulty, objective: e.objective, procedure: e.procedure, expectedResult: e.expectedResult, explanation: e.explanation });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const handleEdit = (exp: any) => {
+    setEditId(Number(exp.id));
+    setForm({
+      title: exp.title ?? "",
+      type: exp.type ?? "custom",
+      subject: exp.subject ?? "Physics",
+      classLevel: exp.classLevel ?? "Class IX",
+      difficulty: exp.difficulty ?? "medium",
+      objective: exp.objective ?? "",
+      theory: exp.theory ?? "",
+      apparatus: exp.apparatus ?? "",
+      procedure: exp.procedure ?? "",
+      expectedResult: exp.expectedResult ?? "",
+      explanation: exp.explanation ?? "",
+      videoUrl: exp.videoUrl ?? "",
+      hints: exp.hints ?? "",
+      summary: exp.summary ?? "",
+    });
     setShowForm(true);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const data = {
+      ...form,
+      videoUrl: form.videoUrl || null,
+      hints: form.hints || null,
+      summary: form.summary || null,
+    };
     if (editId) {
-      updateExp.mutate({ id: editId, data: form });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      updateExp.mutate({ id: editId, data: data as any });
     } else {
-      createExp.mutate({ data: form });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      createExp.mutate({ data: data as any });
     }
     resetForm();
   };
 
-  const F = (key: keyof typeof emptyForm) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
-    setForm(f => ({ ...f, [key]: e.target.value }));
+  const F = (key: keyof FormShape) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
+    setForm((f) => ({ ...f, [key]: e.target.value }));
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
@@ -73,50 +105,77 @@ export default function AdminExperimentsPage() {
         </Button>
       </div>
 
-      {/* Form */}
       {showForm && (
         <form onSubmit={handleSubmit} className="bg-card border border-border rounded-xl p-6 mb-6 space-y-4" data-testid="form-experiment">
           <h2 className="font-semibold">{editId ? "Edit Experiment" : "New Experiment"}</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="sm:col-span-2">
               <Label>Title</Label>
               <Input value={form.title} onChange={F("title")} required placeholder="Experiment title" className="mt-1" data-testid="input-experiment-title" />
             </div>
             <div>
-              <Label>Type</Label>
-              <select value={form.type} onChange={F("type")} className="w-full h-10 px-3 rounded-lg border border-border bg-card text-foreground text-sm mt-1" data-testid="select-type">
-                {EXPERIMENT_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+              <Label>Subject</Label>
+              <select value={form.subject} onChange={F("subject")} className="w-full h-10 px-3 rounded-lg border border-border bg-card text-foreground text-sm mt-1" data-testid="select-subject">
+                {SUBJECTS.map((s) => <option key={s} value={s}>{s}</option>)}
               </select>
             </div>
             <div>
               <Label>Class Level</Label>
               <select value={form.classLevel} onChange={F("classLevel")} className="w-full h-10 px-3 rounded-lg border border-border bg-card text-foreground text-sm mt-1" data-testid="select-class-level">
-                {CLASS_LEVELS.map(cl => <option key={cl} value={cl}>{cl}</option>)}
+                {CLASS_LEVELS.map((cl) => <option key={cl} value={cl}>{cl}</option>)}
               </select>
             </div>
-          </div>
-          <div>
-            <Label>Difficulty</Label>
-            <select value={form.difficulty} onChange={F("difficulty")} className="w-full h-10 px-3 rounded-lg border border-border bg-card text-foreground text-sm mt-1" data-testid="select-difficulty">
-              {DIFFICULTIES.map(d => <option key={d} value={d}>{d}</option>)}
-            </select>
+            <div>
+              <Label>Simulation Type</Label>
+              <select value={form.type} onChange={F("type")} className="w-full h-10 px-3 rounded-lg border border-border bg-card text-foreground text-sm mt-1" data-testid="select-type">
+                {EXPERIMENT_TYPES.map((t) => <option key={t} value={t}>{SIM_TYPE_LABELS[t]}</option>)}
+              </select>
+            </div>
+            <div>
+              <Label>Difficulty</Label>
+              <select value={form.difficulty} onChange={F("difficulty")} className="w-full h-10 px-3 rounded-lg border border-border bg-card text-foreground text-sm mt-1" data-testid="select-difficulty">
+                {DIFFICULTIES.map((d) => <option key={d} value={d}>{d}</option>)}
+              </select>
+            </div>
           </div>
           <div>
             <Label>Objective</Label>
             <Input value={form.objective} onChange={F("objective")} required placeholder="What will students learn?" className="mt-1" data-testid="input-objective" />
           </div>
           <div>
+            <Label>Theory</Label>
+            <textarea value={form.theory} onChange={F("theory")} rows={3} placeholder="Background concepts, formulae..." className="w-full mt-1 px-3 py-2 rounded-lg border border-border bg-card text-foreground text-sm resize-none" data-testid="input-theory" />
+          </div>
+          <div>
+            <Label>Apparatus (one per line)</Label>
+            <textarea value={form.apparatus} onChange={F("apparatus")} rows={3} placeholder="Beaker&#10;Stopwatch&#10;Ruler" className="w-full mt-1 px-3 py-2 rounded-lg border border-border bg-card text-foreground text-sm resize-none" data-testid="input-apparatus" />
+          </div>
+          <div>
             <Label>Procedure (one step per line)</Label>
-            <textarea value={form.procedure} onChange={F("procedure")} rows={4} placeholder="Step 1...&#10;Step 2..." className="w-full mt-1 px-3 py-2 rounded-lg border border-border bg-card text-foreground text-sm resize-none" data-testid="input-procedure" />
+            <textarea value={form.procedure} onChange={F("procedure")} rows={4} required placeholder="Step 1...&#10;Step 2..." className="w-full mt-1 px-3 py-2 rounded-lg border border-border bg-card text-foreground text-sm resize-none" data-testid="input-procedure" />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <Label>Expected Result</Label>
-              <textarea value={form.expectedResult} onChange={F("expectedResult")} rows={2} className="w-full mt-1 px-3 py-2 rounded-lg border border-border bg-card text-foreground text-sm resize-none" data-testid="input-expected-result" />
+              <textarea value={form.expectedResult} onChange={F("expectedResult")} rows={2} required className="w-full mt-1 px-3 py-2 rounded-lg border border-border bg-card text-foreground text-sm resize-none" data-testid="input-expected-result" />
             </div>
             <div>
               <Label>Scientific Explanation</Label>
-              <textarea value={form.explanation} onChange={F("explanation")} rows={2} className="w-full mt-1 px-3 py-2 rounded-lg border border-border bg-card text-foreground text-sm resize-none" data-testid="input-explanation" />
+              <textarea value={form.explanation} onChange={F("explanation")} rows={2} required className="w-full mt-1 px-3 py-2 rounded-lg border border-border bg-card text-foreground text-sm resize-none" data-testid="input-explanation" />
+            </div>
+          </div>
+          <div>
+            <Label>YouTube Video URL (optional)</Label>
+            <Input value={form.videoUrl} onChange={F("videoUrl")} placeholder="https://youtu.be/..." className="mt-1" data-testid="input-video-url" />
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <Label>Hints (optional)</Label>
+              <textarea value={form.hints} onChange={F("hints")} rows={2} className="w-full mt-1 px-3 py-2 rounded-lg border border-border bg-card text-foreground text-sm resize-none" data-testid="input-hints" />
+            </div>
+            <div>
+              <Label>Concept Summary (optional)</Label>
+              <textarea value={form.summary} onChange={F("summary")} rows={2} className="w-full mt-1 px-3 py-2 rounded-lg border border-border bg-card text-foreground text-sm resize-none" data-testid="input-summary" />
             </div>
           </div>
           <div className="flex gap-3">
@@ -128,9 +187,8 @@ export default function AdminExperimentsPage() {
         </form>
       )}
 
-      {/* List */}
       {isLoading ? (
-        <div className="space-y-3">{[1,2,3].map(i => <div key={i} className="h-16 bg-muted rounded-xl animate-pulse" />)}</div>
+        <div className="space-y-3">{[1, 2, 3].map((i) => <div key={i} className="h-16 bg-muted rounded-xl animate-pulse" />)}</div>
       ) : (
         <div className="space-y-3">
           {experiments?.map((exp) => (
@@ -141,6 +199,7 @@ export default function AdminExperimentsPage() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
                   <p className="font-medium text-foreground">{exp.title}</p>
+                  <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-medium">{exp.subject}</span>
                   <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
                     exp.difficulty === "easy" ? "bg-green-100 text-green-700" :
                     exp.difficulty === "medium" ? "bg-amber-100 text-amber-700" : "bg-red-100 text-red-700"

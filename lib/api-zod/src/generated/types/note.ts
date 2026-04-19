@@ -14,6 +14,5 @@ export interface Note {
   content: string;
   type: NoteType;
   fileUrl?: string;
-  youtubeId?: string | null;
   order: number;
 }

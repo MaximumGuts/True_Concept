@@ -11,7 +11,6 @@ export interface CreateQaBody {
   question: string;
   answer: string;
   explanation: string;
-  youtubeId?: string;
   isImportant: boolean;
   order: number;
 }

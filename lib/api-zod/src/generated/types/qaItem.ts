@@ -12,7 +12,6 @@ export interface QaItem {
   question: string;
   answer: string;
   explanation: string;
-  youtubeId?: string | null;
   isImportant: boolean;
   order: number;
 }

@@ -6,16 +6,23 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { ExperimentDifficulty } from "./experimentDifficulty";
+import type { ExperimentSubject } from "./experimentSubject";
 import type { ExperimentType } from "./experimentType";
 
 export interface Experiment {
   id: number;
+  subject: ExperimentSubject;
   classLevel: string;
   title: string;
   objective: string;
+  theory: string;
+  apparatus: string;
   procedure: string;
   expectedResult: string;
   explanation: string;
+  videoUrl?: string | null;
+  hints?: string | null;
+  summary?: string | null;
   type: ExperimentType;
   difficulty: ExperimentDifficulty;
 }

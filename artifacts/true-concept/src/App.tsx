@@ -87,6 +87,20 @@ function AppRoutes() {
             </ProtectedRoute>
           )}
         </Route>
+        <Route path="/virtual-lab/physics">
+          {() => (
+            <ProtectedRoute>
+              <VirtualLabPage />
+            </ProtectedRoute>
+          )}
+        </Route>
+        <Route path="/virtual-lab/chemistry">
+          {() => (
+            <ProtectedRoute>
+              <VirtualLabPage />
+            </ProtectedRoute>
+          )}
+        </Route>
         <Route path="/virtual-lab/:experimentId">
           {() => (
             <ProtectedRoute>

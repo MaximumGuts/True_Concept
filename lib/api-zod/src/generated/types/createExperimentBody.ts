@@ -7,15 +7,22 @@
  */
 import type { CreateExperimentBodyClassLevel } from "./createExperimentBodyClassLevel";
 import type { CreateExperimentBodyDifficulty } from "./createExperimentBodyDifficulty";
+import type { CreateExperimentBodySubject } from "./createExperimentBodySubject";
 import type { CreateExperimentBodyType } from "./createExperimentBodyType";
 
 export interface CreateExperimentBody {
+  subject: CreateExperimentBodySubject;
   classLevel: CreateExperimentBodyClassLevel;
   title: string;
   objective: string;
+  theory?: string;
+  apparatus?: string;
   procedure: string;
   expectedResult: string;
   explanation: string;
+  videoUrl?: string | null;
+  hints?: string | null;
+  summary?: string | null;
   type: CreateExperimentBodyType;
   difficulty: CreateExperimentBodyDifficulty;
 }

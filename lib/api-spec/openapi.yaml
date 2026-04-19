@@ -1098,11 +1098,18 @@ components:
       properties:
         id:
           type: integer
+        subject:
+          type: string
+          enum: [Physics, Chemistry]
         classLevel:
           type: string
         title:
           type: string
         objective:
+          type: string
+        theory:
+          type: string
+        apparatus:
           type: string
         procedure:
           type: string
@@ -1110,17 +1117,29 @@ components:
           type: string
         explanation:
           type: string
+        videoUrl:
+          type: string
+          nullable: true
+        hints:
+          type: string
+          nullable: true
+        summary:
+          type: string
+          nullable: true
         type:
           type: string
-          enum: [light-reflection, light-refraction, electric-circuit, lens, magnet, custom]
+          enum: [distance-time, velocity-time, free-fall, motion-accel, gravitation, archimedes, density, kinetic-energy, potential-energy, pendulum, reflection, plane-mirror, convex-lens, refraction, power-of-lens, ohms-law, series-circuit, parallel-circuit, heating-effect, sound-wave, pitch, echo, filtration, crystallization, ph-testing, light-reflection, light-refraction, electric-circuit, lens, magnet, custom]
         difficulty:
           type: string
           enum: [easy, medium, hard]
       required:
         - id
+        - subject
         - classLevel
         - title
         - objective
+        - theory
+        - apparatus
         - procedure
         - expectedResult
         - explanation
@@ -1130,6 +1149,9 @@ components:
     CreateExperimentBody:
       type: object
       properties:
+        subject:
+          type: string
+          enum: [Physics, Chemistry]
         classLevel:
           type: string
           enum: ["Class IX", "Class X"]
@@ -1137,19 +1159,33 @@ components:
           type: string
         objective:
           type: string
+        theory:
+          type: string
+        apparatus:
+          type: string
         procedure:
           type: string
         expectedResult:
           type: string
         explanation:
           type: string
+        videoUrl:
+          type: string
+          nullable: true
+        hints:
+          type: string
+          nullable: true
+        summary:
+          type: string
+          nullable: true
         type:
           type: string
-          enum: [light-reflection, light-refraction, electric-circuit, lens, magnet, custom]
+          enum: [distance-time, velocity-time, free-fall, motion-accel, gravitation, archimedes, density, kinetic-energy, potential-energy, pendulum, reflection, plane-mirror, convex-lens, refraction, power-of-lens, ohms-law, series-circuit, parallel-circuit, heating-effect, sound-wave, pitch, echo, filtration, crystallization, ph-testing, light-reflection, light-refraction, electric-circuit, lens, magnet, custom]
         difficulty:
           type: string
           enum: [easy, medium, hard]
       required:
+        - subject
         - classLevel
         - title
         - objective
