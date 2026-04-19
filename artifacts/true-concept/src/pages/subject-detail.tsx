@@ -58,7 +58,7 @@ export default function SubjectDetailPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 blob-bg">
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 pb-28 md:pb-8 blob-bg">
       <Link href="/subjects">
         <button className="flex items-center gap-2 text-sm font-black text-gray-500 hover:text-purple-700 mb-6 transition-colors" data-testid="button-back-subjects">
           <ArrowLeft className="w-4 h-4" /> All Subjects

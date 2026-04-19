@@ -30,7 +30,7 @@ export default function VirtualLabPage() {
   );
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 blob-bg">
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 pb-28 md:pb-8 blob-bg">
       {/* Header */}
       <div className="relative overflow-hidden liquid-dark rounded-3xl p-8 text-white mb-8">
         <div className="absolute top-0 right-0 text-[160px] opacity-10 leading-none pointer-events-none">🔬</div>

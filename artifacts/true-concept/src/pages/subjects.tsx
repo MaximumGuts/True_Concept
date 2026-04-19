@@ -27,7 +27,7 @@ export default function SubjectsPage() {
   });
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 blob-bg">
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 pb-28 md:pb-8 blob-bg">
       <div className="text-center mb-10">
         <div className="text-4xl mb-3">📚</div>
         <h1 className="font-black text-4xl text-gray-900 mb-2" data-testid="heading-subjects">
