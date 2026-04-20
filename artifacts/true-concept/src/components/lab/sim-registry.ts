@@ -55,7 +55,7 @@ export const SIM_TYPE_LABELS: Record<string, string> = {
   "pendulum": "Pendulum / Conservation of Energy",
   "reflection": "Laws of Reflection",
   "plane-mirror": "Plane Mirror",
-  "convex-lens": "Convex Lens Image",
+  "convex-lens": "Image Formation by Lens & Mirror",
   "refraction": "Refraction (Glass Slab)",
   "power-of-lens": "Power of Lens",
   "ohms-law": "Ohm's Law",

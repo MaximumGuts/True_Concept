@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { SimSlider, SimNumber, SimContainer } from "../sim-ui";
+import { SimSlider, SimNumber, SimContainer, SimResetButton } from "../sim-ui";
 
 /* 11. Laws of Reflection */
 export function ReflectionSim() {
@@ -65,47 +65,254 @@ export function PlaneMirrorSim() {
   );
 }
 
-/* 13. Convex Lens Image Formation */
+/* 13. Image Formation by Lens & Mirror — PhET Geometric Optics style */
+type OpticType = "cv" | "cc" | "cm" | "cx";
+
 export function ConvexLensSim() {
-  const [u, setU] = useState(30); // object distance (cm)
-  const f = 15;
-  // 1/v - 1/u = 1/f → v = uf/(u-f) (using sign convention with u positive to left)
-  const v = (u * f) / (u - f);
-  const m = -v / -u; // magnification (linear)
-  const isReal = u > f;
+  const [type, setType] = useState<OpticType>("cv");
+  const [f, setF] = useState(15);
+  const [u, setU] = useState(30);
+  const [ho, setHo] = useState(15);
+
+  const isLens = type === "cv" || type === "cc";
+  // NCERT Cartesian sign convention: convex lens & convex mirror → +f; concave lens & concave mirror → -f
+  const fS = type === "cv" || type === "cx" ? f : -f;
+  const uS = -u; // object always at negative position (left of element)
+
+  let vS: number;
+  if (isLens) vS = 1 / (1 / fS + 1 / uS); // 1/v - 1/u = 1/f
+  else vS = 1 / (1 / fS - 1 / uS); // 1/v + 1/u = 1/f
+
+  const m = isLens ? vS / uS : -vS / uS;
+  const hi = m * ho;
+
+  const elemX = 180;
+  const axisY = 100;
+  const SX = 2;
+  const SY = 1.2;
+
+  const objX = elemX + uS * SX; // = elemX - u*2
+  const objTopY = axisY - ho * SY;
+  const imageXraw = elemX + vS * SX;
+  const imageX = Math.max(8, Math.min(352, Number.isFinite(imageXraw) ? imageXraw : 9999));
+  const imgHeightPx = hi * SY;
+  const imgTopY = Math.max(8, Math.min(192, axisY - imgHeightPx));
+
+  const isVirtual = isLens ? vS < 0 : vS > 0;
+  const isReal = !isVirtual && Number.isFinite(vS);
+
+  // Focal points (NCERT-style: F is the "primary" focal point on the side of incoming light, F' on the other side)
+  const Fnear = elemX - f * SX;
+  const Ffar = elemX + f * SX;
+  const Cnear = elemX - 2 * f * SX;
+  const Cfar = elemX + 2 * f * SX;
+
+  // Geometric construction of outgoing rays per element type (works even at u=f / image at infinity).
+  // Ray 1: incoming parallel-to-axis at height objTopY hits element at elemPt1.
+  // Ray 2: incoming through optical centre / pole hits element at elemPt2 = (elemX, axisY).
+  const elemPt1 = { x: elemX, y: objTopY };
+  const elemPt2 = { x: elemX, y: axisY };
+  const imgPt = { x: imageXraw, y: axisY - imgHeightPx };
+
+  // Helper: extend a line from `from` in direction (dx,dy) by `len` pixels, clamped to viewBox.
+  function extend(from: { x: number; y: number }, dx: number, dy: number, len: number) {
+    const d = Math.hypot(dx, dy) || 1;
+    return { x: from.x + (dx / d) * len, y: from.y + (dy / d) * len };
+  }
+
+  // Direction of outgoing parallel ray (Ray 1) after the element.
+  // Convex lens (cv): refracts through F' on far side → direction = F' − elemPt1.
+  // Concave lens (cc): diverges as if from F on near side → direction = elemPt1 − F (away from F).
+  // Concave mirror (cm): reflects through F on near (left) side → direction = F − elemPt1 (going left).
+  // Convex mirror (cx): reflects diverging, virtual F behind on far (right) side → direction = elemPt1 − F_behind (going left).
+  let r1dx: number, r1dy: number;
+  if (type === "cv") { r1dx = Ffar - elemX; r1dy = axisY - objTopY; }
+  else if (type === "cc") { r1dx = elemX - Fnear; r1dy = objTopY - axisY; }
+  else if (type === "cm") { r1dx = Fnear - elemX; r1dy = axisY - objTopY; }
+  else { r1dx = elemX - Ffar; r1dy = objTopY - axisY; }
+  const out1 = extend(elemPt1, r1dx, r1dy, 220);
+
+  // Direction of outgoing chief ray (Ray 2):
+  // Lens: continues straight in same direction as incident (axisY − objTopY in y, positive x).
+  // Mirror: reflects about the mirror plane at pole (axis is normal): x-component negates, y-component preserved.
+  let r2dx: number, r2dy: number;
+  const inc2dx = elemX - objX; // = u*SX (positive)
+  const inc2dy = axisY - objTopY; // = ho*SY (positive when object above axis)
+  if (isLens) { r2dx = inc2dx; r2dy = inc2dy; }
+  else { r2dx = -inc2dx; r2dy = inc2dy; }
+  const out2 = extend(elemPt2, r2dx, r2dy, 220);
+
+  function renderElement() {
+    const colors = { cv: "#6366f1", cc: "#8b5cf6", cm: "#10b981", cx: "#f59e0b" };
+    const c = colors[type];
+    if (type === "cv") {
+      return (
+        <ellipse cx={elemX} cy={axisY} rx="10" ry="55" fill="rgba(99,102,241,0.28)" stroke={c} strokeWidth="2.5" />
+      );
+    }
+    if (type === "cc") {
+      return (
+        <path
+          d={`M ${elemX - 9},${axisY - 55} Q ${elemX + 4},${axisY} ${elemX - 9},${axisY + 55} L ${elemX + 9},${axisY + 55} Q ${elemX - 4},${axisY} ${elemX + 9},${axisY - 55} Z`}
+          fill="rgba(139,92,246,0.28)"
+          stroke={c}
+          strokeWidth="2.5"
+        />
+      );
+    }
+    if (type === "cm") {
+      return (
+        <g>
+          <path d={`M ${elemX + 8},${axisY - 55} Q ${elemX - 8},${axisY} ${elemX + 8},${axisY + 55}`} fill="none" stroke={c} strokeWidth="3" />
+          {Array.from({ length: 9 }).map((_, i) => (
+            <line key={i} x1={elemX + 4} y1={axisY - 50 + i * 13} x2={elemX + 12} y2={axisY - 44 + i * 13} stroke={c} strokeWidth="1" />
+          ))}
+        </g>
+      );
+    }
+    return (
+      <g>
+        <path d={`M ${elemX - 8},${axisY - 55} Q ${elemX + 8},${axisY} ${elemX - 8},${axisY + 55}`} fill="none" stroke={c} strokeWidth="3" />
+        {Array.from({ length: 9 }).map((_, i) => (
+          <line key={i} x1={elemX - 12} y1={axisY - 50 + i * 13} x2={elemX - 4} y2={axisY - 44 + i * 13} stroke={c} strokeWidth="1" />
+        ))}
+      </g>
+    );
+  }
+
+  const desc = !Number.isFinite(vS)
+    ? "Image formed at infinity"
+    : `${isReal ? "Real" : "Virtual"}, ${m < 0 ? "inverted" : "upright"}, ${
+        Math.abs(m) > 1.05 ? "magnified" : Math.abs(m) < 0.95 ? "diminished" : "same size"
+      }`;
+
+  const labels: Record<OpticType, string> = {
+    cv: "Convex Lens",
+    cc: "Concave Lens",
+    cm: "Concave Mirror",
+    cx: "Convex Mirror",
+  };
+  const emojis: Record<OpticType, string> = { cv: "🔍", cc: "〰️", cm: "🥄", cx: "🪩" };
+  const btnColors: Record<OpticType, string> = { cv: "#6366f1", cc: "#8b5cf6", cm: "#10b981", cx: "#f59e0b" };
+
   return (
-    <SimContainer hint="Beyond 2F → image is real, inverted, smaller. Inside F → virtual, upright, larger.">
-      <SimSlider label="Object Distance (u)" value={u} onChange={setU} min={5} max={60} step={1} unit=" cm" color="#7c3aed" />
-      <svg viewBox="0 0 320 160" className="w-full bg-gradient-to-r from-yellow-50 to-orange-50 rounded-xl">
-        {/* axis */}
-        <line x1="10" y1="80" x2="310" y2="80" stroke="#94a3b8" strokeWidth="1" strokeDasharray="3 3" />
-        {/* lens */}
-        <ellipse cx="160" cy="80" rx="8" ry="55" fill="rgba(99,102,241,0.3)" stroke="#6366f1" strokeWidth="2" />
-        <text x="155" y="155" fontSize="9" fill="#6366f1" fontWeight="700">L</text>
-        {/* focal points */}
-        <circle cx={160 - f * 2} cy="80" r="3" fill="#374151" /><text x={160 - f * 2 - 6} y={95} fontSize="9" fill="#374151">F</text>
-        <circle cx={160 + f * 2} cy="80" r="3" fill="#374151" /><text x={160 + f * 2 - 6} y={95} fontSize="9" fill="#374151">F'</text>
-        {/* object arrow */}
-        <line x1={160 - u * 2} y1="80" x2={160 - u * 2} y2="50" stroke="#dc2626" strokeWidth="2.5" markerEnd="url(#oa)" />
-        <text x={160 - u * 2 - 8} y="45" fontSize="9" fill="#dc2626" fontWeight="700">O</text>
-        {/* image arrow */}
-        {isFinite(v) && Math.abs(v) < 200 && (
+    <SimContainer hint="Pick any of the four optical elements. Use the sliders to change focal length, object distance, and object size — watch how the image, magnification, and ray diagram change in real time.">
+      <div className="grid grid-cols-2 gap-1.5 mb-3">
+        {(Object.keys(labels) as OpticType[]).map((id) => (
+          <button
+            key={id}
+            onClick={() => setType(id)}
+            data-testid={`btn-optic-${id}`}
+            className={`px-2 py-1.5 rounded-xl text-xs font-black transition-all ${
+              type === id ? "text-white shadow-md scale-[1.02]" : "bg-white/60 text-gray-700 hover:bg-white/80"
+            }`}
+            style={type === id ? { background: btnColors[id] } : {}}
+          >
+            <span className="mr-1">{emojis[id]}</span>
+            {labels[id]}
+          </button>
+        ))}
+      </div>
+
+      <SimSlider label="Focal length |f|" value={f} onChange={setF} min={5} max={45} step={1} unit=" cm" color="#7c3aed" />
+      <SimSlider label="Object distance (u)" value={u} onChange={setU} min={10} max={80} step={1} unit=" cm" color="#dc2626" />
+      <SimSlider label="Object height" value={ho} onChange={setHo} min={5} max={30} step={1} unit=" cm" color="#0ea5e9" />
+
+      <svg viewBox="0 0 360 200" className="w-full bg-gradient-to-b from-slate-50 via-blue-50 to-indigo-50 rounded-2xl border border-white/60">
+        {/* principal axis */}
+        <line x1="4" y1={axisY} x2="356" y2={axisY} stroke="#94a3b8" strokeWidth="1" strokeDasharray="3 3" />
+
+        {/* element */}
+        {renderElement()}
+
+        {/* focal points + center of curvature */}
+        {isLens ? (
           <>
-            <line x1={160 + v * 2} y1="80" x2={160 + v * 2} y2={isReal ? 80 + Math.min(50, Math.abs(m) * 30) : 80 - Math.min(50, Math.abs(m) * 30)} stroke="#10b981" strokeWidth="2.5" markerEnd="url(#ia)" />
-            <text x={160 + v * 2 - 5} y={isReal ? 80 + Math.min(50, Math.abs(m) * 30) + 12 : 80 - Math.min(50, Math.abs(m) * 30) - 4} fontSize="9" fill="#10b981" fontWeight="700">I</text>
+            <circle cx={Fnear} cy={axisY} r="3" fill="#1f2937" />
+            <text x={Fnear - 3} y={axisY + 13} fontSize="9" fontWeight="800" fill="#1f2937">F</text>
+            <circle cx={Ffar} cy={axisY} r="3" fill="#1f2937" />
+            <text x={Ffar - 4} y={axisY + 13} fontSize="9" fontWeight="800" fill="#1f2937">F'</text>
+            <circle cx={Cnear} cy={axisY} r="2.5" fill="#64748b" />
+            <text x={Cnear - 4} y={axisY + 13} fontSize="8" fontWeight="700" fill="#64748b">2F</text>
+            <circle cx={Cfar} cy={axisY} r="2.5" fill="#64748b" />
+            <text x={Cfar - 5} y={axisY + 13} fontSize="8" fontWeight="700" fill="#64748b">2F'</text>
+          </>
+        ) : type === "cm" ? (
+          <>
+            <circle cx={Fnear} cy={axisY} r="3" fill="#1f2937" />
+            <text x={Fnear - 3} y={axisY + 13} fontSize="9" fontWeight="800" fill="#1f2937">F</text>
+            <circle cx={Cnear} cy={axisY} r="3" fill="#475569" />
+            <text x={Cnear - 3} y={axisY + 13} fontSize="9" fontWeight="800" fill="#475569">C</text>
+          </>
+        ) : (
+          <>
+            <circle cx={Ffar} cy={axisY} r="3" fill="#1f2937" />
+            <text x={Ffar - 3} y={axisY + 13} fontSize="9" fontWeight="800" fill="#1f2937">F</text>
+            <circle cx={Cfar} cy={axisY} r="3" fill="#475569" />
+            <text x={Cfar - 3} y={axisY + 13} fontSize="9" fontWeight="800" fill="#475569">C</text>
           </>
         )}
+
+        {/* object arrow */}
+        <line x1={objX} y1={axisY} x2={objX} y2={objTopY} stroke="#dc2626" strokeWidth="2.5" markerEnd="url(#arr-obj)" />
+        <text x={objX - 14} y={objTopY - 4} fontSize="9" fontWeight="800" fill="#dc2626">Object</text>
+
+        {/* Ray 1: parallel to axis */}
+        <line x1={objX} y1={objTopY} x2={elemX} y2={objTopY} stroke="#0ea5e9" strokeWidth="1.5" />
+        <line x1={elemX} y1={objTopY} x2={out1.x} y2={out1.y} stroke="#0ea5e9" strokeWidth="1.5" />
+        {isVirtual && Number.isFinite(imgPt.x) && (
+          <line x1={elemX} y1={objTopY} x2={imgPt.x} y2={imgPt.y} stroke="#0ea5e9" strokeWidth="1" strokeDasharray="3 3" opacity="0.7" />
+        )}
+
+        {/* Ray 2: through optical center / pole */}
+        <line x1={objX} y1={objTopY} x2={elemX} y2={axisY} stroke="#a855f7" strokeWidth="1.5" />
+        <line x1={elemX} y1={axisY} x2={out2.x} y2={out2.y} stroke="#a855f7" strokeWidth="1.5" />
+        {isVirtual && Number.isFinite(imgPt.x) && (
+          <line x1={elemX} y1={axisY} x2={imgPt.x} y2={imgPt.y} stroke="#a855f7" strokeWidth="1" strokeDasharray="3 3" opacity="0.7" />
+        )}
+
+        {/* image arrow */}
+        {Number.isFinite(vS) && (
+          <>
+            <line
+              x1={imageX}
+              y1={axisY}
+              x2={imageX}
+              y2={imgTopY}
+              stroke={isReal ? "#10b981" : "#f59e0b"}
+              strokeWidth="2.5"
+              strokeDasharray={isReal ? undefined : "4 3"}
+              markerEnd={isReal ? "url(#arr-img-real)" : "url(#arr-img-virt)"}
+            />
+            <text
+              x={imageX - 10}
+              y={imgHeightPx > 0 ? imgTopY - 4 : imgTopY + 12}
+              fontSize="9"
+              fontWeight="800"
+              fill={isReal ? "#10b981" : "#f59e0b"}
+            >
+              Image
+            </text>
+          </>
+        )}
+
         <defs>
-          <marker id="oa" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 z" fill="#dc2626" /></marker>
-          <marker id="ia" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 z" fill="#10b981" /></marker>
+          <marker id="arr-obj" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 z" fill="#dc2626" /></marker>
+          <marker id="arr-img-real" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 z" fill="#10b981" /></marker>
+          <marker id="arr-img-virt" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 z" fill="#f59e0b" /></marker>
         </defs>
       </svg>
-      <div className="grid grid-cols-2 gap-2 mt-3">
-        <SimNumber label="Image dist (v)" value={v} unit="cm" color="#10b981" />
-        <SimNumber label="Magnification" value={m} color="#f59e0b" />
+
+      <div className="grid grid-cols-3 gap-2 mt-3">
+        <SimNumber label="u" value={u} unit=" cm" color="#dc2626" precision={0} />
+        <SimNumber label="|v|" value={Number.isFinite(vS) ? Math.abs(vS) : Infinity} unit=" cm" color={isReal ? "#10b981" : "#f59e0b"} precision={1} />
+        <SimNumber label="m" value={Number.isFinite(m) ? m : Infinity} color="#7c3aed" precision={2} />
       </div>
-      <div className="mt-2 text-xs text-center font-black text-gray-700">
-        {u <= f ? "Virtual, upright, magnified" : u < 2 * f ? "Real, inverted, magnified" : u === 2 * f ? "Real, inverted, same size" : "Real, inverted, diminished"}
+      <div data-testid="text-image-desc" className="mt-2 px-3 py-2 rounded-xl text-xs font-black text-center liquid-inner text-gray-700">
+        {desc}
+      </div>
+      <div className="mt-2 flex justify-end">
+        <SimResetButton onClick={() => { setType("cv"); setF(15); setU(30); setHo(15); }} />
       </div>
     </SimContainer>
   );
