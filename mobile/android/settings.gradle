@@ -1,0 +1,5 @@
+rootProject.name = 'TrueConcept'
+
+apply from: 'capacitor.settings.gradle'
+
+include ':app'

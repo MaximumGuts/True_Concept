@@ -1,19 +1,18 @@
-import { pgTable, text, serial, timestamp, integer } from "drizzle-orm/pg-core";
-import { createInsertSchema } from "drizzle-zod";
-import { z } from "zod/v4";
-import { subjectsTable } from "./subjects";
+import { z } from "zod";
 
-export const chaptersTable = pgTable("chapters", {
-  id: serial("id").primaryKey(),
-  subjectId: integer("subject_id").notNull().references(() => subjectsTable.id, { onDelete: "cascade" }),
-  classLevel: text("class_level", { enum: ["Class IX", "Class X"] }).notNull(),
-  medium: text("medium", { enum: ["Assamese", "English", "Both"] }).notNull().default("Both"),
-  title: text("title").notNull(),
-  chapterNumber: integer("chapter_number").notNull(),
-  description: text("description").notNull(),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+export const insertChapterSchema = z.object({
+  subjectId: z.string(),
+  classLevel: z.enum(["Class IX", "Class X"]),
+  medium: z.enum(["Assamese", "English", "Both"]).default("Both"),
+  title: z.string(),
+  chapterNumber: z.number(),
+  description: z.string(),
 });
 
-export const insertChapterSchema = createInsertSchema(chaptersTable).omit({ id: true, createdAt: true });
+export const chapterSchema = insertChapterSchema.extend({
+  id: z.string(),
+  createdAt: z.date().default(() => new Date()),
+});
+
 export type InsertChapter = z.infer<typeof insertChapterSchema>;
-export type Chapter = typeof chaptersTable.$inferSelect;
+export type Chapter = z.infer<typeof chapterSchema>;

@@ -78,9 +78,9 @@ export default function LightRefractionSim() {
     ctx.beginPath();
     ctx.moveTo(midX, slabTop);
     ctx.lineTo(exitX, exitY);
-    ctx.strokeStyle = "#a78bfa";
+    ctx.strokeStyle = "#f5a584";
     ctx.lineWidth = 2.5;
-    ctx.shadowColor = "#a78bfa";
+    ctx.shadowColor = "#f5a584";
     ctx.shadowBlur = 6;
     ctx.stroke();
     ctx.shadowBlur = 0;
@@ -103,7 +103,7 @@ export default function LightRefractionSim() {
     ctx.font = "bold 12px Inter, sans-serif";
     ctx.fillStyle = "#fbbf24";
     ctx.fillText("Incident", ix - 60, iy + 5);
-    ctx.fillStyle = "#a78bfa";
+    ctx.fillStyle = "#f5a584";
     ctx.fillText("Refracted", (midX + exitX) / 2 + 5, (slabTop + slabBottom) / 2);
     ctx.fillStyle = "#34d399";
     ctx.fillText("Emergent", ex - 20, ey + 15);

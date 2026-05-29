@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#DA6B45</color>
+    <color name="colorPrimaryDark">#B85535</color>
+    <color name="colorAccent">#DA6B45</color>
+    <color name="colorBackground">#0C0920</color>
+    <!--
+      Dedicated status-bar background. We deliberately do NOT use
+      colorPrimaryDark (which is the orange brand colour) because the WebView
+      below it serves a dark cosmic theme — the orange bar created a jarring
+      visual seam at the top. Using the same deep-indigo as the app background
+      lets the status bar feel like a natural extension of the page chrome.
+      The system icons (time / battery / signal) stay light per the
+      windowLightStatusBar=false setting in styles.xml.
+    -->
+    <color name="statusBarBg">#0C0920</color>
+</resources>

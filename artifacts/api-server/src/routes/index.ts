@@ -8,6 +8,9 @@ import experimentsRouter from "./experiments";
 import progressRouter from "./progress";
 import searchRouter from "./search";
 import storageRouter from "./storage";
+import studentsRouter from "./students";
+import aiMentorRouter from "./ai-mentor";
+import nextRecommendationRouter from "./next-recommendation";
 
 const router: IRouter = Router();
 
@@ -20,5 +23,8 @@ router.use(experimentsRouter);
 router.use(progressRouter);
 router.use(searchRouter);
 router.use(storageRouter);
+router.use(studentsRouter);
+router.use(aiMentorRouter);
+router.use(nextRecommendationRouter);
 
 export default router;

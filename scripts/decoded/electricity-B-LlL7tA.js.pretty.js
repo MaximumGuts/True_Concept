@@ -1,0 +1,1265 @@
+import { j as e } from "./index-CkhNTvuD.js";
+import { c as D, r as h } from "./App-U7Teu2t1.js";
+import { S as A, a as $, c as w, u as I, d as z, b as T } from "./sim-ui-Bi06fhUM.js";
+import "./rotate-ccw-DQs0uxq4.js";
+const B = [
+    ["path", { d: "M12 2v10", key: "mnfbl" }],
+    ["path", { d: "M18.4 6.6a9 9 0 1 1-12.77.04", key: "obofu9" }],
+  ],
+  F = D("power", B);
+function Y() {
+  const [s, j] = h.useState("VI"),
+    [o, v] = h.useState(!1),
+    [i, g] = h.useState(1),
+    [c, u] = h.useState(1),
+    d = o ? i / c : 0,
+    C = i * d,
+    [p, k] = h.useState([]),
+    [y, f] = h.useState(0);
+  (I(o, (x) => {
+    f((W) => W - d * 25 * x);
+  }),
+    h.useEffect(() => {
+      o &&
+        k((x) => {
+          if (x.length > 0) {
+            const O = x[x.length - 1];
+            if (O.v === i && O.r === c) return x;
+          }
+          const W = [...x, { v: i, r: c, i: d }];
+          return W.length > 300 ? W.slice(-300) : W;
+        });
+    }, [i, c, d, o]));
+  const R = () => {
+    (k([]), v(!1), g(1), u(1));
+  };
+  let b = "Voltage (V)",
+    S = 24,
+    N = p.map((x) => ({ x: x.v, y: x.i }));
+  (s === "IR" && ((b = "Resistance (Ω)"), (S = 24), (N = p.map((x) => ({ x: x.r, y: x.i })))),
+    N.sort((x, W) => x.x - W.x));
+  const M = [{ points: N, color: s === "IR" ? "#f59e0b" : "#38bdf8" }],
+    m = Math.min(1, d / 10),
+    V = Math.floor(100 + m * 139),
+    l = Math.floor(116 - m * 48),
+    r = Math.floor(139 - m * 71),
+    t = o ? `rgb(${V}, ${l}, ${r})` : "#64748b",
+    n = o && m > 0.1 ? `drop-shadow(0 0 ${m * 10}px rgb(239, 68, 68))` : "none";
+  let a = "Turn ON the circuit to observe the flow of current.";
+  o &&
+    (s === "VI"
+      ? (a = `With Resistance constant at ${c}Ω, increasing Voltage forces more Current through the circuit. This generates a linear V-I graph!`)
+      : s === "IR"
+        ? (a = `With Voltage constant at ${i}V, increasing Resistance restricts the flow, exponentially reducing Current. This creates an inverse curve!`)
+        : (a = `Free Exploration: Current (${d.toFixed(2)}A) is directly proportional to Voltage and inversely proportional to Resistance.`));
+  const L = "M 50 120 L 50 50 L 350 50 L 350 200 L 50 200 L 50 180";
+  return e.jsxs(A, {
+    onReset: R,
+    hint: "Ohm's Law: V = I × R. Voltage pushes current, while Resistance slows it down.",
+    children: [
+      e.jsxs("div", {
+        className: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4",
+        children: [
+          e.jsxs("div", {
+            className: "flex flex-col justify-center px-1",
+            children: [
+              e.jsx("label", {
+                className: "text-[10px] font-black text-gray-700 dark:text-gray-200 uppercase tracking-wide mb-1.5",
+                children: "Experiment Mode",
+              }),
+              e.jsxs("select", {
+                value: s,
+                onChange: (x) => {
+                  (j(x.target.value), R());
+                },
+                className:
+                  "bg-white/80 dark:bg-gray-800 border-0 rounded-lg text-xs font-bold shadow-sm p-1.5 text-gray-700 dark:text-gray-200 cursor-pointer w-full",
+                children: [
+                  e.jsx("option", { value: "VI", children: "V-I Verification" }),
+                  e.jsx("option", { value: "IR", children: "I-R Relationship" }),
+                  e.jsx("option", { value: "FREE", children: "Free Lab Mode" }),
+                ],
+              }),
+            ],
+          }),
+          e.jsx($, {
+            label: "Voltage (V)",
+            value: i,
+            onChange: g,
+            min: 1,
+            max: 24,
+            step: 1,
+            unit: " V",
+            color: "#38bdf8",
+            disabled: s === "IR",
+          }),
+          e.jsx($, {
+            label: "Resistance (R)",
+            value: c,
+            onChange: u,
+            min: 1,
+            max: 24,
+            step: 1,
+            unit: " Ω",
+            color: "#f59e0b",
+            disabled: s === "VI",
+          }),
+          e.jsx("div", {
+            className: "flex items-center justify-center pt-2 sm:pt-4",
+            children: e.jsx(z, {
+              onClick: () => v(!o),
+              color: o ? "#ef4444" : "#10b981",
+              icon: e.jsx(F, { className: "w-4 h-4" }),
+              children: o ? "Turn OFF" : "Turn ON",
+            }),
+          }),
+        ],
+      }),
+      e.jsx("div", {
+        className:
+          "relative rounded-2xl overflow-hidden shadow-2xl border border-white/10 bg-gradient-to-b from-[#020617] to-[#0f172a] touch-none mb-4 w-full h-[280px]",
+        children: e.jsxs("svg", {
+          viewBox: "-10 -10 430 260",
+          preserveAspectRatio: "xMidYMid meet",
+          className: "w-full h-full absolute inset-0",
+          children: [
+            e.jsx("path", { d: L, fill: "none", stroke: "#334155", strokeWidth: "4" }),
+            o &&
+              d > 0 &&
+              e.jsx("path", {
+                d: L,
+                fill: "none",
+                stroke: "#38bdf8",
+                strokeWidth: "2",
+                strokeDasharray: "6 12",
+                strokeDashoffset: y,
+              }),
+            e.jsx("path", {
+              d: "M 350 110 L 290 110 L 290 200 L 350 200",
+              fill: "none",
+              stroke: "#334155",
+              strokeWidth: "4",
+            }),
+            o &&
+              e.jsx("path", {
+                d: "M 350 110 L 290 110 L 290 200 L 350 200",
+                fill: "none",
+                stroke: "rgba(16, 185, 129, 0.4)",
+                strokeWidth: "2",
+              }),
+            e.jsx("rect", { x: 230, y: 30, width: 40, height: 40, fill: "#0f172a" }),
+            e.jsx("circle", { cx: 235, cy: 50, r: 4, fill: "#94a3b8" }),
+            e.jsx("circle", { cx: 265, cy: 50, r: 4, fill: "#94a3b8" }),
+            e.jsx("line", {
+              x1: 235,
+              y1: 50,
+              x2: 265,
+              y2: o ? 50 : 35,
+              stroke: o ? "#10b981" : "#cbd5e1",
+              strokeWidth: "4",
+              strokeLinecap: "round",
+              className: "transition-all duration-200",
+            }),
+            e.jsx("rect", { x: 20, y: 120, width: 60, height: 60, fill: "#0f172a" }),
+            e.jsx("rect", {
+              x: 25,
+              y: 130,
+              width: 50,
+              height: 40,
+              fill: "#1e293b",
+              stroke: "#64748b",
+              strokeWidth: "2",
+              rx: "4",
+            }),
+            e.jsx("rect", { x: 40, y: 125, width: 20, height: 5, fill: "#64748b" }),
+            e.jsxs("text", {
+              x: 50,
+              y: 155,
+              fill: "#fff",
+              fontSize: "14",
+              textAnchor: "middle",
+              fontWeight: "bold",
+              children: [i, "V"],
+            }),
+            e.jsx("text", {
+              x: 50,
+              y: 120,
+              fill: "#ef4444",
+              fontSize: "14",
+              textAnchor: "middle",
+              fontWeight: "bold",
+              children: "+",
+            }),
+            e.jsx("text", {
+              x: 50,
+              y: 185,
+              fill: "#3b82f6",
+              fontSize: "14",
+              textAnchor: "middle",
+              fontWeight: "bold",
+              children: "-",
+            }),
+            e.jsx("rect", { x: 130, y: 30, width: 40, height: 40, fill: "#0f172a" }),
+            e.jsx("circle", { cx: 150, cy: 50, r: 22, fill: "#1e293b", stroke: "#38bdf8", strokeWidth: "2" }),
+            e.jsx("text", {
+              x: 150,
+              y: 55,
+              fill: "#fff",
+              fontSize: "16",
+              textAnchor: "middle",
+              fontWeight: "bold",
+              children: "A",
+            }),
+            e.jsx("rect", { x: 125, y: -5, width: 50, height: 20, fill: "#020617", rx: "4" }),
+            e.jsxs("text", {
+              x: 150,
+              y: 8,
+              fill: "#38bdf8",
+              fontSize: "10",
+              textAnchor: "middle",
+              children: [d.toFixed(2), " A"],
+            }),
+            e.jsx("rect", { x: 330, y: 110, width: 40, height: 90, fill: "#0f172a" }),
+            e.jsx("path", {
+              d: "M 350 110 L 340 120 L 360 135 L 340 150 L 360 165 L 340 180 L 350 190 L 350 200",
+              fill: "none",
+              stroke: t,
+              strokeWidth: "4",
+              strokeLinejoin: "round",
+              style: { filter: n, transition: "stroke 0.3s, filter 0.3s" },
+            }),
+            e.jsxs("text", {
+              x: 380,
+              y: 155,
+              fill: "#f59e0b",
+              fontSize: "14",
+              textAnchor: "start",
+              fontWeight: "bold",
+              children: [c, " Ω"],
+            }),
+            e.jsx("rect", { x: 270, y: 135, width: 40, height: 40, fill: "#0f172a" }),
+            e.jsx("circle", { cx: 290, cy: 155, r: 22, fill: "#1e293b", stroke: "#10b981", strokeWidth: "2" }),
+            e.jsx("text", {
+              x: 290,
+              y: 160,
+              fill: "#fff",
+              fontSize: "16",
+              textAnchor: "middle",
+              fontWeight: "bold",
+              children: "V",
+            }),
+            e.jsx("rect", { x: 265, y: 100, width: 50, height: 20, fill: "#020617", rx: "4" }),
+            e.jsxs("text", {
+              x: 290,
+              y: 113,
+              fill: "#10b981",
+              fontSize: "10",
+              textAnchor: "middle",
+              children: [o ? i.toFixed(1) : "0.0", " V"],
+            }),
+          ],
+        }),
+      }),
+      e.jsx("div", {
+        className: "w-full bg-slate-900 border border-emerald-500/30 p-3 mb-4 rounded-xl shadow-lg text-center",
+        children: e.jsx("p", { className: "text-sm font-bold text-emerald-100 leading-relaxed", children: a }),
+      }),
+      e.jsxs("div", {
+        className: "grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4",
+        children: [
+          e.jsx(w, { label: "Voltage (V)", value: o ? i : 0, unit: " V", color: "#38bdf8", precision: 1 }),
+          e.jsx(w, { label: "Current (I)", value: d, unit: " A", color: "#dc2626", precision: 2 }),
+          e.jsx(w, { label: "Resistance (R)", value: c, unit: " Ω", color: "#f59e0b", precision: 0 }),
+          e.jsx(w, { label: "Power (P)", value: C, unit: " W", color: "#8b5cf6", precision: 1 }),
+        ],
+      }),
+      e.jsxs("div", {
+        className: "mb-2",
+        children: [
+          e.jsxs("div", {
+            className: "flex justify-between items-center mb-1",
+            children: [
+              e.jsx("div", {
+                className: "text-xs font-black text-gray-500 dark:text-gray-400",
+                children: "Live Graph Generation",
+              }),
+              e.jsx("div", {
+                className: "flex gap-3 text-[10px] font-bold",
+                children: e.jsxs("span", {
+                  className: s === "IR" ? "text-amber-500" : "text-sky-500",
+                  children: ["■ ", s === "IR" ? "Current vs Resistance" : "Current vs Voltage"],
+                }),
+              }),
+            ],
+          }),
+          e.jsx(T, { series: M, xMax: S, yMax: 12, xLabel: b, yLabel: "Current (A)", height: 120 }),
+        ],
+      }),
+    ],
+  });
+}
+function _() {
+  const [s, j] = h.useState([10, 20]),
+    [o, v] = h.useState(12),
+    [i, g] = h.useState(!1),
+    [c, u] = h.useState("basic"),
+    [d, C] = h.useState("IvsR"),
+    [p, k] = h.useState(0),
+    y = s.reduce((l, r) => l + r, 0),
+    f = i ? o / y : 0;
+  I(i, (l) => {
+    k((r) => r - l * f * 80);
+  });
+  const R = () => {
+      (j([10, 20]), g(!1));
+    },
+    b = () => {
+      s.length < 5 && j([...s, 10]);
+    },
+    S = () => {
+      s.length > 1 && j(s.slice(0, -1));
+    },
+    N = () => {
+      const l = [];
+      if (d === "IvsR") {
+        for (let r = 1; r <= 150; r += 2) {
+          const t = o / r,
+            n = 20 + (r / 150) * 160,
+            a = 90 - Math.min(1, t / 12) * 80;
+          l.push(`${n},${a}`);
+        }
+        return e.jsx("polyline", {
+          points: l.join(" "),
+          fill: "none",
+          stroke: "#facc15",
+          strokeWidth: "2",
+          style: { filter: "drop-shadow(0 0 4px #facc15)" },
+        });
+      } else {
+        let r = 0;
+        const t = [];
+        t.push("20,90");
+        for (let n = 0; n < s.length; n++) {
+          r += s[n];
+          const a = 20 + ((n + 1) / 5) * 160,
+            L = 90 - (r / 150) * 80;
+          t.push(`${a},${L}`);
+        }
+        return e.jsx("polyline", {
+          points: t.join(" "),
+          fill: "none",
+          stroke: "#10b981",
+          strokeWidth: "2",
+          style: { filter: "drop-shadow(0 0 4px #10b981)" },
+        });
+      }
+    },
+    M = () => {
+      if (d === "IvsR") {
+        const l = 20 + Math.min(1, y / 150) * 160,
+          r = 90 - Math.min(1, f / 12) * 80;
+        return { cx: l, cy: r };
+      } else {
+        const l = 20 + (s.length / 5) * 160,
+          r = 90 - (y / 150) * 80;
+        return { cx: l, cy: r };
+      }
+    };
+  let m = "Circuit is OFF. Turn the switch ON to observe current flow.";
+  return (
+    i &&
+      (c === "voltage"
+        ? (m =
+            "Notice the Voltage Drop: The total 12V from the battery is divided across each resistor based on its resistance.")
+        : c === "current"
+          ? (m =
+              "Notice the Current: Exactly the same amount of current flows through EVERY resistor in a series circuit.")
+          : (m = `Current is flowing! Total resistance is ${y}Ω, yielding a current of ${f.toFixed(2)}A.`)),
+    e.jsx(A, {
+      onReset: R,
+      hint: "In a series circuit, Current is the same everywhere, but Voltage divides across components!",
+      children: e.jsxs("div", {
+        className: "grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4",
+        children: [
+          e.jsxs("div", {
+            className: "flex flex-col gap-3",
+            children: [
+              e.jsxs("div", {
+                className: "grid grid-cols-3 gap-1",
+                children: [
+                  e.jsx("button", {
+                    onClick: () => {
+                      u("basic");
+                    },
+                    className: `py-1.5 rounded-lg text-xs font-bold transition-all border ${c === "basic" ? "bg-indigo-600 border-indigo-400 text-white" : "bg-transparent border-white/10 text-gray-400 hover:bg-white/5"}`,
+                    children: "Basic",
+                  }),
+                  e.jsx("button", {
+                    onClick: () => {
+                      u("voltage");
+                    },
+                    className: `py-1.5 rounded-lg text-xs font-bold transition-all border ${c === "voltage" ? "bg-rose-600 border-rose-400 text-white" : "bg-transparent border-white/10 text-gray-400 hover:bg-white/5"}`,
+                    children: "Voltage",
+                  }),
+                  e.jsx("button", {
+                    onClick: () => {
+                      u("current");
+                    },
+                    className: `py-1.5 rounded-lg text-xs font-bold transition-all border ${c === "current" ? "bg-emerald-600 border-emerald-400 text-white" : "bg-transparent border-white/10 text-gray-400 hover:bg-white/5"}`,
+                    children: "Current",
+                  }),
+                ],
+              }),
+              e.jsxs("div", {
+                className: "bg-[#0f172a]/50 p-3 rounded-xl border border-white/10 flex flex-col gap-2",
+                children: [
+                  e.jsxs("div", {
+                    className: "flex justify-between items-center mb-1",
+                    children: [
+                      e.jsxs("span", {
+                        className: "text-xs font-black uppercase text-gray-500",
+                        children: ["Resistors (", s.length, "/5)"],
+                      }),
+                      e.jsxs("div", {
+                        className: "flex gap-1",
+                        children: [
+                          e.jsx("button", {
+                            onClick: S,
+                            disabled: s.length <= 1,
+                            className:
+                              "w-6 h-6 bg-rose-500/20 text-rose-400 hover:bg-rose-500 hover:text-white disabled:opacity-30 rounded flex items-center justify-center font-black",
+                            children: "-",
+                          }),
+                          e.jsx("button", {
+                            onClick: b,
+                            disabled: s.length >= 5,
+                            className:
+                              "w-6 h-6 bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500 hover:text-white disabled:opacity-30 rounded flex items-center justify-center font-black",
+                            children: "+",
+                          }),
+                        ],
+                      }),
+                    ],
+                  }),
+                  s.map((l, r) =>
+                    e.jsxs(
+                      "div",
+                      {
+                        className: "flex items-center gap-2",
+                        children: [
+                          e.jsxs("span", {
+                            className: "text-[10px] font-black text-amber-500 w-4",
+                            children: ["R", r + 1],
+                          }),
+                          e.jsx("input", {
+                            type: "range",
+                            min: 1,
+                            max: 50,
+                            value: l,
+                            onChange: (t) => j(s.map((n, a) => (a === r ? Number(t.target.value) : n))),
+                            className: "flex-1 accent-amber-500 h-1",
+                          }),
+                          e.jsxs("span", {
+                            className: "text-[10px] font-black text-gray-300 w-6 text-right",
+                            children: [l, "Ω"],
+                          }),
+                        ],
+                      },
+                      r,
+                    ),
+                  ),
+                ],
+              }),
+              e.jsx($, {
+                label: "Battery Voltage",
+                value: o,
+                onChange: v,
+                min: 1,
+                max: 24,
+                step: 1,
+                unit: " V",
+                color: "#38bdf8",
+              }),
+              e.jsx("div", {
+                className: "flex gap-2 mt-2",
+                children: e.jsx(z, {
+                  onClick: () => g(!i),
+                  color: i ? "#ef4444" : "#10b981",
+                  icon: e.jsx(F, { className: "w-4 h-4" }),
+                  children: i ? "Turn OFF Circuit" : "Turn ON Circuit",
+                }),
+              }),
+              e.jsxs("div", {
+                className: "grid grid-cols-2 gap-2 mt-1",
+                children: [
+                  e.jsx(w, { label: "Total Resistance", value: y, unit: " Ω", color: "#f59e0b", precision: 0 }),
+                  e.jsx(w, { label: "Current", value: f, unit: " A", color: "#dc2626", precision: 2 }),
+                ],
+              }),
+            ],
+          }),
+          e.jsxs("div", {
+            className:
+              "lg:col-span-1 bg-[#020617] border border-white/10 rounded-2xl overflow-hidden relative shadow-2xl flex flex-col",
+            style: { minHeight: "350px" },
+            children: [
+              e.jsxs("svg", {
+                viewBox: "0 0 400 200",
+                className: "w-full h-full flex-1",
+                children: [
+                  e.jsxs("defs", {
+                    children: [
+                      e.jsxs("filter", {
+                        id: "glow",
+                        children: [
+                          e.jsx("feGaussianBlur", { stdDeviation: "3", result: "coloredBlur" }),
+                          e.jsxs("feMerge", {
+                            children: [
+                              e.jsx("feMergeNode", { in: "coloredBlur" }),
+                              e.jsx("feMergeNode", { in: "SourceGraphic" }),
+                            ],
+                          }),
+                        ],
+                      }),
+                      e.jsxs("filter", {
+                        id: "wire-glow",
+                        children: [
+                          e.jsx("feGaussianBlur", { stdDeviation: "2", result: "blur" }),
+                          e.jsxs("feMerge", {
+                            children: [
+                              e.jsx("feMergeNode", { in: "blur" }),
+                              e.jsx("feMergeNode", { in: "SourceGraphic" }),
+                            ],
+                          }),
+                        ],
+                      }),
+                    ],
+                  }),
+                  e.jsx("pattern", {
+                    id: "grid",
+                    width: "20",
+                    height: "20",
+                    patternUnits: "userSpaceOnUse",
+                    children: e.jsx("circle", { cx: "10", cy: "10", r: "1", fill: "#ffffff", opacity: "0.05" }),
+                  }),
+                  e.jsx("rect", { width: "100%", height: "100%", fill: "url(#grid)" }),
+                  e.jsx("path", {
+                    d: "M 225 150 L 350 150 L 350 115",
+                    fill: "none",
+                    stroke: "#334155",
+                    strokeWidth: "4",
+                  }),
+                  e.jsx("path", {
+                    d: "M 350 85 L 350 50 L 50 50 L 50 150 L 175 150",
+                    fill: "none",
+                    stroke: "#334155",
+                    strokeWidth: "4",
+                  }),
+                  i &&
+                    e.jsx("path", {
+                      d: "M 225 150 L 350 150 L 350 50 L 50 50 L 50 150 L 175 150",
+                      fill: "none",
+                      stroke: "#38bdf8",
+                      strokeWidth: "3",
+                      strokeDasharray: "6 12",
+                      strokeDashoffset: p,
+                      filter: "url(#wire-glow)",
+                      opacity: Math.min(1, f / 2 + 0.3),
+                    }),
+                  e.jsxs("g", {
+                    transform: "translate(350, 100)",
+                    children: [
+                      e.jsx("circle", { cx: "0", cy: "-15", r: "4", fill: "#64748b" }),
+                      e.jsx("circle", { cx: "0", cy: "15", r: "4", fill: "#64748b" }),
+                      e.jsx("line", {
+                        x1: "0",
+                        y1: "-15",
+                        x2: i ? "0" : "15",
+                        y2: i ? "15" : "0",
+                        stroke: "#e2e8f0",
+                        strokeWidth: "4",
+                        strokeLinecap: "round",
+                        style: { transition: "all 0.2s ease" },
+                      }),
+                    ],
+                  }),
+                  s.map((l, r) => {
+                    const t = 300 / s.length,
+                      n = 50 + t / 2 + r * t,
+                      a = 50,
+                      L = f * l,
+                      x = i ? Math.min(0.8, (f * f * l) / 50) : 0;
+                    return e.jsxs(
+                      "g",
+                      {
+                        children: [
+                          e.jsx("rect", { x: n - 15, y: a - 8, width: "30", height: "16", fill: "#b45309", rx: "3" }),
+                          e.jsx("rect", {
+                            x: n - 10,
+                            y: a - 8,
+                            width: "3",
+                            height: "16",
+                            fill: "#000",
+                            opacity: "0.6",
+                          }),
+                          e.jsx("rect", {
+                            x: n - 3,
+                            y: a - 8,
+                            width: "3",
+                            height: "16",
+                            fill: "#ef4444",
+                            opacity: "0.6",
+                          }),
+                          e.jsx("rect", {
+                            x: n + 4,
+                            y: a - 8,
+                            width: "3",
+                            height: "16",
+                            fill: "#eab308",
+                            opacity: "0.6",
+                          }),
+                          x > 0 &&
+                            e.jsx("rect", {
+                              x: n - 15,
+                              y: a - 8,
+                              width: "30",
+                              height: "16",
+                              fill: "#ef4444",
+                              opacity: x,
+                              filter: "url(#glow)",
+                              rx: "3",
+                            }),
+                          e.jsxs("text", {
+                            x: n,
+                            y: a - 14,
+                            fill: "#cbd5e1",
+                            fontSize: "10",
+                            textAnchor: "middle",
+                            fontWeight: "bold",
+                            children: ["R", r + 1, ": ", l, "Ω"],
+                          }),
+                          c === "voltage" &&
+                            i &&
+                            e.jsxs("g", {
+                              transform: `translate(${n}, ${a + 25})`,
+                              children: [
+                                e.jsx("rect", {
+                                  x: "-18",
+                                  y: "-8",
+                                  width: "36",
+                                  height: "16",
+                                  fill: "#0f172a",
+                                  stroke: "#f59e0b",
+                                  strokeWidth: "1",
+                                  rx: "2",
+                                }),
+                                e.jsxs("text", {
+                                  x: "0",
+                                  y: "3",
+                                  fill: "#f59e0b",
+                                  fontSize: "8",
+                                  textAnchor: "middle",
+                                  fontWeight: "bold",
+                                  children: [L.toFixed(1), "V"],
+                                }),
+                                e.jsx("path", {
+                                  d: "M -15 -8 L -20 -25",
+                                  stroke: "#f59e0b",
+                                  strokeWidth: "1",
+                                  strokeDasharray: "2 2",
+                                }),
+                                e.jsx("path", {
+                                  d: "M 15 -8 L 20 -25",
+                                  stroke: "#f59e0b",
+                                  strokeWidth: "1",
+                                  strokeDasharray: "2 2",
+                                }),
+                              ],
+                            }),
+                          c === "current" &&
+                            i &&
+                            e.jsxs("g", {
+                              transform: `translate(${n}, ${a + 25})`,
+                              children: [
+                                e.jsx("rect", {
+                                  x: "-16",
+                                  y: "-8",
+                                  width: "32",
+                                  height: "16",
+                                  fill: "#0f172a",
+                                  stroke: "#ef4444",
+                                  strokeWidth: "1",
+                                  rx: "2",
+                                }),
+                                e.jsxs("text", {
+                                  x: "0",
+                                  y: "3",
+                                  fill: "#ef4444",
+                                  fontSize: "8",
+                                  textAnchor: "middle",
+                                  fontWeight: "bold",
+                                  children: [f.toFixed(2), "A"],
+                                }),
+                              ],
+                            }),
+                        ],
+                      },
+                      r,
+                    );
+                  }),
+                  e.jsxs("g", {
+                    transform: "translate(200, 150)",
+                    children: [
+                      e.jsx("rect", {
+                        x: "-25",
+                        y: "-15",
+                        width: "50",
+                        height: "30",
+                        fill: "#1e293b",
+                        stroke: "#38bdf8",
+                        strokeWidth: "2",
+                        rx: "4",
+                      }),
+                      e.jsx("rect", { x: "-30", y: "-8", width: "5", height: "16", fill: "#38bdf8" }),
+                      e.jsx("rect", { x: "25", y: "-8", width: "5", height: "16", fill: "#38bdf8" }),
+                      e.jsxs("text", {
+                        x: "0",
+                        y: "4",
+                        fill: "white",
+                        fontSize: "12",
+                        textAnchor: "middle",
+                        fontWeight: "bold",
+                        children: [o, "V"],
+                      }),
+                      e.jsx("text", {
+                        x: "-15",
+                        y: "4",
+                        fill: "#ef4444",
+                        fontSize: "12",
+                        textAnchor: "middle",
+                        fontWeight: "bold",
+                        children: "-",
+                      }),
+                      e.jsx("text", {
+                        x: "15",
+                        y: "4",
+                        fill: "#10b981",
+                        fontSize: "12",
+                        textAnchor: "middle",
+                        fontWeight: "bold",
+                        children: "+",
+                      }),
+                    ],
+                  }),
+                ],
+              }),
+              e.jsx("div", {
+                className:
+                  "w-full bg-slate-900 border-t border-sky-500/30 p-2 text-center text-xs font-bold text-sky-200 min-h-[40px] flex items-center justify-center",
+                children: m,
+              }),
+            ],
+          }),
+          e.jsxs("div", {
+            className:
+              "lg:col-span-1 bg-[#0f172a]/50 p-4 rounded-xl border border-white/10 flex flex-col shadow-inner min-h-[350px]",
+            children: [
+              e.jsxs("div", {
+                className: "flex justify-between items-center mb-4",
+                children: [
+                  e.jsx("label", {
+                    className: "text-xs font-black uppercase text-gray-500 tracking-wider",
+                    children: "Live Graph",
+                  }),
+                  e.jsxs("select", {
+                    value: d,
+                    onChange: (l) => C(l.target.value),
+                    className:
+                      "bg-transparent text-xs font-bold text-white border-b border-white/20 pb-1 cursor-pointer outline-none focus:border-amber-500 transition-colors",
+                    children: [
+                      e.jsx("option", { value: "IvsR", className: "bg-slate-800", children: "Current vs Resistance" }),
+                      e.jsx("option", {
+                        value: "RvsN",
+                        className: "bg-slate-800",
+                        children: "Resistance vs Components",
+                      }),
+                    ],
+                  }),
+                ],
+              }),
+              e.jsx("div", {
+                className: "flex-1 relative border-l border-b border-slate-700 mx-2 mt-4 mb-6",
+                children: e.jsxs("svg", {
+                  viewBox: "0 0 200 100",
+                  className: "w-full h-full absolute inset-0 overflow-visible",
+                  children: [
+                    e.jsx("line", {
+                      x1: "20",
+                      y1: "10",
+                      x2: "180",
+                      y2: "10",
+                      stroke: "#334155",
+                      strokeWidth: "1",
+                      strokeDasharray: "2 2",
+                    }),
+                    e.jsx("line", {
+                      x1: "20",
+                      y1: "50",
+                      x2: "180",
+                      y2: "50",
+                      stroke: "#334155",
+                      strokeWidth: "1",
+                      strokeDasharray: "2 2",
+                    }),
+                    e.jsx("text", {
+                      x: "5",
+                      y: "10",
+                      fill: "#64748b",
+                      fontSize: "8",
+                      textAnchor: "middle",
+                      transform: "rotate(-90 5,10)",
+                      children: d === "IvsR" ? "Current (A)" : "Res (Ω)",
+                    }),
+                    e.jsx("text", {
+                      x: "180",
+                      y: "110",
+                      fill: "#64748b",
+                      fontSize: "8",
+                      textAnchor: "end",
+                      children: d === "IvsR" ? "Resistance (Ω)" : "Resistors (N)",
+                    }),
+                    N(),
+                    e.jsxs("g", {
+                      transform: `translate(${M().cx}, ${M().cy})`,
+                      children: [
+                        e.jsx("circle", { r: "4", fill: "white", style: { filter: "drop-shadow(0 0 4px white)" } }),
+                        e.jsxs("circle", {
+                          r: "6",
+                          fill: "none",
+                          stroke: d === "IvsR" ? "#facc15" : "#10b981",
+                          strokeWidth: "1.5",
+                          children: [
+                            e.jsx("animate", {
+                              attributeName: "r",
+                              values: "4; 10; 4",
+                              dur: "1s",
+                              repeatCount: "indefinite",
+                            }),
+                            e.jsx("animate", {
+                              attributeName: "opacity",
+                              values: "1; 0; 1",
+                              dur: "1s",
+                              repeatCount: "indefinite",
+                            }),
+                          ],
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+              }),
+              e.jsx("div", {
+                className: "mt-auto bg-black/20 p-3 rounded-lg border border-white/5",
+                children: e.jsx("p", {
+                  className: "text-xs font-medium text-gray-400 leading-relaxed text-center",
+                  children:
+                    d === "IvsR"
+                      ? e.jsxs(e.Fragment, {
+                          children: [
+                            "Observe the ",
+                            e.jsx("strong", { className: "text-amber-400", children: "Inverse Curve" }),
+                            ". As total series resistance increases, current exponentially decreases.",
+                          ],
+                        })
+                      : e.jsxs(e.Fragment, {
+                          children: [
+                            "Observe the ",
+                            e.jsx("strong", { className: "text-emerald-400", children: "Linear Growth" }),
+                            ". Adding resistors in series increases the total resistance directly.",
+                          ],
+                        }),
+                }),
+              }),
+            ],
+          }),
+        ],
+      }),
+    })
+  );
+}
+function q() {
+  const [s, j] = h.useState(!1),
+    [o, v] = h.useState(12),
+    [i, g] = h.useState([10, 20, 30]),
+    [c, u] = h.useState(0),
+    d = i.reduce((l, r) => l + 1 / r, 0),
+    C = d > 0 ? 1 / d : 0,
+    p = s ? o / C : 0;
+  I(s, (l) => {
+    u((r) => r - l * 25);
+  });
+  const k = 80,
+    y = 70,
+    f = i.length,
+    R = k + (f - 1) * y,
+    b = Math.max(260, R + 50),
+    S = b + 40,
+    N = `M 50 160 L 50 40 L 150 40 L 150 ${R}`,
+    M = `M 350 ${k} L 350 ${b} L 50 ${b} L 50 220`,
+    m = (l) => {
+      const r = Math.min(1, l / 4),
+        t = Math.floor(100 + r * 139),
+        n = Math.floor(116 - r * 48),
+        a = Math.floor(139 - r * 71);
+      return `rgb(${t}, ${n}, ${a})`;
+    },
+    V = () => {
+      (j(!1), v(12), g([10, 20, 30]));
+    };
+  return e.jsxs(A, {
+    onReset: V,
+    hint: "In parallel, voltage is identical across all branches. Current splits proportionally.",
+    children: [
+      e.jsxs("div", {
+        className: "grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4",
+        children: [
+          e.jsxs("div", {
+            className: "flex flex-col gap-3",
+            children: [
+              e.jsx($, {
+                label: "Source Voltage (V)",
+                value: o,
+                onChange: v,
+                min: 1,
+                max: 24,
+                step: 1,
+                unit: " V",
+                color: "#38bdf8",
+              }),
+              e.jsx("div", {
+                className: "flex items-center gap-2",
+                children: e.jsx(z, {
+                  onClick: () => j(!s),
+                  color: s ? "#ef4444" : "#10b981",
+                  icon: e.jsx(F, { className: "w-4 h-4" }),
+                  children: s ? "Turn OFF Circuit" : "Turn ON Circuit",
+                }),
+              }),
+              e.jsxs("div", {
+                className: "grid grid-cols-2 gap-2 mt-2",
+                children: [
+                  e.jsx(w, { label: "Total Resistance", value: C, unit: " Ω", color: "#f59e0b", precision: 2 }),
+                  e.jsx(w, { label: "Total Current", value: p, unit: " A", color: "#dc2626", precision: 2 }),
+                ],
+              }),
+            ],
+          }),
+          e.jsxs("div", {
+            className: "lg:col-span-2 bg-[#0f172a]/50 p-4 rounded-xl border border-white/10",
+            children: [
+              e.jsxs("div", {
+                className: "flex items-center justify-between mb-3",
+                children: [
+                  e.jsxs("label", {
+                    className: "text-[10px] font-black text-gray-400 uppercase tracking-wide",
+                    children: ["Parallel Branches (", f, ")"],
+                  }),
+                  e.jsxs("div", {
+                    className: "flex gap-2",
+                    children: [
+                      e.jsx("button", {
+                        onClick: () => f < 5 && g([...i, 10]),
+                        disabled: f >= 5,
+                        className:
+                          "px-2 py-1 bg-emerald-500/20 text-emerald-400 rounded-lg text-xs font-bold disabled:opacity-30 transition-all",
+                        children: "+ Add Branch",
+                      }),
+                      e.jsx("button", {
+                        onClick: () => f > 1 && g(i.slice(0, -1)),
+                        disabled: f <= 1,
+                        className:
+                          "px-2 py-1 bg-rose-500/20 text-rose-400 rounded-lg text-xs font-bold disabled:opacity-30 transition-all",
+                        children: "- Remove Branch",
+                      }),
+                    ],
+                  }),
+                ],
+              }),
+              e.jsx("div", {
+                className: "grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2",
+                children: i.map((l, r) =>
+                  e.jsxs(
+                    "div",
+                    {
+                      className: "flex items-center gap-3 bg-white/5 p-2 rounded-lg",
+                      children: [
+                        e.jsxs("span", { className: "text-xs font-black text-sky-400 w-6", children: ["R", r + 1] }),
+                        e.jsx("input", {
+                          type: "range",
+                          min: 1,
+                          max: 30,
+                          step: 1,
+                          value: l,
+                          onChange: (t) => g(i.map((n, a) => (a === r ? Number(t.target.value) : n))),
+                          className: "flex-1 h-1.5 rounded-full appearance-none bg-slate-700 accent-fuchsia-500",
+                        }),
+                        e.jsxs("span", {
+                          className: "text-xs font-black text-fuchsia-400 w-10 text-right",
+                          children: [l, " Ω"],
+                        }),
+                      ],
+                    },
+                    r,
+                  ),
+                ),
+              }),
+            ],
+          }),
+        ],
+      }),
+      e.jsx("div", {
+        className:
+          "relative rounded-2xl overflow-hidden shadow-2xl border border-white/10 bg-gradient-to-b from-[#020617] to-[#0f172a] touch-none mb-4 w-full",
+        style: { height: Math.max(350, S) },
+        children: e.jsxs("svg", {
+          viewBox: `-10 -10 420 ${S}`,
+          className: "w-full h-full absolute inset-0",
+          preserveAspectRatio: "xMidYMid meet",
+          children: [
+            e.jsx("path", { d: N, fill: "none", stroke: "#334155", strokeWidth: "4" }),
+            e.jsx("path", { d: M, fill: "none", stroke: "#334155", strokeWidth: "4" }),
+            s &&
+              p > 0 &&
+              e.jsxs(e.Fragment, {
+                children: [
+                  e.jsx("path", {
+                    d: N,
+                    fill: "none",
+                    stroke: "#38bdf8",
+                    strokeWidth: "2",
+                    strokeDasharray: "6 12",
+                    strokeDashoffset: c * Math.min(5, p),
+                  }),
+                  e.jsx("path", {
+                    d: M,
+                    fill: "none",
+                    stroke: "#38bdf8",
+                    strokeWidth: "2",
+                    strokeDasharray: "6 12",
+                    strokeDashoffset: c * Math.min(5, p),
+                  }),
+                ],
+              }),
+            e.jsx("rect", { x: 80, y: 30, width: 40, height: 20, fill: "#0f172a" }),
+            e.jsx("circle", { cx: 85, cy: 40, r: 4, fill: "#94a3b8" }),
+            e.jsx("circle", { cx: 115, cy: 40, r: 4, fill: "#94a3b8" }),
+            e.jsx("line", {
+              x1: 85,
+              y1: 40,
+              x2: 115,
+              y2: s ? 40 : 25,
+              stroke: s ? "#10b981" : "#cbd5e1",
+              strokeWidth: "4",
+              strokeLinecap: "round",
+              className: "transition-all duration-200",
+            }),
+            e.jsx("rect", { x: 20, y: 160, width: 60, height: 60, fill: "#0f172a" }),
+            e.jsx("rect", {
+              x: 25,
+              y: 170,
+              width: 50,
+              height: 40,
+              fill: "#1e293b",
+              stroke: "#64748b",
+              strokeWidth: "2",
+              rx: "4",
+            }),
+            e.jsx("rect", { x: 40, y: 165, width: 20, height: 5, fill: "#64748b" }),
+            e.jsxs("text", {
+              x: 50,
+              y: 195,
+              fill: "#fff",
+              fontSize: "14",
+              textAnchor: "middle",
+              fontWeight: "bold",
+              children: [o, "V"],
+            }),
+            e.jsx("text", {
+              x: 50,
+              y: 160,
+              fill: "#ef4444",
+              fontSize: "14",
+              textAnchor: "middle",
+              fontWeight: "bold",
+              children: "+",
+            }),
+            e.jsx("text", {
+              x: 50,
+              y: 225,
+              fill: "#3b82f6",
+              fontSize: "14",
+              textAnchor: "middle",
+              fontWeight: "bold",
+              children: "-",
+            }),
+            e.jsx("rect", { x: 180, y: b - 20, width: 40, height: 40, fill: "#0f172a" }),
+            e.jsx("circle", { cx: 200, cy: b, r: 18, fill: "#1e293b", stroke: "#38bdf8", strokeWidth: "2" }),
+            e.jsx("text", {
+              x: 200,
+              y: b + 5,
+              fill: "#fff",
+              fontSize: "14",
+              textAnchor: "middle",
+              fontWeight: "bold",
+              children: "A",
+            }),
+            e.jsx("rect", { x: 175, y: b + 20, width: 50, height: 16, fill: "#020617", rx: "4" }),
+            e.jsxs("text", {
+              x: 200,
+              y: b + 31,
+              fill: "#38bdf8",
+              fontSize: "9",
+              textAnchor: "middle",
+              children: [p.toFixed(2), " A"],
+            }),
+            i.map((l, r) => {
+              const t = k + r * y,
+                n = s ? o / l : 0,
+                a = m(n),
+                L = Math.min(10, n),
+                x = s && n > 0.5 ? `drop-shadow(0 0 ${Math.min(10, n * 2)}px rgb(239, 68, 68))` : "none";
+              return e.jsxs(
+                "g",
+                {
+                  children: [
+                    e.jsx("path", { d: `M 150 ${t} L 350 ${t}`, fill: "none", stroke: "#334155", strokeWidth: "4" }),
+                    s &&
+                      n > 0 &&
+                      e.jsx("path", {
+                        d: `M 150 ${t} L 350 ${t}`,
+                        fill: "none",
+                        stroke: "#a855f7",
+                        strokeWidth: "2",
+                        strokeDasharray: "6 12",
+                        strokeDashoffset: c * L,
+                      }),
+                    e.jsx("rect", { x: 260, y: t - 15, width: 50, height: 30, fill: "#0f172a" }),
+                    e.jsx("path", {
+                      d: `M 260 ${t} L 265 ${t - 10} L 275 ${t + 10} L 285 ${t - 10} L 295 ${t + 10} L 305 ${t - 10} L 310 ${t}`,
+                      fill: "none",
+                      stroke: a,
+                      strokeWidth: "3",
+                      strokeLinejoin: "round",
+                      style: { filter: x, transition: "stroke 0.3s, filter 0.3s" },
+                    }),
+                    e.jsxs("text", {
+                      x: 315,
+                      y: t + 4,
+                      fill: "#f59e0b",
+                      fontSize: "12",
+                      fontWeight: "bold",
+                      children: [l, " Ω"],
+                    }),
+                    e.jsx("rect", { x: 175, y: t - 15, width: 30, height: 30, fill: "#0f172a" }),
+                    e.jsx("circle", { cx: 190, cy: t, r: 14, fill: "#1e293b", stroke: "#a855f7", strokeWidth: "1.5" }),
+                    e.jsx("text", {
+                      x: 190,
+                      y: t + 4,
+                      fill: "#fff",
+                      fontSize: "10",
+                      textAnchor: "middle",
+                      fontWeight: "bold",
+                      children: "A",
+                    }),
+                    e.jsxs("text", {
+                      x: 190,
+                      y: t + 24,
+                      fill: "#a855f7",
+                      fontSize: "9",
+                      textAnchor: "middle",
+                      children: [n.toFixed(2), " A"],
+                    }),
+                    e.jsx("path", {
+                      d: `M 260 ${t - 2} L 260 ${t - 25} L 310 ${t - 25} L 310 ${t - 2}`,
+                      fill: "none",
+                      stroke: "#334155",
+                      strokeWidth: "2",
+                    }),
+                    s &&
+                      e.jsx("path", {
+                        d: `M 260 ${t - 2} L 260 ${t - 25} L 310 ${t - 25} L 310 ${t - 2}`,
+                        fill: "none",
+                        stroke: "rgba(16, 185, 129, 0.4)",
+                        strokeWidth: "1",
+                      }),
+                    e.jsx("rect", { x: 275, y: t - 35, width: 20, height: 20, fill: "#0f172a" }),
+                    e.jsx("circle", {
+                      cx: 285,
+                      cy: t - 25,
+                      r: 10,
+                      fill: "#1e293b",
+                      stroke: "#10b981",
+                      strokeWidth: "1",
+                    }),
+                    e.jsx("text", {
+                      x: 285,
+                      y: t - 22,
+                      fill: "#10b981",
+                      fontSize: "8",
+                      textAnchor: "middle",
+                      fontWeight: "bold",
+                      children: "V",
+                    }),
+                    e.jsxs("text", {
+                      x: 285,
+                      y: t - 38,
+                      fill: "#10b981",
+                      fontSize: "8",
+                      textAnchor: "middle",
+                      children: [s ? o.toFixed(1) : "0.0", "V"],
+                    }),
+                  ],
+                },
+                r,
+              );
+            }),
+          ],
+        }),
+      }),
+      e.jsx("div", {
+        className: "w-full bg-slate-900 border border-fuchsia-500/30 p-3 mb-4 rounded-xl shadow-lg text-center",
+        children: e.jsx("p", {
+          className: "text-sm font-bold text-fuchsia-100 leading-relaxed",
+          children: s
+            ? `Voltage is perfectly equal across all branches (${o}V). Total Current (${p.toFixed(2)}A) splits dynamically based on each branch's resistance.`
+            : "Turn ON the circuit to observe parallel current division.",
+        }),
+      }),
+    ],
+  });
+}
+function J() {
+  const [s, j] = h.useState(2),
+    [o, v] = h.useState(5),
+    [i, g] = h.useState(60),
+    c = s * s * o * i,
+    u = Math.min(255, 30 + c / 200),
+    d = `rgba(${Math.min(255, u)},${Math.max(0, 255 - u)},0,1)`;
+  return e.jsxs(A, {
+    hint: "Joule's Law: Heat H = I²Rt. Doubling current quadruples heat produced.",
+    children: [
+      e.jsx($, { label: "Current", value: s, onChange: j, min: 0.5, max: 6, step: 0.5, unit: " A", color: "#dc2626" }),
+      e.jsx($, { label: "Resistance", value: o, onChange: v, min: 1, max: 20, step: 1, unit: " Ω", color: "#f59e0b" }),
+      e.jsx($, { label: "Time", value: i, onChange: g, min: 10, max: 300, step: 10, unit: " s", color: "#3b82f6" }),
+      e.jsx("div", {
+        className: "my-3 flex items-center justify-center bg-gray-900 rounded-xl py-6",
+        children: e.jsx("div", {
+          className: "h-3 w-48 rounded-full transition-colors",
+          style: { background: d, boxShadow: `0 0 ${Math.min(40, u / 8)}px ${d}` },
+        }),
+      }),
+      e.jsx(w, { label: "Heat Produced", value: c, unit: "J", color: "#dc2626", precision: 0 }),
+    ],
+  });
+}
+export { J as HeatingEffectSim, Y as OhmsLawSim, q as ParallelCircuitSim, _ as SeriesCircuitSim };

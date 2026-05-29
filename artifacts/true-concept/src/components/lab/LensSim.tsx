@@ -64,16 +64,16 @@ export default function LensSim() {
     ctx.beginPath();
     ctx.moveTo(objX, cy);
     ctx.lineTo(objX, cy - objH);
-    ctx.strokeStyle = "#a78bfa";
+    ctx.strokeStyle = "#f5a584";
     ctx.lineWidth = 2.5;
     ctx.stroke();
     ctx.beginPath();
     ctx.moveTo(objX - 6, cy - objH + 10);
     ctx.lineTo(objX, cy - objH);
     ctx.lineTo(objX + 6, cy - objH + 10);
-    ctx.strokeStyle = "#a78bfa";
+    ctx.strokeStyle = "#f5a584";
     ctx.stroke();
-    ctx.fillStyle = "#a78bfa";
+    ctx.fillStyle = "#f5a584";
     ctx.font = "12px Inter";
     ctx.fillText("Object", objX - 15, cy - objH - 8);
 
@@ -99,7 +99,6 @@ export default function LensSim() {
         ctx.stroke();
         ctx.fillStyle = "#34d399";
         ctx.font = "11px Inter";
-        const label = imgH < 0 ? "Image\n(Real, Inverted)" : "Image\n(Virtual, Erect)";
         ctx.fillText(imgH < 0 ? "Image (Real)" : "Image (Virtual)", imgX - 20, cy - imgH - 8);
 
         // Ray from top of object parallel then through F
@@ -143,7 +142,7 @@ export default function LensSim() {
           data-testid="slider-distance"
         />
         <p className="text-xs text-muted-foreground mt-2 text-center">
-          Lens Formula: 1/f = 1/v - 1/u · Move slider to change object position
+          Lens Formula: 1/f = 1/v + 1/u · Move slider to change object position
         </p>
       </div>
     </div>

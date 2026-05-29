@@ -1,3 +1,5 @@
+import { tryMockApiRequest } from "./mock-api";
+
 export type CustomFetchOptions = RequestInit & {
   responseType?: "json" | "text" | "blob" | "auto";
 };
@@ -76,6 +78,16 @@ function resolveUrl(input: RequestInfo | URL): string {
   if (typeof input === "string") return input;
   if (isUrl(input)) return input.toString();
   return input.url;
+}
+
+function isApiRequestUrl(url: string): boolean {
+  if (url.startsWith("/api/")) return true;
+
+  try {
+    return new URL(url).pathname.startsWith("/api/");
+  } catch {
+    return false;
+  }
 }
 
 function mergeHeaders(...sources: Array<HeadersInit | undefined>): Headers {
@@ -282,9 +294,16 @@ async function parseErrorBody(response: Response, method: string): Promise<unkno
   return raw;
 }
 
-function inferResponseType(response: Response): "json" | "text" | "blob" {
+function inferResponseType(
+  response: Response,
+  requestInfo: { method: string; url: string },
+): "json" | "text" | "blob" {
   const mediaType = getMediaType(response.headers);
 
+  // Workspace API endpoints are contract-first JSON endpoints. If an `/api/*`
+  // request comes back as HTML or plain text, that's usually a proxy/backend
+  // problem and should fail loudly instead of being treated as valid data.
+  if (isApiRequestUrl(requestInfo.url)) return "json";
   if (isJsonMediaType(mediaType)) return "json";
   if (isTextMediaType(mediaType) || mediaType == null) return "text";
   return "blob";
@@ -300,7 +319,7 @@ async function parseSuccessBody(
   }
 
   const effectiveType =
-    responseType === "auto" ? inferResponseType(response) : responseType;
+    responseType === "auto" ? inferResponseType(response, requestInfo) : responseType;
 
   switch (effectiveType) {
     case "json":
@@ -345,7 +364,7 @@ export async function customFetch<T = unknown>(
     headers.set("content-type", "application/json");
   }
 
-  if (responseType === "json" && !headers.has("accept")) {
+  if ((responseType === "json" || isApiRequestUrl(resolveUrl(input))) && !headers.has("accept")) {
     headers.set("accept", DEFAULT_JSON_ACCEPT);
   }
 
@@ -360,12 +379,43 @@ export async function customFetch<T = unknown>(
 
   const requestInfo = { method, url: resolveUrl(input) };
 
-  const response = await fetch(input, { ...init, method, headers });
+  const tryMock = (): T | undefined => {
+    const mockData = tryMockApiRequest(requestInfo.url, method, {
+      ...init,
+      method,
+      headers,
+    });
+    return mockData as T | undefined;
+  };
+
+  let response: Response;
+
+  try {
+    response = await fetch(input, { ...init, method, headers });
+  } catch (error) {
+    const mockData = tryMock();
+    if (mockData !== undefined) {
+      return mockData;
+    }
+    throw error;
+  }
 
   if (!response.ok) {
+    const mockData = tryMock();
+    if (mockData !== undefined) {
+      return mockData;
+    }
     const errorData = await parseErrorBody(response, method);
     throw new ApiError(response, errorData, requestInfo);
   }
 
-  return (await parseSuccessBody(response, responseType, requestInfo)) as T;
+  try {
+    return (await parseSuccessBody(response, responseType, requestInfo)) as T;
+  } catch (error) {
+    const mockData = tryMock();
+    if (mockData !== undefined) {
+      return mockData;
+    }
+    throw error;
+  }
 }

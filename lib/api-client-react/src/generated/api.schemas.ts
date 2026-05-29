@@ -22,7 +22,7 @@ export const UserRole = {
 } as const;
 
 export interface User {
-  id: number;
+  id: string;
   username: string;
   role: UserRole;
   name: string;
@@ -34,7 +34,7 @@ export interface LoginResponse {
 }
 
 export interface Subject {
-  id: number;
+  id: string;
   name: string;
   description: string;
   icon: string;
@@ -51,9 +51,17 @@ export interface CreateSubjectBody {
   color: string;
 }
 
+export type ChapterMedium = (typeof ChapterMedium)[keyof typeof ChapterMedium];
+
+export const ChapterMedium = {
+  English: "English",
+  Assamese: "Assamese",
+  Both: "Both",
+} as const;
+
 export interface Chapter {
-  id: number;
-  subjectId: number;
+  id: string;
+  subjectId: string;
   subjectName?: string;
   classLevel: string;
   title: string;
@@ -63,6 +71,7 @@ export interface Chapter {
   hasMcqs: boolean;
   hasQa: boolean;
   hasVideo: boolean;
+  medium?: ChapterMedium;
 }
 
 export type CreateChapterBodyClassLevel =
@@ -74,7 +83,7 @@ export const CreateChapterBodyClassLevel = {
 } as const;
 
 export interface CreateChapterBody {
-  subjectId: number;
+  subjectId: string;
   classLevel: CreateChapterBodyClassLevel;
   title: string;
   chapterNumber: number;
@@ -90,8 +99,8 @@ export const NoteType = {
 } as const;
 
 export interface Note {
-  id: number;
-  chapterId: number;
+  id: string;
+  chapterId: string;
   title: string;
   content: string;
   type: NoteType;
@@ -109,7 +118,7 @@ export const CreateNoteBodyType = {
 } as const;
 
 export interface CreateNoteBody {
-  chapterId: number;
+  chapterId: string;
   title: string;
   content: string;
   type: CreateNoteBodyType;
@@ -118,53 +127,59 @@ export interface CreateNoteBody {
 }
 
 export interface Mcq {
-  id: number;
-  chapterId: number;
+  id: string;
+  chapterId: string;
   question: string;
   options: string[];
   correctIndex: number;
   explanation: string;
   order: number;
+  /** Set grouping inside a chapter. Defaults to 1 when missing on legacy docs. */
+  setNumber?: number;
 }
 
 export interface CreateMcqBody {
-  chapterId: number;
+  chapterId: string;
   question: string;
   options: string[];
   correctIndex: number;
   explanation: string;
   order: number;
+  /** Set grouping inside a chapter. Defaults to 1 when omitted. */
+  setNumber?: number;
 }
 
 export interface QaItem {
-  id: number;
-  chapterId: number;
+  id: string;
+  chapterId: string;
   question: string;
   answer: string;
   explanation: string;
   isImportant: boolean;
+  youtubeId?: string | null;
   order: number;
 }
 
 export interface CreateQaBody {
-  chapterId: number;
+  chapterId: string;
   question: string;
   answer: string;
   explanation: string;
   isImportant: boolean;
+  youtubeId?: string | null;
   order: number;
 }
 
 export interface Video {
-  id: number;
-  chapterId: number;
+  id: string;
+  chapterId: string;
   youtubeId: string;
   title: string;
   description: string;
 }
 
 export interface CreateVideoBody {
-  chapterId: number;
+  chapterId: string;
   youtubeId: string;
   title: string;
   description: string;
@@ -225,7 +240,7 @@ export const ExperimentDifficulty = {
 } as const;
 
 export interface Experiment {
-  id: number;
+  id: string;
   subject: ExperimentSubject;
   classLevel: string;
   title: string;
@@ -322,9 +337,9 @@ export interface CreateExperimentBody {
 }
 
 export interface Progress {
-  id: number;
-  userId: number;
-  chapterId: number;
+  id: string;
+  userId: string;
+  chapterId: string;
   chapterTitle: string;
   subjectName: string;
   mcqScore?: number;
@@ -334,17 +349,17 @@ export interface Progress {
 }
 
 export interface SaveMcqScoreBody {
-  chapterId: number;
+  chapterId: string;
   score: number;
   total: number;
 }
 
 export interface MarkChapterBody {
-  chapterId: number;
+  chapterId: string;
 }
 
 export type DashboardSummarySubjectProgressItem = {
-  subjectId: number;
+  subjectId: string;
   subjectName: string;
   chaptersTotal: number;
   chaptersVisited: number;
@@ -365,24 +380,24 @@ export interface SearchResults {
 }
 
 export type GetChaptersParams = {
-  subjectId?: number;
+  subjectId?: string;
   classLevel?: string;
 };
 
 export type GetNotesParams = {
-  chapterId: number;
+  chapterId: string;
 };
 
 export type GetMcqsParams = {
-  chapterId: number;
+  chapterId: string;
 };
 
 export type GetQaParams = {
-  chapterId: number;
+  chapterId: string;
 };
 
 export type GetVideosParams = {
-  chapterId: number;
+  chapterId: string;
 };
 
 export type GetExperimentsParams = {

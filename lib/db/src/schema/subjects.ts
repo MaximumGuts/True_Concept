@@ -1,17 +1,17 @@
-import { pgTable, text, serial, timestamp } from "drizzle-orm/pg-core";
-import { createInsertSchema } from "drizzle-zod";
-import { z } from "zod/v4";
+import { z } from "zod";
 
-export const subjectsTable = pgTable("subjects", {
-  id: serial("id").primaryKey(),
-  name: text("name").notNull(),
-  description: text("description").notNull(),
-  icon: text("icon").notNull().default("BookOpen"),
-  classLevels: text("class_levels").array().notNull(),
-  color: text("color").notNull().default("#1e3a8a"),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+export const insertSubjectSchema = z.object({
+  name: z.string(),
+  description: z.string(),
+  icon: z.string().default("BookOpen"),
+  classLevels: z.array(z.string()),
+  color: z.string().default("#1e3a8a"),
 });
 
-export const insertSubjectSchema = createInsertSchema(subjectsTable).omit({ id: true, createdAt: true });
+export const subjectSchema = insertSubjectSchema.extend({
+  id: z.string(),
+  createdAt: z.date().default(() => new Date()),
+});
+
 export type InsertSubject = z.infer<typeof insertSubjectSchema>;
-export type Subject = typeof subjectsTable.$inferSelect;
+export type Subject = z.infer<typeof subjectSchema>;

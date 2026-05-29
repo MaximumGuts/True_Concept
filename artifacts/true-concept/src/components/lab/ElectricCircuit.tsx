@@ -81,7 +81,7 @@ export default function ElectricCircuitSim() {
 
         {switchOn && (
           <div className="mt-3 bg-[hsl(45,93%,47%)]/10 rounded-lg px-4 py-2 text-center">
-            <p className="text-amber-600 text-sm font-medium">Circuit closed — Current flowing!</p>
+            <p className="text-amber-600 dark:text-amber-400 text-sm font-medium">Circuit closed — Current flowing!</p>
             <p className="text-xs text-muted-foreground mt-0.5">V=6V, R=10Ω, I = V/R = 0.6 A (Ohm's Law)</p>
           </div>
         )}

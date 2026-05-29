@@ -1,0 +1,20 @@
+ext {
+    // Bumped from 22 → 23 because play-services-ads:24.7.0 (pulled by AdMob
+    // plugin) requires minSdk 23. Real-world impact: nil — Android 5.1 share
+    // is well under 0.1% globally and zero in India.
+    minSdkVersion = 23
+    // Bumped to 35 because @capacitor-community/admob pulls androidx.core:1.15.0
+    // which requires compileSdk >= 35. targetSdk stays at 34 to keep runtime
+    // behaviour unchanged (Google Play allows targetSdk 34 through Aug 2026).
+    compileSdkVersion = 35
+    targetSdkVersion = 34
+    androidxActivityVersion = '1.8.0'
+    androidxAppCompatVersion = '1.6.1'
+    androidxCoordinatorLayoutVersion = '1.2.0'
+    androidxCoreVersion = '1.15.0'
+    androidxFragmentVersion = '1.6.2'
+    coreSplashScreenVersion = '1.0.1'
+    junitVersion = '4.13.2'
+    androidxJunitVersion = '1.1.5'
+    androidxEspressoCoreVersion = '3.5.1'
+}

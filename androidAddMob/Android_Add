@@ -1,0 +1,1129 @@
+# TRUE CONCEPT — AdMob Integration Guide (Beginner-Friendly)
+
+> Complete step-by-step guide to add Google AdMob ads to your TRUE CONCEPT Android APK.
+> Earn money from your app to cover hosting costs and beyond.
+> Total time: 2–3 hours for first-time setup + 1–2 weeks waiting for first ads to show.
+
+---
+
+## Table of Contents
+
+1. [Understanding AdMob](#1-understanding-admob)
+2. [Create AdMob Account](#2-create-admob-account)
+3. [Add Your App to AdMob](#3-add-your-app-to-admob)
+4. [Create Ad Units](#4-create-ad-units)
+5. [Install the Capacitor AdMob Plugin](#5-install-the-capacitor-admob-plugin)
+6. [Configure Android Files](#6-configure-android-files)
+7. [Initialize AdMob in Your React App](#7-initialize-admob-in-your-react-app)
+8. [Add Banner Ads](#8-add-banner-ads)
+9. [Add Interstitial Ads](#9-add-interstitial-ads-between-screens)
+10. [Add Rewarded Ads](#10-add-rewarded-ads-watch-ad-for-bonus)
+11. [Where to Place Ads in TRUE CONCEPT](#11-where-to-place-ads-in-true-concept)
+12. [Testing With Test Ad IDs](#12-testing-with-test-ad-ids)
+13. [Switching to Real Ads (Going Live)](#13-switching-to-real-ads-going-live)
+14. [Setup Payment (UPI / Bank)](#14-setup-payment-upi--bank)
+15. [AdMob Policies — Don't Get Banned](#15-admob-policies--dont-get-banned)
+16. [Monitor Earnings](#16-monitor-earnings)
+17. [Common Problems & Fixes](#17-common-problems--fixes)
+
+---
+
+## 1. Understanding AdMob
+
+### What is AdMob?
+
+AdMob is Google's ad network for mobile apps. You display ads in your app → advertisers pay Google → Google pays you (after taking a cut).
+
+### How You Get Paid
+
+```
+Advertiser pays Google for ad slots
+           ↓
+Google shows their ad in your app
+           ↓
+Each view (impression) earns you fractions of a rupee
+           ↓
+Earnings accumulate in your AdMob account
+           ↓
+When balance crosses ₹100, Google pays you on the 21st of next month
+```
+
+### The 4 Ad Formats You Can Use
+
+| Format | What It Looks Like | When to Show | Earnings (India eCPM) |
+|---|---|---|---|
+| **Banner** | Small rectangle at bottom/top of screen | Always visible while user uses app | ₹25–₹85 per 1000 views |
+| **Interstitial** | Full-screen ad covering entire app | Between activities (after MCQ, after experiment) | ₹85–₹250 per 1000 views |
+| **Rewarded** | Full-screen video, user watches voluntarily | When user wants a bonus (extra hint, unlock content) | ₹400–₹850 per 1000 completed views |
+| **Native** | Ad styled like your normal app content | Inside lists (between chapter cards) | ₹40–₹170 per 1000 views |
+
+> "eCPM" = effective revenue per 1000 impressions. India has lower eCPM than US/EU, but volume can make up for it.
+
+### Key Concept: Ads Only Show in the APK, Not the Web
+
+Capacitor AdMob plugin only works on Android (and iOS). Your `vercel.app` website will still be ad-free — the plugin is a no-op in browsers.
+
+---
+
+## 2. Create AdMob Account
+
+### Step 2.1 — Sign up
+
+1. Go to https://admob.google.com
+2. Click **Get started**
+3. Sign in with your Gmail account (use the same one as your Google Play account)
+
+### Step 2.2 — Fill in account info
+
+You'll be asked:
+- **Country/region:** India
+- **Time zone:** (GMT+05:30) Asia/Kolkata
+- **Billing currency:** Indian Rupee (INR) ✅ — this means earnings show in ₹ but Google still pays in USD converted
+  - Actually, some people select USD for cleaner reporting. Either works.
+- **Email preferences:** check the boxes you want
+- Accept the **AdMob Terms of Service**
+
+### Step 2.3 — Verify your email
+
+Google will send a verification email. Click the link.
+
+### Step 2.4 — Skip "Connect to Firebase" for now
+
+You'll see a prompt to link AdMob to Firebase. **Skip this for now** — you can do it later. (You don't need it for basic ad serving.)
+
+You're now in the AdMob dashboard. ✅
+
+---
+
+## 3. Add Your App to AdMob
+
+### Step 3.1 — Create the app entry
+
+1. In AdMob dashboard, click **Apps** (left sidebar) → **Add app**
+2. **Have you published your app?**
+   - If your app is already on the Play Store: click **Yes** → search and select your app
+   - If not yet published: click **No** → continue
+3. **Platform:** Android
+4. **App name:** `TRUE CONCEPT`
+5. Click **Add app**
+
+### Step 3.2 — Copy your AdMob App ID
+
+You'll see a screen showing your **App ID**:
+
+```
+ca-app-pub-1234567890123456~1234567890
+```
+
+> Note the `~` (tilde) in the App ID. This is different from the `/` in Ad Unit IDs (next step).
+
+**Copy this and save it in a Notepad file.** You'll need it in Step 6.
+
+### Step 3.3 — Don't click "Done" yet
+
+After copying the App ID, you'll be prompted to add Ad Units. Continue to Step 4 to create them.
+
+---
+
+## 4. Create Ad Units
+
+You need to create one ad unit per ad type you want to use. Let's create three: Banner, Interstitial, and Rewarded.
+
+### Step 4.1 — Create a Banner ad unit
+
+1. Click **Add ad unit**
+2. Select **Banner**
+3. Fill in:
+   - **Ad unit name:** `Banner — Bottom`
+   - **Advanced settings:** leave defaults
+4. Click **Create ad unit**
+5. **Copy the Ad Unit ID** — looks like:
+   ```
+   ca-app-pub-1234567890123456/1111111111
+   ```
+   > Note the `/` (slash) in Ad Unit IDs. App IDs use `~`.
+6. Save it in your Notepad as `BANNER_AD_UNIT_ID`
+
+### Step 4.2 — Create an Interstitial ad unit
+
+1. Click **Add ad unit** again
+2. Select **Interstitial**
+3. Fill in:
+   - **Ad unit name:** `Interstitial — Between Activities`
+4. Click **Create ad unit**
+5. Copy the Ad Unit ID, save as `INTERSTITIAL_AD_UNIT_ID`
+
+### Step 4.3 — Create a Rewarded ad unit
+
+1. Click **Add ad unit**
+2. Select **Rewarded**
+3. Fill in:
+   - **Ad unit name:** `Rewarded — Bonus Hints`
+   - **Reward amount:** `1`
+   - **Reward item:** `Hint`
+4. Click **Create ad unit**
+5. Copy the Ad Unit ID, save as `REWARDED_AD_UNIT_ID`
+
+### Step 4.4 — Your Notepad should now contain
+
+```
+ADMOB_APP_ID         = ca-app-pub-1234567890123456~1234567890
+BANNER_AD_UNIT_ID    = ca-app-pub-1234567890123456/1111111111
+INTERSTITIAL_AD_UNIT_ID = ca-app-pub-1234567890123456/2222222222
+REWARDED_AD_UNIT_ID  = ca-app-pub-1234567890123456/3333333333
+```
+
+Keep this Notepad file safe — you'll need these throughout the integration.
+
+> **Important:** Newly created ad units take **up to 1 hour** to become active. You can move on to the next steps while waiting.
+
+---
+
+## 5. Install the Capacitor AdMob Plugin
+
+### Step 5.1 — Install the package
+
+Open PowerShell:
+
+```powershell
+cd c:\Users\ASUS\Desktop\Web-App-Assets\artifacts\true-concept
+pnpm add @capacitor-community/admob
+```
+
+This installs the AdMob plugin in your frontend project.
+
+### Step 5.2 — Sync to Android
+
+```powershell
+cd c:\Users\ASUS\Desktop\Web-App-Assets\mobile
+npx cap sync android
+```
+
+This adds the AdMob native code to your Android project.
+
+### Step 5.3 — Verify the install
+
+Check that `mobile/node_modules/@capacitor-community/admob` exists. If yes, the install worked.
+
+---
+
+## 6. Configure Android Files
+
+You need to tell Android about your AdMob App ID so ads can load.
+
+### Step 6.1 — Edit `AndroidManifest.xml`
+
+Open the file:
+```
+c:\Users\ASUS\Desktop\Web-App-Assets\mobile\android\app\src\main\AndroidManifest.xml
+```
+
+Inside the `<application>` tag (anywhere before `</application>`), add this `<meta-data>` block — **paste your real App ID** in the `android:value`:
+
+```xml
+<application
+    android:allowBackup="true"
+    ...>
+
+    <!-- ⬇️ ADD THIS — your AdMob App ID from Step 3.2 ⬇️ -->
+    <meta-data
+        android:name="com.google.android.gms.ads.APPLICATION_ID"
+        android:value="ca-app-pub-1234567890123456~1234567890"/>
+
+    <!-- existing activities, providers etc. -->
+    <activity ... />
+
+</application>
+```
+
+> If you forget this step, your app will **crash on startup** when it tries to load AdMob. Don't skip.
+
+### Step 6.2 — Add internet permission (probably already there)
+
+Check that this line exists somewhere in `AndroidManifest.xml` (above the `<application>` tag):
+
+```xml
+<uses-permission android:name="android.permission.INTERNET" />
+```
+
+If it's missing, add it. (It's almost certainly already there since the app calls APIs.)
+
+### Step 6.3 — Save and sync again
+
+```powershell
+cd c:\Users\ASUS\Desktop\Web-App-Assets\mobile
+npx cap sync android
+```
+
+---
+
+## 7. Initialize AdMob in Your React App
+
+### Step 7.1 — Create a helper file
+
+Create a new file:
+```
+c:\Users\ASUS\Desktop\Web-App-Assets\artifacts\true-concept\src\lib\admob.ts
+```
+
+Paste this content:
+
+```typescript
+import { AdMob, BannerAdSize, BannerAdPosition, AdmobConsentStatus } from "@capacitor-community/admob";
+
+// ── Ad Unit IDs ─────────────────────────────────────────────────────────────
+// During development, use Google's official test IDs (always safe to use, never get banned)
+// Switch to real IDs only when ready to publish (see Step 13)
+
+const IS_TESTING = true;  // ← change to false when going live
+
+// Test IDs (Google's official test ad units — always show test ads)
+const TEST_BANNER_ID      = "ca-app-pub-3940256099942544/6300978111";
+const TEST_INTERSTITIAL_ID = "ca-app-pub-3940256099942544/1033173712";
+const TEST_REWARDED_ID    = "ca-app-pub-3940256099942544/5224354917";
+
+// Your real IDs from AdMob dashboard (Step 4)
+const REAL_BANNER_ID      = "ca-app-pub-XXXXXXXXXXXXXXXX/1111111111";
+const REAL_INTERSTITIAL_ID = "ca-app-pub-XXXXXXXXXXXXXXXX/2222222222";
+const REAL_REWARDED_ID    = "ca-app-pub-XXXXXXXXXXXXXXXX/3333333333";
+
+export const BANNER_ID      = IS_TESTING ? TEST_BANNER_ID      : REAL_BANNER_ID;
+export const INTERSTITIAL_ID = IS_TESTING ? TEST_INTERSTITIAL_ID : REAL_INTERSTITIAL_ID;
+export const REWARDED_ID    = IS_TESTING ? TEST_REWARDED_ID    : REAL_REWARDED_ID;
+
+// ── Initialization ──────────────────────────────────────────────────────────
+
+let initialized = false;
+
+export async function initAdMob() {
+  // Skip on web — AdMob only works on native platforms
+  if (!(window as any).Capacitor?.isNativePlatform?.()) return;
+  if (initialized) return;
+
+  try {
+    // Check user consent (required for users in EU/UK — safe to call everywhere)
+    const consentInfo = await AdMob.requestConsentInfo();
+    if (
+      consentInfo.isConsentFormAvailable &&
+      consentInfo.status === AdmobConsentStatus.REQUIRED
+    ) {
+      await AdMob.showConsentForm();
+    }
+
+    // Initialize AdMob
+    await AdMob.initialize({
+      testingDevices: [],   // empty = all devices treat as production (use test IDs above for safety)
+      initializeForTesting: IS_TESTING,
+    });
+
+    initialized = true;
+    console.info("[AdMob] Initialized");
+  } catch (err) {
+    console.error("[AdMob] Init failed", err);
+  }
+}
+
+// ── Banner Ad ───────────────────────────────────────────────────────────────
+
+export async function showBanner() {
+  if (!(window as any).Capacitor?.isNativePlatform?.()) return;
+  try {
+    await AdMob.showBanner({
+      adId: BANNER_ID,
+      adSize: BannerAdSize.ADAPTIVE_BANNER,
+      position: BannerAdPosition.BOTTOM_CENTER,
+      margin: 0,
+    });
+  } catch (err) {
+    console.error("[AdMob] Banner failed", err);
+  }
+}
+
+export async function hideBanner() {
+  if (!(window as any).Capacitor?.isNativePlatform?.()) return;
+  try {
+    await AdMob.hideBanner();
+  } catch (err) {
+    console.error("[AdMob] Hide banner failed", err);
+  }
+}
+
+// ── Interstitial Ad ─────────────────────────────────────────────────────────
+
+export async function showInterstitial() {
+  if (!(window as any).Capacitor?.isNativePlatform?.()) return;
+  try {
+    // Race ad loading vs 5 sec timeout — if ad takes too long, skip it
+    // (prevents long ad delays on slow networks)
+    await Promise.race([
+      AdMob.prepareInterstitial({ adId: INTERSTITIAL_ID }),
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("Ad load timeout")), 5000)
+      ),
+    ]);
+    await AdMob.showInterstitial();
+  } catch (err) {
+    console.warn("[AdMob] Skipped slow ad:", err);
+    // Silently skip — student isn't blocked, app continues normally
+  }
+}
+
+// ── Rewarded Ad ─────────────────────────────────────────────────────────────
+
+export async function showRewarded(): Promise<boolean> {
+  if (!(window as any).Capacitor?.isNativePlatform?.()) return false;
+  try {
+    await AdMob.prepareRewardVideoAd({ adId: REWARDED_ID });
+    const result = await AdMob.showRewardVideoAd();
+    // result is the reward earned — non-null means user watched fully
+    return !!result;
+  } catch (err) {
+    console.error("[AdMob] Rewarded failed", err);
+    return false;
+  }
+}
+```
+
+### Step 7.2 — Call `initAdMob()` once at app startup
+
+Open `artifacts/true-concept/src/main.tsx` and add this near the top, after the existing setup:
+
+```typescript
+import { initAdMob } from "@/lib/admob";
+
+// ... existing code ...
+
+// Initialize AdMob (only runs on native Android, no-op on web)
+void initAdMob();
+```
+
+Add it near the bottom of the file, just before the `bootstrap()` call.
+
+---
+
+## 8. Add Banner Ads
+
+A banner is the easiest to start with. It sits at the bottom of the screen always.
+
+### Step 8.1 — Show banner when student logs in
+
+Open `artifacts/true-concept/src/components/Layout.tsx` and modify the `Layout` component:
+
+```typescript
+import { useEffect } from "react";
+import { showBanner, hideBanner } from "@/lib/admob";
+
+export default function Layout({ children }: LayoutProps) {
+  const { user } = useAuth();
+  // ... existing state ...
+
+  // Show banner only for logged-in students (not admins)
+  useEffect(() => {
+    if (user?.role === "student") {
+      showBanner();
+    } else {
+      hideBanner();
+    }
+    return () => { hideBanner(); };
+  }, [user]);
+
+  // ... rest of component ...
+}
+```
+
+### Step 8.2 — Adjust bottom padding so banner doesn't cover content
+
+The banner takes ~50px at the bottom. Update the bottom spacer in `Layout.tsx`:
+
+Find this section (already exists at line 193-198):
+
+```tsx
+{user && user.role === "student" && (
+  <div
+    className="md:hidden"
+    style={{ height: `calc(env(safe-area-inset-bottom, 0px) + 80px)` }}
+  />
+)}
+```
+
+Change `80px` to `140px` to make room for both the bottom pill nav AND the AdMob banner:
+
+```tsx
+style={{ height: `calc(env(safe-area-inset-bottom, 0px) + 140px)` }}
+```
+
+> Tip: Only do this on Android (Capacitor). On web/PWA, the banner doesn't show, so you don't need extra padding. You can detect this with `window.Capacitor?.isNativePlatform?.()`.
+
+---
+
+## 9. Add Interstitial Ads (After MCQ + After Experiment)
+
+Interstitials are full-screen ads. In your final plan, you show them in **exactly two places**:
+1. After completing an MCQ set
+2. After finishing a virtual experiment
+
+Both are natural break points where students expect a transition.
+
+### Step 9.1 — Add a frequency cap (safety throttle)
+
+Showing interstitials too frequently annoys students and triggers AdMob policy warnings. Cap them to **1 per 7 minutes per user** — this gives students a comfortable buffer between ads while still earning revenue from active users.
+
+Create `artifacts/true-concept/src/lib/ad-frequency.ts`:
+
+```typescript
+import { showInterstitial } from "./admob";
+
+const MIN_INTERVAL_MS = 7 * 60 * 1000;   // 7 minutes between interstitials
+let lastShown = 0;
+
+/**
+ * Call this after MCQ set completion or experiment completion.
+ * Shows an interstitial unless one was shown in the last 7 minutes
+ * (keeps the app feeling friendly, not ad-spammy).
+ */
+export async function maybeShowInterstitial() {
+  const now = Date.now();
+  if (now - lastShown < MIN_INTERVAL_MS) {
+    const minsLeft = Math.ceil((MIN_INTERVAL_MS - (now - lastShown)) / 60_000);
+    console.info(`[AdMob] Skipped interstitial — next one in ${minsLeft} min`);
+    return;
+  }
+  lastShown = now;
+  await showInterstitial();
+}
+```
+
+> **Why 7 minutes?** A typical student finishes one MCQ set in ~2-3 minutes and one experiment in ~5-10 minutes. With a 7-minute gap, fast students who rush through 3 MCQs in 5 minutes only see 1 ad — not 3 back-to-back. Slow students doing one activity at a time see an ad every time. Both feel respected.
+
+### Step 9.2 — Trigger after MCQ completion
+
+Find your MCQ completion logic in `pages/chapter-detail.tsx`:
+
+```typescript
+import { maybeShowInterstitial } from "@/lib/ad-frequency";
+
+// After student submits all MCQs:
+const handleSubmitMcq = async () => {
+  await saveProgress();
+  setShowResults(true);
+  await maybeShowInterstitial();  // ← shows ad after every MCQ set
+};
+```
+
+### Step 9.3 — Trigger after finishing an experiment
+
+In `pages/experiment-detail.tsx`, add the same logic when the student clicks "Done" or navigates back from the experiment:
+
+```typescript
+import { maybeShowInterstitial } from "@/lib/ad-frequency";
+
+const handleFinishExperiment = async () => {
+  await saveExperimentProgress();
+  await maybeShowInterstitial();  // ← shows ad after every experiment
+  setLocation("/virtual-lab");
+};
+```
+
+---
+
+## 10. Add Rewarded Ad — "Watch Ad for 3 More Hours of App Use"
+
+This is your final monetization model: every student gets **3 hours of free app usage** at a time. When their time expires, they watch a single short ad to unlock another 3 hours. This is highly profitable AND students see clear value in watching the ad.
+
+### Step 10.1 — Create the usage timer logic
+
+Create `artifacts/true-concept/src/lib/usage-gate.ts`:
+
+```typescript
+import { showRewarded } from "./admob";
+
+const GATE_KEY = "trueconcept_gate_until";
+const GATE_DURATION_HOURS = 3;
+const GATE_DURATION_MS = GATE_DURATION_HOURS * 60 * 60 * 1000;
+
+/** Returns the timestamp until which the user has free access. 0 = never set. */
+export function getGateExpiry(): number {
+  const stored = localStorage.getItem(GATE_KEY);
+  return stored ? parseInt(stored, 10) : 0;
+}
+
+/** True if the user can currently use the app (gate not yet hit). */
+export function isWithinGate(): boolean {
+  const expiry = getGateExpiry();
+  if (expiry === 0) {
+    // First time user — give them 3 hours immediately, no ad
+    extendGate();
+    return true;
+  }
+  return Date.now() < expiry;
+}
+
+/** Extends the user's access by 3 more hours. */
+export function extendGate() {
+  const newExpiry = Date.now() + GATE_DURATION_MS;
+  localStorage.setItem(GATE_KEY, newExpiry.toString());
+}
+
+/** Shows a rewarded ad. If completed fully, extends access by 3 hours. */
+export async function requestMoreTime(): Promise<boolean> {
+  const success = await showRewarded();
+  if (success) {
+    extendGate();
+    return true;
+  }
+  return false;
+}
+
+/** Minutes remaining in current gate window. */
+export function getMinutesRemaining(): number {
+  const expiry = getGateExpiry();
+  if (expiry === 0) return GATE_DURATION_HOURS * 60;
+  const ms = expiry - Date.now();
+  return Math.max(0, Math.floor(ms / 60000));
+}
+```
+
+### Step 10.2 — Create the gate modal component
+
+Create `artifacts/true-concept/src/components/UsageGate.tsx`:
+
+```typescript
+import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
+import { Lock, Play } from "lucide-react";
+import { isWithinGate, requestMoreTime } from "@/lib/usage-gate";
+import { useAuth } from "@/contexts/AuthContext";
+
+export default function UsageGate() {
+  const { user } = useAuth();
+  const [blocked, setBlocked] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  // Check gate every 60 seconds while user is logged in
+  useEffect(() => {
+    if (!user || user.role !== "student") return;
+
+    const check = () => setBlocked(!isWithinGate());
+    check();
+    const t = setInterval(check, 60_000);
+    return () => clearInterval(t);
+  }, [user]);
+
+  if (!blocked) return null;
+
+  const handleWatchAd = async () => {
+    setLoading(true);
+    const success = await requestMoreTime();
+    setLoading(false);
+    if (success) setBlocked(false);
+    else alert("Please watch the full ad to continue using the app.");
+  };
+
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[300] flex items-center justify-center p-4"
+      style={{ background: "rgba(0,0,0,0.85)", backdropFilter: "blur(8px)" }}
+    >
+      <div
+        className="liquid-card rounded-3xl p-8 max-w-sm text-center"
+        style={{ border: "1px solid rgba(218,107,69,0.3)" }}
+      >
+        <div
+          className="w-16 h-16 mx-auto mb-4 rounded-2xl flex items-center justify-center text-white"
+          style={{ background: "linear-gradient(135deg, #da6b45, #b85535)" }}
+        >
+          <Lock className="w-8 h-8" />
+        </div>
+        <h2 className="font-black text-2xl text-foreground mb-2">Time's Up!</h2>
+        <p className="text-sm text-muted-foreground font-semibold mb-6">
+          You've used your free 3 hours. Watch a short ad to keep learning for 3 more hours.
+        </p>
+        <button
+          onClick={handleWatchAd}
+          disabled={loading}
+          className="w-full py-4 rounded-2xl font-black text-white shadow-lg flex items-center justify-center gap-2 disabled:opacity-50"
+          style={{ background: "linear-gradient(135deg, #da6b45, #b85535)" }}
+        >
+          <Play className="w-5 h-5" /> {loading ? "Loading ad…" : "Watch Ad — Get 3 More Hours"}
+        </button>
+        <p className="text-xs text-muted-foreground mt-4 italic">
+          Your progress is saved. The ad takes about 30 seconds.
+        </p>
+      </div>
+    </div>,
+    document.body
+  );
+}
+```
+
+### Step 10.3 — Mount the gate in App.tsx
+
+Open `artifacts/true-concept/src/App.tsx` and add:
+
+```typescript
+import UsageGate from "@/components/UsageGate";
+
+function AppRoutes() {
+  const { user } = useAuth();
+  return (
+    <Layout>
+      <StudentPrefsModal />
+      {user?.role === "student" && <WhatsAppPopup />}
+      {user?.role === "student" && <UsageGate />}  {/* ← ADD THIS */}
+      <Switch>
+        {/* ... routes ... */}
+      </Switch>
+    </Layout>
+  );
+}
+```
+
+### Step 10.4 — Update the AdMob ad unit reward
+
+When you created the rewarded ad unit in Step 4.3, you set:
+- Reward amount: `1`
+- Reward item: `Hint`
+
+For the 3-hour gate model, update these in your AdMob dashboard:
+1. Go to **Apps** → your app → click your Rewarded ad unit
+2. Edit:
+   - **Reward amount:** `3`
+   - **Reward item:** `Hours`
+3. Save changes
+
+### How it works for users
+
+```
+First app open    → gets 3 free hours immediately (no ad)
+Uses app for 3 hours
+Modal appears     → "Time's Up! Watch ad for 3 more hours"
+Student watches 30-sec rewarded ad
+Gets 3 more hours → modal disappears, can keep using
+```
+
+**Key benefits:**
+- ✅ First experience is friction-free (no ad on signup)
+- ✅ Students who love the app are happy to watch one ad per 3 hours
+- ✅ Highest eCPM ad type (₹400-₹850 per 1000 views)
+- ✅ Modal works even when offline (the timer is local)
+
+---
+
+## 11. Where to Place Ads in TRUE CONCEPT — FINAL PLAN
+
+Here's the exact ad placement plan for your app. **Only these 4 ad slots — nothing more.**
+
+| # | Ad Type | Where | When |
+|---|---|---|---|
+| 1 | **Banner** | Bottom of student screens | Always visible while student is logged in |
+| 2 | **Interstitial** | After MCQ set submission | Every time (60-sec throttle) |
+| 3 | **Interstitial** | After finishing an experiment | Every time (60-sec throttle) |
+| 4 | **Rewarded** | Full-screen gate after 3 hours of usage | Watch ad to unlock 3 more hours |
+
+### Where ads MUST NOT appear
+
+| Screen | Why no ads |
+|---|---|
+| Login / OTP screen | Looks unprofessional, hurts conversion |
+| Note reading (full-screen view) | Kills focus during studying |
+| Admin panel | Admins are you, not target audience |
+| Inside running simulations | Breaks the experience |
+
+### Visual hierarchy (student screens)
+
+```
+┌─────────────────────────────────┐
+│ Header (sticky)                 │ ← never covered
+├─────────────────────────────────┤
+│                                 │
+│   Main content scrolls          │
+│                                 │
+├─────────────────────────────────┤
+│ Bottom pill nav (floating)      │
+├─────────────────────────────────┤
+│ AdMob Banner (50px)             │ ← Ad #1 (always visible)
+└─────────────────────────────────┘
+
+After completing MCQ or Experiment:
+┌─────────────────────────────────┐
+│                                 │
+│      [Full-screen Ad #2/3]      │ ← Interstitial
+│                                 │
+└─────────────────────────────────┘
+
+After 3 hours of usage:
+┌─────────────────────────────────┐
+│  ╔═══════════════════════════╗  │
+│  ║ 🔒 Time's Up!             ║  │
+│  ║ Watch Ad → 3 More Hours   ║  │ ← Ad #4 gate modal
+│  ╚═══════════════════════════╝  │
+└─────────────────────────────────┘
+```
+
+### Why this plan is balanced
+
+- ✅ **Banner is non-intrusive** — students forget it's there after a few minutes
+- ✅ **Interstitials only appear at natural breaks** (after finishing something)
+- ✅ **The 60-sec throttle** prevents back-to-back ads if students rush through MCQs
+- ✅ **5-second timeout** in `showInterstitial()` skips any slow-loading ads — no annoying waits
+- ✅ **The rewarded gate is the only "forced" ad** — but students get 3 hours free first, and the value (continue learning) is clear
+
+---
+
+## 12. Testing With Test Ad IDs
+
+You **MUST** test with Google's test IDs first. Using your real IDs to test = your account gets banned for "invalid traffic" (clicking your own ads).
+
+### Step 12.1 — Build and install with test IDs
+
+In `src/lib/admob.ts`, confirm:
+
+```typescript
+const IS_TESTING = true;   // ✅ test mode
+```
+
+Build the APK:
+
+```powershell
+cd c:\Users\ASUS\Desktop\Web-App-Assets
+$env:API_URL = "https://true-concept-api.onrender.com"
+node mobile/build.mjs
+```
+
+Install on your phone. Open the app. You should see:
+- Banner: "Test Ad" written on a colored bar
+- Interstitial: Full-screen "Test Ad" with controls
+- Rewarded: "Test Ad" video that you can skip/complete
+
+If you see these — **integration works** ✅
+
+### Step 12.2 — What to check during testing
+
+- [ ] Banner appears at the bottom on all student screens
+- [ ] Banner does NOT appear on login screen or admin screens
+- [ ] Interstitial only shows every 3rd action (not every time)
+- [ ] Rewarded button works and you actually get the reward after watching
+- [ ] No crashes when ads fail to load (offline mode)
+- [ ] Bottom pill nav doesn't get covered by banner
+
+---
+
+## 13. Switching to Real Ads (Going Live)
+
+**ONLY do this when you're ready to publish to real users.**
+
+### Step 13.1 — Update `admob.ts`
+
+Open `artifacts/true-concept/src/lib/admob.ts`:
+
+```typescript
+const IS_TESTING = false;   // ← changed from true to false
+
+// Replace these with your REAL IDs from Step 4:
+const REAL_BANNER_ID      = "ca-app-pub-1234567890123456/1111111111";
+const REAL_INTERSTITIAL_ID = "ca-app-pub-1234567890123456/2222222222";
+const REAL_REWARDED_ID    = "ca-app-pub-1234567890123456/3333333333";
+```
+
+### Step 13.2 — Update `AndroidManifest.xml`
+
+Confirm the `APPLICATION_ID` meta-data uses your **real** App ID (not a test one):
+
+```xml
+<meta-data
+    android:name="com.google.android.gms.ads.APPLICATION_ID"
+    android:value="ca-app-pub-1234567890123456~1234567890"/>
+```
+
+### Step 13.3 — Build a release APK and publish
+
+Build the signed release APK (see `deployInstruction.md` Part 6) and upload to the Play Store (Part 7). Real ads will start showing within **24–72 hours** after Play Store approval.
+
+> **AdMob requires** at least a few days of real user traffic before ads start filling consistently. Don't panic if you see "no ads" initially — be patient.
+
+### Step 13.4 — Critical: never click your own ads
+
+Even by accident. Even once. Google's anti-fraud system will flag your account and you'll lose all earnings (and possibly the account permanently).
+
+If you accidentally click an ad, immediately go to https://support.google.com/admob/contact/invalid_clicks_contact and report it.
+
+---
+
+## 14. Setup Payment (UPI / Bank)
+
+Money accumulates in AdMob until you set up payment. Do this **before** you cross the ₹100 threshold.
+
+### Step 14.1 — Add tax info (required for India)
+
+1. AdMob dashboard → **Payments** (left sidebar)
+2. Click **Manage settings**
+3. Under **Tax information**, click **Manage tax info**
+4. Fill in:
+   - **Tax residence:** India
+   - **Type of beneficial owner:** Individual (or Business if you have a registered company)
+   - **PAN card number:** required
+   - Submit the form
+5. Wait for Google to verify (1–2 days)
+
+### Step 14.2 — Add bank account or UPI
+
+1. In **Payments** → **Manage settings**, click **Add payment method**
+2. Choose:
+   - **Bank account** (NEFT/IMPS) — most reliable for India
+   - **OR Wire transfer** (USD, requires USD bank account)
+3. For bank account, enter:
+   - Account holder name (must match PAN)
+   - Bank name
+   - Account number
+   - IFSC code
+4. Click **Save**
+
+> AdMob does NOT support direct UPI payments yet. You must use a bank account.
+
+### Step 14.3 — Verify your address
+
+1. Once you cross **₹500 (~$6) in earnings**, Google sends a PIN to your address by physical mail
+2. The PIN takes **2–4 weeks** to arrive
+3. Enter the PIN in AdMob → **Payments** → **Verify address**
+4. Until verified, you cannot get paid (earnings keep accumulating safely)
+
+### Step 14.4 — Set payment threshold
+
+1. **Payments** → **Settings** → **Payment threshold**
+2. Default is **$100 USD (~₹8,300)**
+3. You can raise it but not lower it
+4. Once your monthly balance exceeds the threshold, payment is initiated
+
+### Step 14.5 — Payment schedule
+
+- AdMob runs payments around the **21st of each month**
+- Money arrives in your bank account **3–7 business days later**
+- You'll see "Form 16A" tax certificate in your AdMob account each year (download for income tax filing)
+
+---
+
+## 15. AdMob Policies — Don't Get Banned
+
+Google bans 10–15% of new AdMob accounts in the first 6 months for policy violations. Here's how to **NOT** be one of them.
+
+### Things that get you banned instantly
+
+| Violation | Why It's Bad |
+|---|---|
+| ❌ Clicking your own ads (even once) | Invalid traffic — your account dies |
+| ❌ Asking friends/family to click ads | Same as above — Google detects this |
+| ❌ Buying clicks/impressions from a "service" | Same as above |
+| ❌ Showing ads on illegal/copyrighted content | Policy violation |
+| ❌ Showing ads to users under 13 without parental consent (COPPA) | Legal issue |
+| ❌ Interstitial that shows on app launch (before user sees content) | Annoying users → banned |
+| ❌ Banner placed where it can be accidentally clicked (like next to a button) | Accidental click violation |
+
+### Things that get you banned slowly
+
+| Issue | Why It's Bad |
+|---|---|
+| ⚠️ Interstitials every 30 seconds | Annoys users, low quality score |
+| ⚠️ Misleading "Click to continue" labels next to ads | Deception |
+| ⚠️ Hiding the close button on interstitials | Banned interaction pattern |
+| ⚠️ Auto-refreshing banner faster than 30 sec | Earnings throttled |
+
+### Safe practices
+
+- ✅ Show banner at bottom of screen, far from interactive buttons
+- ✅ Show interstitials at natural breaks (after activity, not during)
+- ✅ Always clearly mark sponsored content if you have any
+- ✅ Add your privacy policy URL to AdMob settings
+- ✅ Read the policy: https://support.google.com/admob/answer/6128543
+
+### Rule of thumb
+
+> **If it would annoy YOU as a user, it'll get you banned.** Place ads with respect.
+
+---
+
+## 16. Monitor Earnings
+
+### Daily monitoring
+
+After your app is live, check the AdMob dashboard daily for the first month:
+
+1. Go to https://admob.google.com → **Home**
+2. You'll see today's:
+   - **Estimated earnings** (in INR)
+   - **Impressions** (how many ads were shown)
+   - **eCPM** (revenue per 1000 impressions)
+   - **Match rate** (% of ad requests that returned an ad — should be >80%)
+   - **Click-through rate (CTR)** (% of users who clicked — typical: 1-3%)
+
+### Key metrics to watch
+
+| Metric | Healthy Range | What It Means |
+|---|---|---|
+| Match rate | 80–100% | Higher = AdMob is filling your ad slots |
+| Show rate | 90–100% | Higher = ads are actually displaying |
+| eCPM (banner) | ₹25–₹85 | India education app range |
+| eCPM (interstitial) | ₹85–₹250 | Higher because larger ad |
+| eCPM (rewarded) | ₹400–₹850 | Highest because user opted in |
+| CTR | 1–3% | Higher means users find ads relevant |
+
+### A/B test placements
+
+After 2-3 weeks of data, try moving the banner to the top vs bottom and see which earns more. AdMob's "Mediation" feature lets you A/B test automatically (advanced — explore later).
+
+---
+
+## 17. Common Problems & Fixes
+
+### "App crashes when opened" after AdMob integration
+
+**Cause:** Forgot to add the `<meta-data>` block in `AndroidManifest.xml`.
+
+**Fix:** Step 6.1 above. The App ID must be in the manifest BEFORE you build.
+
+### "No ads showing" but no errors
+
+**Cause 1:** Ad units take ~1 hour to activate after creation.
+**Fix:** Wait 1 hour, try again.
+
+**Cause 2:** You're using real IDs but app isn't published yet.
+**Fix:** New apps have low fill rate. Either wait 1-2 weeks for fills, or use test IDs during dev.
+
+**Cause 3:** Network issue / AdMob policy issue.
+**Fix:** Check AdMob dashboard for any warnings (red banner at top).
+
+### Banner overlaps the bottom pill nav
+
+**Cause:** The bottom spacer `div` in `Layout.tsx` is too short.
+
+**Fix:** Step 8.2 — change spacer height from `80px` to `140px`.
+
+### Interstitial shows but immediately closes
+
+**Cause:** You called `showInterstitial()` while another ad is loading.
+
+**Fix:** Wait for the previous ad to finish, or disable buttons that trigger ads while loading.
+
+### Rewarded ad ends but user didn't get the reward
+
+**Cause:** The user closed the ad before completing it. The promise resolves to `false`.
+
+**Fix:** Make sure your code checks the return value:
+```typescript
+const success = await showRewarded();
+if (success) {
+  // give reward
+} else {
+  toast("Watch the full ad to earn your reward");
+}
+```
+
+### "Invalid Traffic Detected" warning email
+
+**Cause:** Google detected unusual click patterns (often you accidentally clicked your own ads during testing with REAL IDs).
+
+**Fix:**
+1. Stop using real IDs immediately, switch back to test IDs
+2. Submit appeal via https://support.google.com/admob/contact/invalid_clicks_contact
+3. Be honest about what happened
+
+### Earnings stuck at ₹0 even after 1000+ impressions
+
+**Cause:** Could be very low eCPM region/category, or holdback period for new accounts.
+
+**Fix:** Wait 30 days. New AdMob accounts are throttled to detect fraud. After 30 days of clean traffic, eCPM normalizes.
+
+### Test ads work, real ads don't
+
+**Cause:** Almost always — you forgot to update either:
+- `IS_TESTING = false` in `admob.ts`
+- The real Ad Unit IDs in the same file
+
+**Fix:** Double check both. Then rebuild the APK with `node mobile/build.mjs`.
+
+---
+
+## Summary — Your AdMob Journey
+
+| Phase | Time | What You Do |
+|---|---|---|
+| **Setup** | Day 1 (2-3 hours) | Steps 1-7: account, ad units, plugin install, code |
+| **Testing** | Day 1-3 | Steps 8-12: implement ads with test IDs, verify everything works |
+| **Going live** | Day 4 onward | Step 13: switch to real IDs, build release APK, publish to Play Store |
+| **Earning** | Week 1-4 | Real users install your app, ads start filling, earnings grow |
+| **Payment** | Month 2+ | Step 14: setup bank/PAN, wait for first ₹100 (~₹8,300) milestone, get paid |
+
+---
+
+## Quick Reference Card
+
+| Task | File / Action |
+|---|---|
+| Install plugin | `pnpm add @capacitor-community/admob` (in `artifacts/true-concept`) |
+| App ID location | `mobile/android/app/src/main/AndroidManifest.xml` |
+| Ad Unit IDs location | `artifacts/true-concept/src/lib/admob.ts` |
+| Show banner | `await showBanner()` from `@/lib/admob` |
+| Show interstitial | `await showInterstitial()` |
+| Show rewarded | `const got = await showRewarded()` |
+| Test mode toggle | `IS_TESTING = true` in `src/lib/admob.ts` |
+| AdMob dashboard | https://admob.google.com |
+| Earnings reports | AdMob → Reports → Overview |
+
+---
+
+## Cost vs. Earnings Reality Check — FINAL PLAN
+
+For 500 registered TRUE CONCEPT users (~250 daily active) with your final 4-ad strategy:
+
+### Per-ad earnings breakdown
+
+| Ad Slot | Ad Type | Monthly Earnings (Realistic) |
+|---|---|---|
+| Bottom of student screens | Banner | ₹8,000 – ₹15,000 |
+| After MCQ submission | Interstitial | ₹1,500 – ₹3,000 |
+| After experiment completion | Interstitial | ₹500 – ₹1,500 |
+| 3-hour usage gate | Rewarded | ₹1,000 – ₹3,500 |
+| **TOTAL AdMob earnings** | | **₹11,000 – ₹23,000/month** |
+
+### Net profit calculation
+
+| Item | Conservative | Realistic | Optimistic |
+|---|---|---|---|
+| AdMob earnings | +₹11,000 | +₹17,000 | +₹23,000 |
+| Hosting cost (Render + Firebase) | −₹2,575 | −₹2,575 | −₹2,575 |
+| **Net profit per month** | **+₹8,425** | **+₹14,425** | **+₹20,425** |
+
+### Yearly projection
+
+- **Conservative:** ~₹100,000/year profit
+- **Realistic:** ~₹172,000/year profit
+- **Optimistic:** ~₹245,000/year profit
+
+### Growth trajectory
+
+| Month | DAU | Monthly Profit |
+|---|---|---|
+| 1 (launch) | ~50 | -₹1,500 (loss — building base) |
+| 2-3 | ~150 | +₹3,000 to +₹5,000 |
+| 4-6 | ~250 | +₹8,000 to +₹14,000 |
+| 7-12 | ~400+ | +₹15,000 to +₹25,000 |
+
+Once your app is live and stable, **you make money while you sleep**. The 3-hour gate is the unlock — every extended user session = guaranteed ad revenue.
+
+---
+
+## Quick Implementation Order (Final)
+
+Follow these in order — build → test each one → move to next:
+
+1. **Day 1 morning:** AdMob account + create 3 ad units (Steps 1-4)
+2. **Day 1 afternoon:** Install plugin + manifest config (Steps 5-6)
+3. **Day 1 evening:** Create `lib/admob.ts` + `lib/ad-frequency.ts` + `lib/usage-gate.ts` (Steps 7, 9.1, 10.1)
+4. **Day 2 morning:** Mount Banner in `Layout.tsx` + adjust spacer (Step 8)
+5. **Day 2 afternoon:** Wire interstitials to MCQ + experiment completion (Steps 9.2, 9.3)
+6. **Day 2 evening:** Build `UsageGate.tsx` + mount in `App.tsx` (Steps 10.2, 10.3)
+7. **Day 3:** Build APK with `IS_TESTING = true`, install on phone, test all 4 ad slots
+8. **Day 4+:** When ready, switch to real IDs (Step 13) and publish to Play Store
+
+---
+
+*Built your first monetized app? Welcome to the world of indie app development.*

@@ -1,44 +1,61 @@
 import { Router, type IRouter } from "express";
-import { ilike, or, eq, and } from "drizzle-orm";
-import { db, chaptersTable, qaTable, subjectsTable } from "@workspace/db";
+import { db } from "@workspace/db";
 import type { Request, Response } from "express";
-import { sql } from "drizzle-orm";
 
 const router: IRouter = Router();
 
 router.get("/search", async (req: Request, res: Response): Promise<void> => {
-  const q = req.query.q as string;
+  const q = (req.query.q as string)?.toLowerCase();
   if (!q || q.trim().length < 2) {
     res.json({ chapters: [], questions: [] });
     return;
   }
 
-  const pattern = `%${q.trim()}%`;
+  // Firestore doesn't support generic ILIKE across multiple fields easily.
+  // A hacky solution is to fetch all chapters and filter them in memory,
+  // which works for small datasets but isn't scalable.
+  const chaptersSnap = await db.collection("chapters").get();
+  const subjectsSnap = await db.collection("subjects").get();
+  const subjectMap = new Map(subjectsSnap.docs.map((d: any) => [d.id, d.data().name]));
+  
+  const allChapters = chaptersSnap.docs.map((doc: any) => ({ id: doc.id, ...doc.data() }));
+  
+  const chapterMetaMap = new Map<string, { classLevel: string; medium: string }>();
+  allChapters.forEach((c: any) => {
+    chapterMetaMap.set(c.id, { classLevel: c.classLevel, medium: c.medium ?? "Both" });
+  });
 
-  const chapters = await db
-    .select({
-      id: chaptersTable.id,
-      subjectId: chaptersTable.subjectId,
-      subjectName: subjectsTable.name,
-      classLevel: chaptersTable.classLevel,
-      title: chaptersTable.title,
-      chapterNumber: chaptersTable.chapterNumber,
-      description: chaptersTable.description,
-      hasNotes: sql<boolean>`false`,
-      hasMcqs: sql<boolean>`false`,
-      hasQa: sql<boolean>`false`,
-      hasVideo: sql<boolean>`false`,
+  const chapters = allChapters.filter((c: any) =>
+    c.title.toLowerCase().includes(q) ||
+    c.description.toLowerCase().includes(q)
+  ).map((c: any) => ({
+    id: c.id,
+    subjectId: c.subjectId,
+    subjectName: subjectMap.get(c.subjectId) ?? "",
+    classLevel: c.classLevel,
+    medium: c.medium ?? "Both",
+    title: c.title,
+    chapterNumber: c.chapterNumber,
+    description: c.description,
+    hasNotes: false,
+    hasMcqs: false,
+    hasQa: false,
+    hasVideo: false,
+  })).slice(0, 10);
+
+  const qaSnap = await db.collection("qa").get();
+  const questions = qaSnap.docs
+    .map((d: any) => ({ id: d.id, ...d.data() }))
+    .filter((qa: any) => qa.question.toLowerCase().includes(q) || qa.answer.toLowerCase().includes(q))
+    .map((qa: any) => {
+      const meta = chapterMetaMap.get(qa.chapterId);
+      return {
+        ...qa,
+        classLevel: meta?.classLevel ?? null,
+        medium:     meta?.medium     ?? "Both",
+      };
     })
-    .from(chaptersTable)
-    .leftJoin(subjectsTable, eq(chaptersTable.subjectId, subjectsTable.id))
-    .where(or(ilike(chaptersTable.title, pattern), ilike(chaptersTable.description, pattern)))
-    .limit(10);
-
-  const questions = await db
-    .select()
-    .from(qaTable)
-    .where(or(ilike(qaTable.question, pattern), ilike(qaTable.answer, pattern)))
-    .limit(10);
+    .slice(0, 10);
 
   res.json({ chapters, questions });
 });

@@ -39,7 +39,7 @@ export function FiltrationSim() {
         <text x="78" y={210} fontSize="9" fill="#0369a1" fontWeight="700">Filtrate (clear)</text>
         <text x="62" y={155} fontSize="9" fill="#475569" fontWeight="700">filter paper</text>
       </svg>
-      <div className="mt-3 text-xs text-center font-black text-gray-700">
+      <div className="mt-3 text-xs text-center font-black text-gray-700 dark:text-gray-200">
         Progress: {progress.toFixed(0)}%
       </div>
     </SimContainer>
@@ -96,7 +96,7 @@ export function CrystallizationSim() {
         ))}
         <text x="170" y="80" fontSize="11" fill="#dc2626" fontWeight="900">{t.toFixed(0)}°C</text>
       </svg>
-      <div className="mt-3 text-center text-xs font-black text-gray-700">
+      <div className="mt-3 text-center text-xs font-black text-gray-700 dark:text-gray-200">
         {stage === "idle" && "Tap Heat to start"}
         {stage === "heat" && "🔥 Heating..."}
         {stage === "cool" && "❄️ Cooling..."}
@@ -121,12 +121,12 @@ const INDICATORS = [
   },
   {
     id: "phen", name: "Phenolphthalein",
-    color: (pH: number) => pH < 8 ? "#f9fafb" : "#ec4899",
+    color: (pH: number) => pH < 8 ? "#f9fafb" : "#f59e0b",
     label: (pH: number) => pH < 8 ? "Colorless" : "Pink",
   },
   {
     id: "uni", name: "Universal",
-    color: (pH: number) => pH < 4 ? "#dc2626" : pH < 7 ? "#f97316" : pH < 8 ? "#84cc16" : pH < 11 ? "#0ea5e9" : "#7c3aed",
+    color: (pH: number) => pH < 4 ? "#dc2626" : pH < 7 ? "#f97316" : pH < 8 ? "#84cc16" : pH < 11 ? "#0ea5e9" : "#da6b45",
     label: (pH: number) => pH < 4 ? "Red" : pH < 7 ? "Orange" : pH < 8 ? "Green" : pH < 11 ? "Blue" : "Violet",
   },
 ];
@@ -140,24 +140,24 @@ export function PHTestingSim() {
   return (
     <SimContainer hint="Acids turn blue litmus red. Bases turn red litmus blue and pink with phenolphthalein.">
       <div className="mb-3">
-        <div className="text-xs font-black text-gray-700 uppercase mb-2">Choose Solution</div>
+        <div className="text-xs font-black text-gray-700 dark:text-gray-200 uppercase mb-2">Choose Solution</div>
         <div className="grid grid-cols-4 gap-2">
           {SOLUTIONS.map((s) => (
             <button key={s.id} onClick={() => setSol(s)}
-              className={`liquid-inner rounded-xl py-2 px-1 text-center transition-all ${sol.id === s.id ? "ring-2 ring-purple-500 scale-105" : ""}`}>
+              className={`liquid-inner rounded-xl py-2 px-1 text-center transition-all ${sol.id === s.id ? "ring-2 ring-orange-500 scale-105" : ""}`}>
               <div className="text-xl">{s.emoji}</div>
-              <div className="text-xs font-black text-gray-700">{s.name}</div>
+              <div className="text-xs font-black text-gray-700 dark:text-gray-200">{s.name}</div>
             </button>
           ))}
         </div>
       </div>
       <div className="mb-3">
-        <div className="text-xs font-black text-gray-700 uppercase mb-2">Choose Indicator</div>
+        <div className="text-xs font-black text-gray-700 dark:text-gray-200 uppercase mb-2">Choose Indicator</div>
         <div className="grid grid-cols-3 gap-2">
           {INDICATORS.map((i) => (
             <button key={i.id} onClick={() => setInd(i)}
-              className={`liquid-inner rounded-xl py-2 px-2 text-center transition-all ${ind.id === i.id ? "ring-2 ring-purple-500 scale-105" : ""}`}>
-              <div className="text-xs font-black text-gray-700">{i.name}</div>
+              className={`liquid-inner rounded-xl py-2 px-2 text-center transition-all ${ind.id === i.id ? "ring-2 ring-orange-500 scale-105" : ""}`}>
+              <div className="text-xs font-black text-gray-700 dark:text-gray-200">{i.name}</div>
             </button>
           ))}
         </div>
@@ -167,11 +167,11 @@ export function PHTestingSim() {
           <path d="M 20 30 L 20 100 L 60 100 L 60 30 Z" fill="none" stroke="#475569" strokeWidth="2" />
           <rect x="22" y="40" width="36" height="58" fill={color} />
         </svg>
-        <SimSlider label="pH" value={sol.pH} onChange={() => { /* read only */ }} min={0} max={14} color="#7c3aed" />
+        <SimSlider label="pH" value={sol.pH} onChange={() => { /* read only */ }} min={0} max={14} color="#da6b45" />
       </div>
       <div className="mt-3 text-center">
-        <div className="text-xs font-black text-gray-500 uppercase">Result</div>
-        <div className="text-lg font-black text-gray-900">{sol.name} → {label}</div>
+        <div className="text-xs font-black text-gray-500 dark:text-gray-400 uppercase">Result</div>
+        <div className="text-lg font-black text-gray-900 dark:text-gray-100">{sol.name} → {label}</div>
         <div className="text-sm font-black mt-1" style={{ color: sol.pH < 7 ? "#dc2626" : sol.pH > 7 ? "#3b82f6" : "#10b981" }}>{acidic} (pH {sol.pH})</div>
       </div>
     </SimContainer>

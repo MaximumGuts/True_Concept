@@ -1,8 +1,9 @@
 import { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { useGetMe } from "@workspace/api-client-react";
+import { clearProfileCache } from "@/lib/progress/profile-service";
 
 interface AuthUser {
-  id: number;
+  id: string;
   username: string;
   role: "admin" | "student";
   name: string;
@@ -24,7 +25,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   const { data: meData, isLoading: meLoading } = useGetMe({
-    query: { enabled: !!token, retry: false },
+    query: { enabled: !!token, retry: false, queryKey: [`/api/auth/me`] },
   });
 
   useEffect(() => {
@@ -54,6 +55,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = useCallback(() => {
     localStorage.removeItem("trueconcept_token");
     localStorage.removeItem("trueconcept_student_prefs");
+    clearProfileCache();
     setToken(null);
     setUser(null);
   }, []);

@@ -1,0 +1,20 @@
+# Gradle
+.gradle/
+build/
+local.properties
+*.iml
+.idea/
+*.hprof
+
+# Capacitor generated
+app/src/main/assets/public/
+app/src/main/assets/capacitor.config.json
+capacitor-cordova-android-plugins/
+
+# Keys / signing
+*.keystore
+*.jks
+release.keystore
+
+# Gradle wrapper jar (download via: gradle wrapper)
+gradle/wrapper/gradle-wrapper.jar

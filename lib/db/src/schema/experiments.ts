@@ -1,6 +1,4 @@
-import { pgTable, text, serial, timestamp } from "drizzle-orm/pg-core";
-import { createInsertSchema } from "drizzle-zod";
-import { z } from "zod/v4";
+import { z } from "zod";
 
 export const SIM_TYPES = [
   "distance-time",
@@ -36,25 +34,27 @@ export const SIM_TYPES = [
   "custom",
 ] as const;
 
-export const experimentsTable = pgTable("experiments", {
-  id: serial("id").primaryKey(),
-  subject: text("subject", { enum: ["Physics", "Chemistry"] }).notNull().default("Physics"),
-  classLevel: text("class_level", { enum: ["Class IX", "Class X"] }).notNull(),
-  title: text("title").notNull(),
-  objective: text("objective").notNull(),
-  theory: text("theory").notNull().default(""),
-  apparatus: text("apparatus").notNull().default(""),
-  procedure: text("procedure").notNull(),
-  expectedResult: text("expected_result").notNull(),
-  explanation: text("explanation").notNull(),
-  videoUrl: text("video_url"),
-  hints: text("hints"),
-  summary: text("summary"),
-  type: text("type", { enum: SIM_TYPES }).notNull(),
-  difficulty: text("difficulty", { enum: ["easy", "medium", "hard"] }).notNull().default("medium"),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+export const insertExperimentSchema = z.object({
+  subject: z.enum(["Physics", "Chemistry"]).default("Physics"),
+  classLevel: z.enum(["Class IX", "Class X"]),
+  title: z.string(),
+  objective: z.string(),
+  theory: z.string().default(""),
+  apparatus: z.string().default(""),
+  procedure: z.string(),
+  expectedResult: z.string(),
+  explanation: z.string(),
+  videoUrl: z.string().nullable().optional(),
+  hints: z.string().nullable().optional(),
+  summary: z.string().nullable().optional(),
+  type: z.enum(SIM_TYPES),
+  difficulty: z.enum(["easy", "medium", "hard"]).default("medium"),
 });
 
-export const insertExperimentSchema = createInsertSchema(experimentsTable).omit({ id: true, createdAt: true });
+export const experimentSchema = insertExperimentSchema.extend({
+  id: z.string(),
+  createdAt: z.date().default(() => new Date()),
+});
+
 export type InsertExperiment = z.infer<typeof insertExperimentSchema>;
-export type Experiment = typeof experimentsTable.$inferSelect;
+export type Experiment = z.infer<typeof experimentSchema>;

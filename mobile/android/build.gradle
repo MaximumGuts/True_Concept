@@ -1,0 +1,25 @@
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        // Bumped from 8.2.1 → 8.3.2 to support compileSdk 35 (needed by
+        // androidx.core:1.15.0 pulled in by @capacitor-community/admob).
+        // 8.3.x is the highest AGP compatible with Gradle 8.5 in our wrapper.
+        classpath 'com.android.tools.build:gradle:8.3.2'
+    }
+}
+
+apply from: "variables.gradle"
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}

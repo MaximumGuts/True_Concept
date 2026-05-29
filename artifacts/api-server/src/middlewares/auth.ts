@@ -4,14 +4,15 @@ import jwt from "jsonwebtoken";
 const JWT_SECRET = process.env.SESSION_SECRET ?? "trueconcept-secret-2024";
 
 export interface AuthUser {
-  id: number;
+  id: string;
   username: string;
   role: "admin" | "student";
   name: string;
 }
 
 export function signToken(user: AuthUser): string {
-  return jwt.sign(user, JWT_SECRET, { expiresIn: "7d" });
+  // 180 days — keeps students signed in for 6 months to minimize SMS auth costs.
+  return jwt.sign(user, JWT_SECRET, { expiresIn: "180d" });
 }
 
 export function verifyToken(token: string): AuthUser | null {

@@ -63,54 +63,116 @@
   --elevate-1: rgba(0,0,0,.03);
   --elevate-2: rgba(0,0,0,.08);
 
-  --background: 250 50% 98%;
-  --foreground: 240 20% 10%;
-  --border: 250 30% 88%;
-  --card: 0 0% 100%;
-  --card-foreground: 240 15% 12%;
-  --card-border: 250 25% 90%;
-  --sidebar: 255 60% 20%;
-  --sidebar-foreground: 0 0% 100%;
-  --sidebar-border: 255 45% 28%;
-  --sidebar-primary: 38 100% 54%;
-  --sidebar-primary-foreground: 240 15% 12%;
-  --sidebar-accent: 255 45% 30%;
-  --sidebar-accent-foreground: 0 0% 100%;
-  --sidebar-ring: 38 100% 54%;
-  --popover: 0 0% 100%;
-  --popover-foreground: 240 15% 12%;
-  --popover-border: 250 30% 88%;
-  --primary: 255 80% 55%;
+  /* Fallback status-bar inset for Capacitor on Android tablets. main.tsx adds
+     the .is-capacitor class to <html>; the header's max(env(safe-area-inset-top),
+     var(--cap-status-bar)) then keeps content below the system status bar even
+     when the WebView doesn't expose a non-zero safe-area inset. 28px ≈ the
+     standard Android status bar height (24dp). */
+  --cap-status-bar: 0px;
+
+  /* CORAL/WARM palette — primary #da6b45, lavender/indigo neutral base */
+  --background: 250 60% 97%;
+  --foreground: 245 30% 14%;
+  --border: 248 25% 88%;
+  --card: 250 50% 99%;
+  --card-foreground: 245 25% 14%;
+  --card-border: 248 25% 90%;
+  --sidebar: 243 50% 14%;
+  --sidebar-foreground: 245 25% 96%;
+  --sidebar-border: 243 35% 22%;
+  --sidebar-primary: 16 75% 56%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 243 40% 24%;
+  --sidebar-accent-foreground: 245 25% 96%;
+  --sidebar-ring: 16 75% 56%;
+  --popover: 250 50% 99%;
+  --popover-foreground: 245 25% 14%;
+  --popover-border: 248 25% 88%;
+  --primary: 16 65% 56%;
   --primary-foreground: 0 0% 100%;
-  --secondary: 38 100% 54%;
-  --secondary-foreground: 240 15% 12%;
+  --secondary: 38 95% 56%;
+  --secondary-foreground: 20 30% 12%;
   --muted: 250 40% 94%;
-  --muted-foreground: 250 15% 50%;
-  --accent: 38 100% 54%;
-  --accent-foreground: 240 15% 12%;
-  --destructive: 0 84% 60%;
+  --muted-foreground: 248 12% 48%;
+  --accent: 174 75% 35%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 75% 55%;
   --destructive-foreground: 0 0% 100%;
-  --input: 250 30% 90%;
-  --ring: 255 80% 55%;
-  --chart-1: 255 80% 55%;
-  --chart-2: 38 100% 54%;
-  --chart-3: 160 70% 42%;
-  --chart-4: 330 80% 55%;
-  --chart-5: 200 80% 50%;
+  --input: 248 28% 90%;
+  --ring: 16 65% 56%;
+  --chart-1: 16 65% 56%;
+  --chart-2: 174 70% 40%;
+  --chart-3: 38 95% 56%;
+  --chart-4: 252 70% 60%;
+  --chart-5: 340 75% 60%;
+
+  /* Brand color stops (used in inline gradients via CSS) */
+  --brand-50: #fdf3ee;
+  --brand-100: #fae3d6;
+  --brand-200: #f5c2a8;
+  --brand-300: #ee9c79;
+  --brand-400: #e58359;
+  --brand-500: #da6b45;
+  --brand-600: #c45330;
+  --brand-700: #a34228;
+  --brand-800: #843827;
+  --brand-900: #6c3024;
+  --brand-deep: #b85535;
+  --brand-light: #f5a584;
+
+  --honey-300: #fcd34d;
+  --honey-400: #fbbf24;
+  --honey-500: #f59e0b;
+  --honey-600: #d97706;
+
+  --teal-400: #2dd4bf;
+  --teal-500: #14b8a6;
+  --teal-600: #0d9488;
+  --teal-700: #0f766e;
+
+  /* Brand gradient pairs (light theme) */
+  --grad-brand: linear-gradient(135deg, #da6b45 0%, #c45330 100%);
+  --grad-brand-soft: linear-gradient(135deg, #f08766 0%, #da6b45 100%);
+  --grad-brand-warm: linear-gradient(135deg, #da6b45 0%, #fbbf24 100%);
+  --grad-brand-text: linear-gradient(135deg, #b85535 0%, #da6b45 50%, #fbbf24 100%);
+  --grad-honey: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  --grad-teal: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);
+  /* Hero in LIGHT MODE: warm coral→amber so the brand identity carries over
+     and the white hero copy stays readable. Dark-mode override defines a
+     deeper cosmic purple version further down in this file. */
+  --grad-hero: linear-gradient(135deg, #b85535 0%, #da6b45 30%, #f08766 55%, #f59e0b 80%, #b85535 100%);
+  --grad-cta: linear-gradient(135deg, #fbbf24 0%, #fcd34d 100%);
+
+  /* Sticky app header — used by Layout.tsx via inline style. Light value is a
+     soft cream so the nav-pill's `text-gray-600` is readable; dark value
+     keeps the existing deep-cosmic gradient. */
+  --header-bg:          linear-gradient(180deg, rgba(254,251,243,0.96) 0%, rgba(253,247,235,0.92) 60%, rgba(252,242,225,0.85) 100%);
+  --header-glow-top:    linear-gradient(90deg, transparent, rgba(218,107,69,0.55) 30%, rgba(251,191,36,0.55) 70%, transparent);
+  --header-glow-bottom: linear-gradient(180deg, transparent, rgba(218,107,69,0.18));
+
+  /* AdSense fixed-bottom banner container — light cream so it blends with
+     the page in light mode. Dark variant overridden under `.dark` below. */
+  --adsense-banner-bg:     rgba(254,251,243,0.92);
+  --adsense-banner-border: rgba(218,107,69,0.18);
+
+  /* Brand glows (rgba) */
+  --glow-brand: rgba(218, 107, 69, 0.35);
+  --glow-honey: rgba(251, 191, 36, 0.32);
+  --glow-teal: rgba(20, 184, 166, 0.32);
 
   --app-font-sans: 'Nunito', 'Inter', sans-serif;
   --app-font-serif: 'Nunito', sans-serif;
   --app-font-mono: Menlo, monospace;
   --radius: 1rem;
 
-  --shadow-2xs: 0px 1px 2px 0px rgba(100,80,200,0.06);
-  --shadow-xs: 0px 2px 4px 0px rgba(100,80,200,0.08);
-  --shadow-sm: 0px 2px 8px 0px rgba(100,80,200,0.10), 0px 1px 2px -1px rgba(0,0,0,0.04);
-  --shadow: 0px 4px 12px -1px rgba(100,80,200,0.12), 0px 2px 4px -2px rgba(0,0,0,0.04);
-  --shadow-md: 0px 10px 20px -3px rgba(100,80,200,0.14), 0px 4px 8px -4px rgba(0,0,0,0.05);
-  --shadow-lg: 0px 20px 32px -5px rgba(100,80,200,0.16), 0px 8px 12px -6px rgba(0,0,0,0.04);
-  --shadow-xl: 0px 25px 50px -12px rgba(100,80,200,0.24);
-  --shadow-2xl: 0px 25px 50px -12px rgba(100,80,200,0.32);
+  --shadow-2xs: 0px 1px 2px 0px rgba(99, 82, 180, 0.06);
+  --shadow-xs: 0px 2px 4px 0px rgba(99, 82, 180, 0.08);
+  --shadow-sm: 0px 2px 8px 0px rgba(99, 82, 180, 0.10), 0px 1px 2px -1px rgba(0,0,0,0.04);
+  --shadow: 0px 4px 12px -1px rgba(99, 82, 180, 0.12), 0px 2px 4px -2px rgba(0,0,0,0.04);
+  --shadow-md: 0px 10px 20px -3px rgba(99, 82, 180, 0.14), 0px 4px 8px -4px rgba(0,0,0,0.05);
+  --shadow-lg: 0px 20px 32px -5px rgba(99, 82, 180, 0.18), 0px 8px 12px -6px rgba(0,0,0,0.04);
+  --shadow-xl: 0px 25px 50px -12px rgba(99, 82, 180, 0.26);
+  --shadow-2xl: 0px 25px 50px -12px rgba(99, 82, 180, 0.34);
 
   --sidebar-primary-border: hsl(var(--sidebar-primary));
   --sidebar-accent-border: hsl(var(--sidebar-accent));
@@ -121,51 +183,236 @@
   --destructive-border: hsl(var(--destructive));
   --tracking-normal: 0em;
   --spacing: 0.25rem;
+
+  /* Page background (light) */
+  --page-gradient: #faf9f5;
+
+  /* Animated blobs (light) — disabled, kept transparent for backwards-compat */
+  --blob-1: transparent;
+  --blob-2: transparent;
+
+  /* Liquid glass surfaces (light) — lavender-tinted */
+  --glass-bg: rgba(248, 245, 255, 0.72);
+  --glass-card-bg: rgba(250, 248, 255, 0.42);
+  --glass-card-border: rgba(255, 255, 255, 0.60);
+  --glass-card-shadow:
+    0 8px 32px rgba(99, 82, 180, 0.10),
+    0 2px 8px rgba(0,0,0,0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.80),
+    inset 0 -1px 0 rgba(0,0,0,0.03);
+  --glass-panel-bg: rgba(248, 245, 255, 0.55);
+  --glass-panel-border: rgba(255, 255, 255, 0.70);
+  --glass-panel-shadow:
+    0 12px 40px rgba(99, 82, 180, 0.13),
+    0 4px 12px rgba(0,0,0,0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85),
+    inset 0 -1px 0 rgba(0,0,0,0.04);
+  --glass-inner-bg: rgba(248, 245, 255, 0.32);
+  --glass-inner-border: rgba(255, 255, 255, 0.45);
+  --glass-inner-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55);
+  --header-border: rgba(210, 195, 255, 0.55);
+
+  /* Bottom-nav pill (light) — solid for readability */
+  --bottom-nav-bg: rgba(255, 251, 247, 0.96);
+  --bottom-nav-border: rgba(210, 195, 255, 0.6);
+
+  /* Hint popover (light) — high-contrast, readable */
+  --hint-bg: rgba(255, 251, 232, 0.98);
+  --hint-border: rgba(245, 158, 11, 0.5);
+  --hint-text: #78350f;
+
+  /* Note reading prose tokens (light) */
+  --note-h1: #0f0e17;
+  --note-h2: #1a1a2e;
+  --note-h3: #16213e;
+  --note-body: #1e1e2e;
+  --note-strong: #0f0e17;
+  --note-em: #3730a3;
+  --note-rule: #ddd6fe;
+  --note-code-bg: #f5f3ff;
+  --note-code-fg: #b85535;
+  --note-pre-bg: #1e1b4b;
+  --note-pre-fg: #f8f8ff;
+  --note-quote-bg: #f5f3ff;
+  --note-quote-fg: #1e1e2e;
+  --note-quote-border: #da6b45;
+  --note-th-bg: #da6b45;
+  --note-table-row-alt: #f5f3ff;
+  --note-table-border: #ddd6fe;
+  --note-link: #b85535;
+}
+
+/* Capacitor (Android APK) overrides the safe-area fallback so the header
+   reserves space for the system status bar on tablets without a notch. */
+html.is-capacitor {
+  --cap-status-bar: 28px;
+}
+
+/* AdSense bottom banner pushes content up on desktop. On mobile the existing
+   80 px bottom spacer in Layout.tsx already reserves room (it was sized for
+   the AdMob banner on Android, but works for the AdSense banner on web too).
+   The .has-adsense-banner class is toggled on <body> by adsense-provider.ts. */
+@media (min-width: 768px) {
+  body.has-adsense-banner {
+    padding-bottom: 100px;
+  }
+}
+
+.dark {
+  --button-outline: rgba(255,255,255,.08);
+  --badge-outline: rgba(255,255,255,.06);
+  --opaque-button-border-intensity: 8;
+  --elevate-1: rgba(255,255,255,.04);
+  --elevate-2: rgba(255,255,255,.08);
+
+  /* DARK INDIGO palette — deep indigo base, lifted coral primary */
+  --background: 243 45% 7%;
+  --foreground: 245 20% 96%;
+  --border: 243 30% 22%;
+  --card: 243 40% 11%;
+  --card-foreground: 245 20% 96%;
+  --card-border: 243 30% 22%;
+  --sidebar: 243 45% 9%;
+  --sidebar-foreground: 245 20% 96%;
+  --sidebar-border: 243 35% 18%;
+  --sidebar-primary: 18 80% 65%;
+  --sidebar-primary-foreground: 243 45% 8%;
+  --sidebar-accent: 243 35% 22%;
+  --sidebar-accent-foreground: 245 20% 96%;
+  --sidebar-ring: 18 80% 65%;
+  --popover: 243 40% 11%;
+  --popover-foreground: 245 20% 96%;
+  --popover-border: 243 30% 22%;
+  --primary: 18 80% 65%;
+  --primary-foreground: 243 45% 8%;
+  --secondary: 38 95% 62%;
+  --secondary-foreground: 243 45% 8%;
+  --muted: 243 30% 16%;
+  --muted-foreground: 248 15% 70%;
+  --accent: 174 65% 50%;
+  --accent-foreground: 243 45% 8%;
+  --destructive: 0 70% 60%;
+  --destructive-foreground: 0 0% 100%;
+  --input: 243 28% 18%;
+  --ring: 18 80% 65%;
+  --chart-1: 18 80% 65%;
+  --chart-2: 174 65% 55%;
+  --chart-3: 38 95% 62%;
+  --chart-4: 252 75% 70%;
+  --chart-5: 340 75% 68%;
+
+  /* Brand stops shift slightly lighter in dark for better contrast */
+  --brand-500: #f08766;
+  --brand-deep: #da6b45;
+  --brand-light: #f5a584;
+
+  --grad-brand: linear-gradient(135deg, #f08766 0%, #da6b45 100%);
+  --grad-brand-soft: linear-gradient(135deg, #f5a584 0%, #f08766 100%);
+  --grad-brand-warm: linear-gradient(135deg, #f08766 0%, #fcd34d 100%);
+  --grad-brand-text: linear-gradient(135deg, #f5a584 0%, #f08766 50%, #fcd34d 100%);
+  --grad-honey: linear-gradient(135deg, #fcd34d 0%, #fbbf24 100%);
+  --grad-teal: linear-gradient(135deg, #2dd4bf 0%, #14b8a6 100%);
+  --grad-hero: linear-gradient(135deg, #06040f 0%, #0e0b1f 30%, #130f2b 60%, #1a1442 85%, #06040f 100%);
+  --grad-cta: linear-gradient(135deg, #fcd34d 0%, #fde68a 100%);
+
+  /* Dark-mode header values — preserve the original deep cosmic gradient */
+  --header-bg:          linear-gradient(180deg, rgba(12,9,32,0.96) 0%, rgba(20,14,48,0.92) 60%, rgba(28,18,68,0.85) 100%);
+  --header-glow-top:    linear-gradient(90deg, transparent, rgba(218,107,69,0.45) 30%, rgba(251,191,36,0.45) 70%, transparent);
+  --header-glow-bottom: linear-gradient(180deg, transparent, rgba(99,102,241,0.18));
+
+  /* Dark-mode AdSense banner container — keep the original deep cosmic bg */
+  --adsense-banner-bg:     rgba(12,9,32,0.92);
+  --adsense-banner-border: rgba(255,255,255,0.06);
+
+  --glow-brand: rgba(240, 135, 102, 0.40);
+  --glow-honey: rgba(252, 211, 77, 0.32);
+  --glow-teal: rgba(45, 212, 191, 0.32);
+
+  --shadow-2xs: 0px 1px 2px 0px rgba(0,0,0,0.30);
+  --shadow-xs: 0px 2px 4px 0px rgba(0,0,0,0.35);
+  --shadow-sm: 0px 2px 8px 0px rgba(0,0,0,0.40), 0px 1px 2px -1px rgba(0,0,0,0.30);
+  --shadow: 0px 4px 12px -1px rgba(0,0,0,0.45), 0px 2px 4px -2px rgba(0,0,0,0.30);
+  --shadow-md: 0px 10px 20px -3px rgba(0,0,0,0.50), 0px 4px 8px -4px rgba(0,0,0,0.30);
+  --shadow-lg: 0px 20px 32px -5px rgba(0,0,0,0.55), 0px 8px 12px -6px rgba(0,0,0,0.30);
+  --shadow-xl: 0px 25px 50px -12px rgba(0,0,0,0.65);
+  --shadow-2xl: 0px 25px 50px -12px rgba(0,0,0,0.75);
+
+  /* Page background (dark) — solid deep indigo, no seam */
+  --page-gradient: #0c0920;
+
+  /* Animated blobs (dark) — disabled, kept transparent for backwards-compat */
+  --blob-1: transparent;
+  --blob-2: transparent;
+
+  /* Liquid glass surfaces (dark) — indigo-tinted */
+  --glass-bg: rgba(15, 12, 38, 0.74);
+  --glass-card-bg: rgba(22, 18, 52, 0.58);
+  --glass-card-border: rgba(180, 170, 255, 0.10);
+  --glass-card-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.50),
+    0 2px 8px rgba(0,0,0,0.30),
+    inset 0 1px 0 rgba(180, 170, 255, 0.10),
+    inset 0 -1px 0 rgba(0,0,0,0.22);
+  --glass-panel-bg: rgba(22, 18, 52, 0.72);
+  --glass-panel-border: rgba(180, 170, 255, 0.12);
+  --glass-panel-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.58),
+    0 4px 12px rgba(0,0,0,0.36),
+    inset 0 1px 0 rgba(180, 170, 255, 0.12),
+    inset 0 -1px 0 rgba(0,0,0,0.26);
+  --glass-inner-bg: rgba(180, 170, 255, 0.05);
+  --glass-inner-border: rgba(180, 170, 255, 0.08);
+  --glass-inner-shadow: inset 0 1px 0 rgba(180, 170, 255, 0.08);
+  --header-border: rgba(140, 120, 255, 0.10);
+
+  /* Bottom-nav pill (dark) — solid indigo for readability */
+  --bottom-nav-bg: rgba(20, 16, 50, 0.96);
+  --bottom-nav-border: rgba(140, 120, 255, 0.22);
+
+  /* Hint popover (dark) — high-contrast on dark */
+  --hint-bg: rgba(40, 30, 18, 0.97);
+  --hint-border: rgba(245, 158, 11, 0.45);
+  --hint-text: #fcd34d;
+
+  /* Note reading prose tokens (dark) — high contrast white */
+  --note-h1: #ffffff;
+  --note-h2: #ffffff;
+  --note-h3: #f0f0ff;
+  --note-body: #e8e8f0;
+  --note-strong: #ffffff;
+  --note-em: #d0d0e8;
+  --note-rule: #2e2a5e;
+  --note-code-bg: #1a1640;
+  --note-code-fg: #f5a584;
+  --note-pre-bg: #0a0820;
+  --note-pre-fg: #f8f8ff;
+  --note-quote-bg: #14112e;
+  --note-quote-fg: #e0e0f4;
+  --note-quote-border: #f08766;
+  --note-th-bg: #b85535;
+  --note-table-row-alt: #14112e;
+  --note-table-border: #2e2a5e;
+  --note-link: #f5a584;
 }
 
 @layer base {
   * { @apply border-border; }
 
   html {
-    /* Liquid glass needs a colorful background for the effect to show */
-    background: linear-gradient(135deg, #e8d5ff 0%, #d4e8ff 35%, #ffd4f0 65%, #d4f0e8 100%);
-    background-attachment: fixed;
+    background: var(--page-gradient);
     min-height: 100%;
+    transition: background 0.5s ease;
   }
 
   body {
     @apply font-sans antialiased text-foreground;
-    background: transparent;
+    background: var(--page-gradient);
     min-height: 100vh;
     position: relative;
+    transition: background 0.5s ease;
   }
 
-  /* Global animated background blobs */
-  body::before {
-    content: '';
-    position: fixed;
-    top: -20%;
-    left: -10%;
-    width: 60vw;
-    height: 60vw;
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba(167, 139, 250, 0.35) 0%, transparent 70%);
-    pointer-events: none;
-    z-index: -1;
-  }
-
-  body::after {
-    content: '';
-    position: fixed;
-    bottom: -20%;
-    right: -10%;
-    width: 55vw;
-    height: 55vw;
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba(251, 113, 133, 0.28) 0%, transparent 70%);
-    pointer-events: none;
-    z-index: -1;
-  }
+  /* Background blobs disabled — solid page color used instead to avoid visible seams */
 }
 
 @layer utilities {
@@ -177,40 +424,35 @@
 
   /* Primary liquid glass card */
   .liquid-card {
-    background: rgba(255, 255, 255, 0.38);
+    background: var(--glass-card-bg);
     backdrop-filter: blur(24px) saturate(180%);
     -webkit-backdrop-filter: blur(24px) saturate(180%);
-    border: 1px solid rgba(255, 255, 255, 0.55);
-    box-shadow:
-      0 8px 32px rgba(120, 80, 200, 0.10),
-      0 2px 8px rgba(0,0,0,0.06),
-      inset 0 1px 0 rgba(255, 255, 255, 0.7),
-      inset 0 -1px 0 rgba(0,0,0,0.03);
+    border: 1px solid var(--glass-card-border);
+    box-shadow: var(--glass-card-shadow);
+    transition: background 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
   }
 
   /* Stronger glass for panels */
   .liquid-panel {
-    background: rgba(255, 255, 255, 0.52);
+    background: var(--glass-panel-bg);
     backdrop-filter: blur(32px) saturate(200%);
     -webkit-backdrop-filter: blur(32px) saturate(200%);
-    border: 1px solid rgba(255, 255, 255, 0.65);
-    box-shadow:
-      0 12px 40px rgba(120, 80, 200, 0.12),
-      0 4px 12px rgba(0,0,0,0.06),
-      inset 0 1px 0 rgba(255, 255, 255, 0.8),
-      inset 0 -1px 0 rgba(0,0,0,0.04);
+    border: 1px solid var(--glass-panel-border);
+    box-shadow: var(--glass-panel-shadow);
+    transition: background 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
   }
 
   /* Subtle glass for inner elements */
   .liquid-inner {
-    background: rgba(255, 255, 255, 0.28);
+    background: var(--glass-inner-bg);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.4);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    border: 1px solid var(--glass-inner-border);
+    box-shadow: var(--glass-inner-shadow);
+    transition: background 0.4s ease, border-color 0.4s ease;
   }
 
-  /* Dark glass (for hero sections) */
+  /* Dark glass (for hero sections / lab pages) — kept dark in both themes */
   .liquid-dark {
     background: rgba(15, 10, 40, 0.55);
     backdrop-filter: blur(24px) saturate(180%);
@@ -221,31 +463,60 @@
       inset 0 1px 0 rgba(255, 255, 255, 0.15);
   }
 
+  /* AI card glass — theme-aware. Light: soft warm-white card; Dark: cosmic dark. */
+  .liquid-ai {
+    background: rgba(255, 253, 248, 0.82);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(99, 102, 241, 0.14);
+    box-shadow:
+      0 8px 32px rgba(99, 102, 241, 0.10),
+      inset 0 1px 0 rgba(255, 255, 255, 0.85);
+    transition: background 0.4s ease, border-color 0.4s ease;
+  }
+  .dark .liquid-ai {
+    background: rgba(15, 10, 40, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow:
+      0 8px 32px rgba(0, 0, 0, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  }
+
   /* Glassmorphism header */
   .glass {
-    background: rgba(255, 255, 255, 0.68);
+    background: var(--glass-bg);
     backdrop-filter: blur(20px) saturate(180%);
     -webkit-backdrop-filter: blur(20px) saturate(180%);
+    transition: background 0.4s ease;
   }
 
-  /* Gradient text */
+  /* Gradient text — coral → honey */
   .gradient-text {
-    background: linear-gradient(135deg, #7c3aed 0%, #db2777 50%, #f59e0b 100%);
+    background: var(--grad-brand-text);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
 
+  /* Alt gradient — coral → teal (rare use) */
   .gradient-text-blue {
-    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 60%, #a855f7 100%);
+    background: linear-gradient(135deg, #da6b45 0%, #14b8a6 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
 
-  /* Hero background */
+  /* Brand gradient surfaces */
+  .bg-brand { background: var(--grad-brand); }
+  .bg-brand-soft { background: var(--grad-brand-soft); }
+  .bg-brand-warm { background: var(--grad-brand-warm); }
+  .bg-honey { background: var(--grad-honey); }
+  .bg-teal { background: var(--grad-teal); }
+  .bg-cta { background: var(--grad-cta); }
+
+  /* Hero background — deep warm charcoal */
   .bg-hero {
-    background: linear-gradient(135deg, #0f0c29 0%, #1e1b4b 25%, #312e81 55%, #4c1d95 80%, #2d1b69 100%);
+    background: var(--grad-hero);
   }
 
   /* Hover lift with glass shimmer */
@@ -260,34 +531,16 @@
       0 8px 16px rgba(0,0,0,0.08),
       inset 0 1px 0 rgba(255, 255, 255, 0.85);
   }
+  .dark .card-hover:hover {
+    box-shadow:
+      0 24px 48px rgba(0, 0, 0, 0.55),
+      0 8px 16px rgba(0,0,0,0.35),
+      inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  }
 
-  /* Blob decorations for sections */
+  /* Blob decorations disabled — pages now use a clean uniform background */
   .blob-bg {
     position: relative;
-    overflow: hidden;
-    isolation: isolate;
-  }
-  .blob-bg::before {
-    content: '';
-    position: absolute;
-    top: -30%;
-    right: -10%;
-    width: 50%;
-    height: 100%;
-    background: radial-gradient(circle, rgba(167,139,250,0.2) 0%, transparent 65%);
-    pointer-events: none;
-    z-index: -1;
-  }
-  .blob-bg::after {
-    content: '';
-    position: absolute;
-    bottom: -30%;
-    left: -10%;
-    width: 50%;
-    height: 100%;
-    background: radial-gradient(circle, rgba(251,113,133,0.15) 0%, transparent 65%);
-    pointer-events: none;
-    z-index: -1;
   }
 
   /* Prose styles */
@@ -316,29 +569,93 @@
     font-family: "Noto Sans Bengali", "Noto Sans", "Inter", system-ui, sans-serif;
   }
 
-  /* Professional Note Reading — clean white, no glass */
-  .note-reading-prose h1 { font-size: 1.75rem; font-weight: 900; color: #111827; margin-bottom: 0.75rem; margin-top: 1.5rem; line-height: 1.25; }
-  .note-reading-prose h2 { font-size: 1.35rem; font-weight: 800; color: #1f2937; margin-bottom: 0.6rem; margin-top: 1.5rem; padding-bottom: 0.4rem; border-bottom: 2px solid #f3f4f6; line-height: 1.3; }
-  .note-reading-prose h3 { font-size: 1.1rem; font-weight: 800; color: #374151; margin-bottom: 0.5rem; margin-top: 1.25rem; }
-  .note-reading-prose p { font-size: 1.05rem; line-height: 1.85; color: #374151; margin-bottom: 1rem; font-weight: 400; }
+  /* Professional Note Reading — theme-aware via CSS variables */
+  .note-reading-prose h1 { font-size: 1.75rem; font-weight: 900; color: var(--note-h1); margin-bottom: 0.75rem; margin-top: 1.5rem; line-height: 1.25; }
+  .note-reading-prose h2 { font-size: 1.35rem; font-weight: 800; color: var(--note-h2); margin-bottom: 0.6rem; margin-top: 1.5rem; padding-bottom: 0.4rem; border-bottom: 2px solid var(--note-rule); line-height: 1.3; }
+  .note-reading-prose h3 { font-size: 1.1rem; font-weight: 800; color: var(--note-h3); margin-bottom: 0.5rem; margin-top: 1.25rem; }
+  .note-reading-prose p { font-size: 1.05rem; line-height: 1.85; color: var(--note-body); margin-bottom: 1rem; font-weight: 400; }
   .note-reading-prose ul { list-style: disc; padding-left: 1.5rem; margin-bottom: 1rem; }
   .note-reading-prose ol { list-style: decimal; padding-left: 1.5rem; margin-bottom: 1rem; }
-  .note-reading-prose li { font-size: 1.05rem; line-height: 1.8; color: #374151; margin-bottom: 0.3rem; }
-  .note-reading-prose strong { font-weight: 800; color: #111827; }
-  .note-reading-prose em { font-style: italic; color: #4b5563; }
-  .note-reading-prose code { background: #f3f4f6; color: #7c3aed; padding: 0.15rem 0.5rem; border-radius: 0.375rem; font-size: 0.9em; font-family: 'JetBrains Mono', 'Fira Code', monospace; font-weight: 600; }
-  .note-reading-prose pre { background: #1e1e2e; border-radius: 0.75rem; padding: 1.25rem; margin-bottom: 1.25rem; overflow-x: auto; }
-  .note-reading-prose pre code { background: transparent; color: #cdd6f4; padding: 0; font-size: 0.9rem; }
-  .note-reading-prose blockquote { border-left: 4px solid #7c3aed; padding-left: 1rem; color: #6b7280; font-style: italic; margin: 1rem 0; background: #faf5ff; border-radius: 0 0.5rem 0.5rem 0; padding: 0.75rem 1rem; }
+  .note-reading-prose li { font-size: 1.05rem; line-height: 1.8; color: var(--note-body); margin-bottom: 0.3rem; }
+  .note-reading-prose strong { font-weight: 800; color: var(--note-strong); }
+  .note-reading-prose em { font-style: italic; color: var(--note-em); }
+  .note-reading-prose code { background: var(--note-code-bg); color: var(--note-code-fg); padding: 0.15rem 0.5rem; border-radius: 0.375rem; font-size: 0.9em; font-family: 'JetBrains Mono', 'Fira Code', monospace; font-weight: 600; }
+  .note-reading-prose pre { background: var(--note-pre-bg); border-radius: 0.75rem; padding: 1.25rem; margin-bottom: 1.25rem; overflow-x: auto; }
+  .note-reading-prose pre code { background: transparent; color: var(--note-pre-fg); padding: 0; font-size: 0.9rem; }
+  .note-reading-prose blockquote { border-left: 4px solid var(--note-quote-border); padding-left: 1rem; color: var(--note-quote-fg); font-style: italic; margin: 1rem 0; background: var(--note-quote-bg); border-radius: 0 0.5rem 0.5rem 0; padding: 0.75rem 1rem; }
   .note-reading-prose table { width: 100%; border-collapse: collapse; margin-bottom: 1.25rem; font-size: 0.95rem; }
-  .note-reading-prose th { background: #7c3aed; color: white; font-weight: 800; text-align: left; padding: 0.6rem 0.9rem; }
-  .note-reading-prose td { padding: 0.6rem 0.9rem; border-bottom: 1px solid #e5e7eb; color: #374151; }
-  .note-reading-prose tr:nth-child(even) td { background: #f9fafb; }
-  .note-reading-prose a { color: #7c3aed; text-decoration: underline; }
+  .note-reading-prose th { background: var(--note-th-bg); color: white; font-weight: 800; text-align: left; padding: 0.6rem 0.9rem; }
+  .note-reading-prose td { padding: 0.6rem 0.9rem; border-bottom: 1px solid var(--note-table-border); color: var(--note-body); }
+  .note-reading-prose tr:nth-child(even) td { background: var(--note-table-row-alt); }
+  .note-reading-prose a { color: var(--note-link); text-decoration: underline; }
   /* KaTeX display math centering */
   .note-reading-prose .math-display { overflow-x: auto; padding: 1rem 0; text-align: center; }
   /* Images inside notes — responsive, rounded, subtle shadow */
   .note-reading-prose img { max-width: 100%; height: auto; border-radius: 0.75rem; box-shadow: 0 2px 12px rgba(0,0,0,0.08); margin-top: 0.75rem; margin-bottom: 0.75rem; }
   .note-reading-prose .katex-display { margin: 1rem 0; overflow-x: auto; }
   .note-reading-prose .katex { font-size: 1.15em; }
+
+  /* =======================
+     MOTION & EFFECTS
+     ======================= */
+
+  /* Subtle fade-in-up entrance — apply to content rows for staggered feel */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .anim-fade-up { animation: fadeUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+  /* Soft floating animation for hero emojis / accent decorations */
+  @keyframes floatY {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-8px); }
+  }
+  .anim-float { animation: floatY 4s ease-in-out infinite; }
+
+  /* Gentle pulse glow — for primary CTA */
+  @keyframes pulseGlow {
+    0%, 100% { box-shadow: 0 12px 28px -6px rgba(218, 107, 69, 0.45); }
+    50%      { box-shadow: 0 16px 40px -6px rgba(218, 107, 69, 0.65); }
+  }
+  .anim-pulse-glow { animation: pulseGlow 2.4s ease-in-out infinite; }
+
+  /* Shimmer for skeleton loaders — warm-toned */
+  @keyframes shimmer {
+    0%   { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+  .skeleton-shimmer {
+    background: linear-gradient(90deg, transparent, rgba(218, 107, 69, 0.18), transparent);
+    background-size: 200% 100%;
+    animation: shimmer 1.6s linear infinite;
+  }
+
+  /* Brand pill — small reusable badge */
+  .brand-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.375rem 0.875rem;
+    border-radius: 9999px;
+    font-weight: 800;
+    font-size: 0.75rem;
+    color: var(--brand-deep);
+    background: var(--brand-50);
+    border: 1px solid var(--brand-100);
+  }
+  .dark .brand-pill {
+    color: var(--brand-light);
+    background: rgba(240, 135, 102, 0.10);
+    border-color: rgba(240, 135, 102, 0.20);
+  }
+
+  /* Smooth focus ring — coral */
+  .ring-brand {
+    box-shadow: 0 0 0 3px rgba(218, 107, 69, 0.35);
+  }
+
+  /* Tilt-on-hover (subtle) */
+  .tilt-hover { transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+  .tilt-hover:hover { transform: perspective(800px) rotateX(2deg) rotateY(-2deg) translateY(-4px); }
 }

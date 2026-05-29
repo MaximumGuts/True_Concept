@@ -1,0 +1,439 @@
+import { j as e } from "./index-CkhNTvuD.js";
+import { c as N, r as l } from "./App-U7Teu2t1.js";
+import { u as $, S as A, a as v, d as C, c as S } from "./sim-ui-Bi06fhUM.js";
+import "./rotate-ccw-DQs0uxq4.js";
+const q = [
+    [
+      "path",
+      {
+        d: "M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z",
+        key: "uqj9uw",
+      },
+    ],
+    ["path", { d: "M16 9a5 5 0 0 1 0 6", key: "1q6k2b" }],
+    ["path", { d: "M19.364 18.364a9 9 0 0 0 0-12.728", key: "ijwkga" }],
+  ],
+  M = N("volume-2", q);
+const H = [
+    [
+      "path",
+      {
+        d: "M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z",
+        key: "uqj9uw",
+      },
+    ],
+    ["line", { x1: "22", x2: "16", y1: "9", y2: "15", key: "1ewh16" }],
+    ["line", { x1: "16", x2: "22", y1: "9", y2: "15", key: "5ykzw1" }],
+  ],
+  L = N("volume-x", H);
+function F() {
+  const [t, m] = l.useState(2),
+    [x, u] = l.useState(30),
+    [h, o] = l.useState(0);
+  $(!0, (j) => o((c) => c + j * t * 2));
+  const f = 320,
+    r = 100,
+    b = Array.from({ length: 80 }, (j, c) => {
+      const p = (c / 79) * f,
+        a = r / 2 + Math.sin((c / 79) * Math.PI * 2 * t + h) * x;
+      return `${c === 0 ? "M" : "L"} ${p.toFixed(1)} ${a.toFixed(1)}`;
+    }).join(" ");
+  return e.jsxs(A, {
+    hint: "Frequency = pitch (high vs low). Amplitude = loudness.",
+    children: [
+      e.jsx(v, { label: "Frequency", value: t, onChange: m, min: 1, max: 8, step: 0.5, unit: " Hz", color: "#f08766" }),
+      e.jsx(v, { label: "Amplitude", value: x, onChange: u, min: 5, max: 45, step: 1, color: "#ef4444" }),
+      e.jsxs("svg", {
+        viewBox: `0 0 ${f} ${r}`,
+        className: "w-full bg-gradient-to-r from-orange-50 to-amber-50 rounded-xl mt-2",
+        children: [
+          e.jsx("line", { x1: "0", y1: r / 2, x2: f, y2: r / 2, stroke: "#94a3b8", strokeDasharray: "2 3" }),
+          e.jsx("path", { d: b, fill: "none", stroke: "#f08766", strokeWidth: "2.5", strokeLinejoin: "round" }),
+        ],
+      }),
+    ],
+  });
+}
+function D() {
+  const [t, m] = l.useState(440),
+    [x, u] = l.useState(!1),
+    h = l.useRef(null),
+    o = l.useRef(null),
+    f = l.useRef(null);
+  (l.useEffect(
+    () => () => {
+      try {
+        o.current?.stop();
+      } catch {}
+      h.current?.close();
+    },
+    [],
+  ),
+    l.useEffect(() => {
+      o.current && h.current && o.current.frequency.setValueAtTime(t, h.current.currentTime);
+    }, [t]));
+  const r = () => {
+      if (x) {
+        try {
+          o.current?.stop();
+        } catch {}
+        ((o.current = null), u(!1));
+      } else {
+        const j = window.AudioContext || window.webkitAudioContext,
+          c = h.current ?? new j();
+        h.current = c;
+        const p = c.createOscillator(),
+          a = c.createGain();
+        ((a.gain.value = 0.08),
+          (p.frequency.value = t),
+          (p.type = "sine"),
+          p.connect(a).connect(c.destination),
+          p.start(),
+          (o.current = p),
+          (f.current = a),
+          u(!0));
+      }
+    },
+    b = t < 200 ? "Bass" : t < 500 ? "Mid" : t < 1500 ? "Treble" : "High";
+  return e.jsxs(A, {
+    hint: "Human hearing: 20 Hz to 20 000 Hz. Tap play and slide to hear the pitch change.",
+    controls: e.jsx(C, {
+      onClick: r,
+      color: x ? "#dc2626" : "#10b981",
+      icon: x ? e.jsx(L, { className: "w-3.5 h-3.5" }) : e.jsx(M, { className: "w-3.5 h-3.5" }),
+      children: x ? "Stop" : "Play",
+    }),
+    children: [
+      e.jsx(v, {
+        label: "Frequency",
+        value: t,
+        onChange: m,
+        min: 100,
+        max: 2e3,
+        step: 20,
+        unit: " Hz",
+        color: "#0ea5e9",
+      }),
+      e.jsxs("div", {
+        className: "text-center my-3",
+        children: [
+          e.jsx("div", { className: "text-3xl", children: "🎵" }),
+          e.jsxs("div", {
+            className: "text-sm font-black text-gray-700 dark:text-gray-200 mt-1",
+            children: [b, " • ", t, " Hz"],
+          }),
+        ],
+      }),
+    ],
+  });
+}
+function G() {
+  const [t, m] = l.useState(120),
+    [x, u] = l.useState(20),
+    h = 331.4 + 0.6 * x,
+    o = (2 * t) / h,
+    f = o >= 0.1,
+    [r, b] = l.useState({ active: !1, start: 0, dur: 0 }),
+    [j, c] = l.useState(0);
+  $(r.active, () => {
+    (c(performance.now()), performance.now() - r.start > r.dur * 1e3 + 1e3 && b((i) => ({ ...i, active: !1 })));
+  });
+  const p = () => {
+      b({ active: !0, start: performance.now(), dur: o });
+      const i = window.AudioContext || window.webkitAudioContext;
+      if (!i) return;
+      const s = new i(),
+        y = s.createOscillator(),
+        d = s.createGain();
+      if (
+        ((y.type = "triangle"),
+        y.frequency.setValueAtTime(600, s.currentTime),
+        y.frequency.exponentialRampToValueAtTime(100, s.currentTime + 0.1),
+        d.gain.setValueAtTime(0, s.currentTime),
+        d.gain.linearRampToValueAtTime(0.5, s.currentTime + 0.01),
+        d.gain.exponentialRampToValueAtTime(0.01, s.currentTime + 0.1),
+        y.connect(d).connect(s.destination),
+        y.start(s.currentTime),
+        y.stop(s.currentTime + 0.1),
+        t > 0)
+      ) {
+        const n = Math.max(0.02, 0.4 - t / 1e3),
+          g = s.currentTime + o,
+          k = s.createOscillator(),
+          w = s.createGain();
+        ((k.type = "triangle"),
+          k.frequency.setValueAtTime(400, g),
+          k.frequency.exponentialRampToValueAtTime(80, g + 0.1),
+          w.gain.setValueAtTime(0, g),
+          w.gain.linearRampToValueAtTime(n, g + 0.01),
+          w.gain.exponentialRampToValueAtTime(0.01, g + 0.15),
+          k.connect(w).connect(s.destination),
+          k.start(g),
+          k.stop(g + 0.15));
+      }
+    },
+    a = 50 + (t / 500) * 300,
+    R = () => {
+      if (!r.active) return null;
+      const i = (j - r.start) / 1e3;
+      if (i > r.dur) {
+        const d = i - r.dur;
+        if (d < 0.6) {
+          const n = Math.max(0, 1 - d * 1.6);
+          return e.jsx("circle", {
+            cx: 50,
+            cy: 110,
+            r: 20 + d * 150,
+            stroke: "#10b981",
+            strokeWidth: 4,
+            fill: "none",
+            opacity: n,
+          });
+        }
+        return null;
+      }
+      const s = r.dur / 2;
+      if (i > s) {
+        const d = (i - s) / s,
+          n = a - d * (a - 50);
+        return e.jsxs("g", {
+          children: [
+            e.jsx("path", {
+              d: `M ${n} 60 Q ${n - 20} 110 ${n} 160`,
+              fill: "none",
+              stroke: "#10b981",
+              strokeWidth: 4,
+              style: { filter: "drop-shadow(0 0 8px #10b981)" },
+            }),
+            e.jsx("path", {
+              d: `M ${n + 12} 70 Q ${n - 5} 110 ${n + 12} 150`,
+              fill: "none",
+              stroke: "#10b981",
+              strokeWidth: 2,
+              opacity: 0.5,
+            }),
+          ],
+        });
+      } else {
+        const n = 50 + (i / s) * (a - 50);
+        return e.jsxs("g", {
+          children: [
+            e.jsx("path", {
+              d: `M ${n} 60 Q ${n + 20} 110 ${n} 160`,
+              fill: "none",
+              stroke: "#38bdf8",
+              strokeWidth: 4,
+              style: { filter: "drop-shadow(0 0 8px #38bdf8)" },
+            }),
+            e.jsx("path", {
+              d: `M ${n - 12} 70 Q ${n + 5} 110 ${n - 12} 150`,
+              fill: "none",
+              stroke: "#38bdf8",
+              strokeWidth: 2,
+              opacity: 0.5,
+            }),
+          ],
+        });
+      }
+    },
+    T = (i) => {
+      (i === "hall" && (m(15), u(25)), i === "cave" && (m(120), u(10)), i === "canyon" && (m(400), u(20)));
+    },
+    W = f
+      ? `Since the delay (${o.toFixed(3)}s) is ≥ 0.1s, the human brain perceives a DISTINCT ECHO!`
+      : `Since the delay (${o.toFixed(3)}s) is < 0.1s, the reflection MERGES with the original sound (Reverberation).`;
+  return e.jsxs(A, {
+    onReset: () => {
+      (m(120), u(20));
+    },
+    hint: "Sound travels at approx 343 m/s. An echo is only heard if the reflection takes at least 0.1 seconds to return.",
+    children: [
+      e.jsxs("div", {
+        className: "grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4",
+        children: [
+          e.jsxs("div", {
+            className: "flex flex-col gap-3",
+            children: [
+              e.jsxs("div", {
+                className: "flex gap-2",
+                children: [
+                  e.jsx("button", {
+                    onClick: () => T("hall"),
+                    className:
+                      "flex-1 bg-white/5 py-1.5 rounded text-xs font-bold text-gray-300 hover:bg-white/10 transition-colors",
+                    children: "Hall Preset",
+                  }),
+                  e.jsx("button", {
+                    onClick: () => T("cave"),
+                    className:
+                      "flex-1 bg-white/5 py-1.5 rounded text-xs font-bold text-gray-300 hover:bg-white/10 transition-colors",
+                    children: "Cave Preset",
+                  }),
+                  e.jsx("button", {
+                    onClick: () => T("canyon"),
+                    className:
+                      "flex-1 bg-white/5 py-1.5 rounded text-xs font-bold text-gray-300 hover:bg-white/10 transition-colors",
+                    children: "Canyon Preset",
+                  }),
+                ],
+              }),
+              e.jsx(v, {
+                label: "Distance to Wall (d)",
+                value: t,
+                onChange: m,
+                min: 5,
+                max: 500,
+                step: 1,
+                unit: " m",
+                color: "#38bdf8",
+              }),
+              e.jsx(v, {
+                label: "Air Temperature (T)",
+                value: x,
+                onChange: u,
+                min: -20,
+                max: 50,
+                step: 1,
+                unit: " °C",
+                color: "#facc15",
+              }),
+              e.jsx(C, {
+                onClick: p,
+                color: "#ec4899",
+                icon: e.jsx(M, { className: "w-4 h-4" }),
+                children: "Trigger Sound Pulse",
+              }),
+            ],
+          }),
+          e.jsxs("div", {
+            className:
+              "lg:col-span-2 bg-[#0f172a]/50 p-4 rounded-xl border border-white/10 flex flex-col justify-center",
+            children: [
+              e.jsxs("div", {
+                className: "grid grid-cols-2 sm:grid-cols-4 gap-2",
+                children: [
+                  e.jsx(S, { label: "Speed (v)", value: h, unit: " m/s", color: "#facc15", precision: 1 }),
+                  e.jsx(S, { label: "Total Dist (2d)", value: 2 * t, unit: " m", color: "#38bdf8", precision: 0 }),
+                  e.jsx(S, { label: "Echo Delay (t)", value: o, unit: " s", color: "#ec4899", precision: 3 }),
+                  e.jsxs("div", {
+                    className:
+                      "flex flex-col items-center justify-center p-2 bg-black/20 rounded-lg border border-white/5",
+                    children: [
+                      e.jsx("span", {
+                        className: "text-[10px] font-black text-gray-500 uppercase tracking-wide mb-1",
+                        children: "Human Hearing",
+                      }),
+                      e.jsx("span", {
+                        className: `text-sm font-bold ${f ? "text-emerald-400" : "text-rose-400"}`,
+                        children: f ? "Echo Heard" : "Merged",
+                      }),
+                    ],
+                  }),
+                ],
+              }),
+              e.jsxs("p", {
+                className: "text-xs font-bold text-gray-400 mt-4 text-center",
+                children: ["Formula: ", e.jsx("span", { className: "text-fuchsia-400", children: "t = 2d / v" })],
+              }),
+            ],
+          }),
+        ],
+      }),
+      e.jsx("div", {
+        className:
+          "relative rounded-2xl overflow-hidden shadow-2xl border border-white/10 bg-gradient-to-b from-[#020617] to-[#0f172a] touch-none mb-4 w-full h-[260px]",
+        children: e.jsxs("svg", {
+          viewBox: "0 0 400 200",
+          className: "w-full h-full absolute inset-0",
+          preserveAspectRatio: "xMidYMid meet",
+          children: [
+            e.jsx("line", { x1: "50", y1: "180", x2: "350", y2: "180", stroke: "#334155", strokeWidth: "2" }),
+            e.jsx("line", { x1: "50", y1: "175", x2: "50", y2: "185", stroke: "#334155", strokeWidth: "2" }),
+            e.jsx("line", { x1: "350", y1: "175", x2: "350", y2: "185", stroke: "#334155", strokeWidth: "2" }),
+            e.jsx("text", {
+              x: "50",
+              y: "195",
+              fill: "#64748b",
+              fontSize: "10",
+              textAnchor: "middle",
+              fontWeight: "bold",
+              children: "0 m",
+            }),
+            e.jsx("text", {
+              x: "350",
+              y: "195",
+              fill: "#64748b",
+              fontSize: "10",
+              textAnchor: "middle",
+              fontWeight: "bold",
+              children: "500 m",
+            }),
+            e.jsxs("text", {
+              x: Math.max(70, Math.min(330, a)),
+              y: "195",
+              fill: "#38bdf8",
+              fontSize: "10",
+              textAnchor: "middle",
+              fontWeight: "bold",
+              children: [t, " m"],
+            }),
+            e.jsx("rect", { x: a - 5, y: "40", width: "10", height: "140", fill: "#475569", rx: "2" }),
+            e.jsx("path", { d: `M ${a + 5} 40 L ${a + 30} 10 L ${a + 30} 150 L ${a + 5} 180 Z`, fill: "#334155" }),
+            e.jsx("circle", { cx: "50", cy: "100", r: "12", fill: "#94a3b8" }),
+            e.jsx("line", {
+              x1: "50",
+              y1: "112",
+              x2: "50",
+              y2: "150",
+              stroke: "#94a3b8",
+              strokeWidth: "5",
+              strokeLinecap: "round",
+            }),
+            e.jsx("line", {
+              x1: "50",
+              y1: "125",
+              x2: "35",
+              y2: "140",
+              stroke: "#94a3b8",
+              strokeWidth: "4",
+              strokeLinecap: "round",
+            }),
+            e.jsx("line", {
+              x1: "50",
+              y1: "125",
+              x2: "65",
+              y2: "135",
+              stroke: "#94a3b8",
+              strokeWidth: "4",
+              strokeLinecap: "round",
+            }),
+            e.jsx("line", {
+              x1: "50",
+              y1: "150",
+              x2: "40",
+              y2: "180",
+              stroke: "#94a3b8",
+              strokeWidth: "5",
+              strokeLinecap: "round",
+            }),
+            e.jsx("line", {
+              x1: "50",
+              y1: "150",
+              x2: "60",
+              y2: "180",
+              stroke: "#94a3b8",
+              strokeWidth: "5",
+              strokeLinecap: "round",
+            }),
+            R(),
+          ],
+        }),
+      }),
+      e.jsx("div", {
+        className: "w-full bg-slate-900 border border-emerald-500/30 p-3 mb-4 rounded-xl shadow-lg text-center",
+        children: e.jsx("p", { className: "text-sm font-bold text-emerald-100 leading-relaxed", children: W }),
+      }),
+    ],
+  });
+}
+export { G as EchoSim, D as PitchSim, F as SoundWaveSim };

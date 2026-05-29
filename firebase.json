@@ -1,0 +1,84 @@
+{
+  "firestore": {
+    "rules": "firestore.rules"
+  },
+  "functions": [
+    {
+      "source": "functions/lib",
+      "codebase": "default",
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "*.local"
+      ]
+    }
+  ],
+  "hosting": {
+    "public": "artifacts/true-concept/dist/public",
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "headers": [
+      {
+        "//": "CORS for /api/**. Firebase Hosting's Fastly CDN handles OPTIONS preflights before forwarding to the Cloud Function, so our in-function handleCors() never runs for preflights. These hosting-level headers make the browser preflight succeed; the actual GET/POST is then forwarded to the function which sets its own ACAO too. Capacitor WebView origin (http://localhost) is covered by '*'.",
+        "source": "/api/**",
+        "headers": [
+          { "key": "Access-Control-Allow-Origin", "value": "*" },
+          { "key": "Access-Control-Allow-Methods", "value": "GET, POST, PUT, PATCH, DELETE, OPTIONS" },
+          { "key": "Access-Control-Allow-Headers", "value": "Content-Type, Authorization" },
+          { "key": "Access-Control-Max-Age", "value": "3600" }
+        ]
+      }
+    ],
+    "rewrites": [
+      { "source": "/api/auth/**", "function": "auth", "region": "asia-south1" },
+      { "source": "/api/subjects/**", "function": "subjects", "region": "asia-south1" },
+      { "source": "/api/subjects", "function": "subjects", "region": "asia-south1" },
+      { "source": "/api/chapters/**", "function": "chapters", "region": "asia-south1" },
+      { "source": "/api/chapters", "function": "chapters", "region": "asia-south1" },
+      { "source": "/api/notes/**", "function": "content", "region": "asia-south1" },
+      { "source": "/api/notes", "function": "content", "region": "asia-south1" },
+      { "source": "/api/mcqs/**", "function": "content", "region": "asia-south1" },
+      { "source": "/api/mcqs", "function": "content", "region": "asia-south1" },
+      { "source": "/api/qa/**", "function": "content", "region": "asia-south1" },
+      { "source": "/api/qa", "function": "content", "region": "asia-south1" },
+      { "source": "/api/videos/**", "function": "content", "region": "asia-south1" },
+      { "source": "/api/videos", "function": "content", "region": "asia-south1" },
+      { "source": "/api/papers/**", "function": "content", "region": "asia-south1" },
+      { "source": "/api/papers", "function": "content", "region": "asia-south1" },
+      { "source": "/api/experiments/**", "function": "experiments", "region": "asia-south1" },
+      { "source": "/api/experiments", "function": "experiments", "region": "asia-south1" },
+      { "source": "/api/progress/**", "function": "progress", "region": "asia-south1" },
+      { "source": "/api/progress", "function": "progress", "region": "asia-south1" },
+      { "source": "/api/dashboard/**", "function": "dashboard", "region": "asia-south1" },
+      { "source": "/api/search/**", "function": "search", "region": "asia-south1" },
+      { "source": "/api/search", "function": "search", "region": "asia-south1" },
+      { "source": "/api/students/**", "function": "students", "region": "asia-south1" },
+      { "source": "/api/students", "function": "students", "region": "asia-south1" },
+      { "source": "/api/storage/**", "function": "storage", "region": "asia-south1" },
+      { "source": "/api/storage", "function": "storage", "region": "asia-south1" },
+      { "source": "/api/ai/**",       "function": "aiMentor",  "region": "asia-south1" },
+      { "source": "/api/ai",          "function": "aiMentor",  "region": "asia-south1" },
+      { "source": "/api/healthz", "function": "health", "region": "asia-south1" },
+      { "source": "**", "destination": "/index.html" }
+    ]
+  },
+  "emulators": {
+    "functions": {
+      "port": 5001,
+      "host": "localhost"
+    },
+    "firestore": {
+      "port": 8090,
+      "host": "localhost"
+    },
+    "hosting": {
+      "port": 5000,
+      "host": "localhost"
+    },
+    "ui": {
+      "enabled": true,
+      "port": 4000
+    }
+  }
+}

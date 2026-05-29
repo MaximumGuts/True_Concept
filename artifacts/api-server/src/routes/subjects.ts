@@ -1,19 +1,18 @@
 import { Router, type IRouter } from "express";
-import { eq, sql } from "drizzle-orm";
-import { db, subjectsTable, chaptersTable } from "@workspace/db";
-import { requireAdmin, requireAuth, type AuthUser } from "../middlewares/auth";
+import { db } from "@workspace/db";
+import { requireAdmin, requireAuth, type AuthUser } from "../middlewares/auth.js";
 import type { Request, Response } from "express";
 
 const router: IRouter = Router();
 
 router.get("/subjects", async (req: Request, res: Response): Promise<void> => {
-  const subjects = await db.select().from(subjectsTable);
-  const chapterCounts = await db
-    .select({ subjectId: chaptersTable.subjectId, count: sql<number>`count(*)::int` })
-    .from(chaptersTable)
-    .groupBy(chaptersTable.subjectId);
-  const countMap = new Map(chapterCounts.map((c) => [c.subjectId, c.count]));
-  const result = subjects.map((s) => ({ ...s, chapterCount: countMap.get(s.id) ?? 0 }));
+  const subjectsSnap = await db.collection("subjects").get();
+  const subjects = subjectsSnap.docs.map((doc: any) => ({ id: doc.id, ...doc.data() }));
+  
+  const result = await Promise.all(subjects.map(async (s: any) => {
+    const chaptersSnap = await db.collection("chapters").where("subjectId", "==", s.id).count().get();
+    return { ...s, chapterCount: chaptersSnap.data().count };
+  }));
   res.json(result);
 });
 
@@ -23,43 +22,51 @@ router.post("/subjects", requireAdmin as (req: Request, res: Response, next: () 
     res.status(400).json({ error: "Missing required fields" });
     return;
   }
-  const [subject] = await db.insert(subjectsTable).values({ name, description, icon, classLevels, color }).returning();
-  res.status(201).json({ ...subject, chapterCount: 0 });
+  const newRef = db.collection("subjects").doc();
+  const newSubject = { name, description, icon, classLevels, color, createdAt: new Date() };
+  await newRef.set(newSubject);
+  res.status(201).json({ id: newRef.id, ...newSubject, chapterCount: 0 });
 });
 
 router.get("/subjects/:subjectId", async (req: Request, res: Response): Promise<void> => {
-  const id = parseInt(Array.isArray(req.params.subjectId) ? req.params.subjectId[0] : req.params.subjectId, 10);
-  const [subject] = await db.select().from(subjectsTable).where(eq(subjectsTable.id, id));
-  if (!subject) {
+  const id = Array.isArray(req.params.subjectId) ? req.params.subjectId[0] : req.params.subjectId;
+  const docSnap = await db.collection("subjects").doc(id).get();
+  if (!docSnap.exists) {
     res.status(404).json({ error: "Subject not found" });
     return;
   }
-  const [countRow] = await db
-    .select({ count: sql<number>`count(*)::int` })
-    .from(chaptersTable)
-    .where(eq(chaptersTable.subjectId, id));
-  res.json({ ...subject, chapterCount: countRow?.count ?? 0 });
+  
+  const countSnap = await db.collection("chapters").where("subjectId", "==", id).count().get();
+  res.json({ id: docSnap.id, ...docSnap.data(), chapterCount: countSnap.data().count });
 });
 
 router.put("/subjects/:subjectId", requireAdmin as (req: Request, res: Response, next: () => void) => void, async (req: Request, res: Response): Promise<void> => {
-  const id = parseInt(Array.isArray(req.params.subjectId) ? req.params.subjectId[0] : req.params.subjectId, 10);
+  const id = Array.isArray(req.params.subjectId) ? req.params.subjectId[0] : req.params.subjectId;
   const { name, description, icon, classLevels, color } = req.body;
-  const [subject] = await db.update(subjectsTable).set({ name, description, icon, classLevels, color }).where(eq(subjectsTable.id, id)).returning();
-  if (!subject) {
+  
+  const docRef = db.collection("subjects").doc(id);
+  const docSnap = await docRef.get();
+  if (!docSnap.exists) {
     res.status(404).json({ error: "Subject not found" });
     return;
   }
-  const [countRow] = await db.select({ count: sql<number>`count(*)::int` }).from(chaptersTable).where(eq(chaptersTable.subjectId, id));
-  res.json({ ...subject, chapterCount: countRow?.count ?? 0 });
+  
+  const updates = { name, description, icon, classLevels, color };
+  await docRef.update(updates);
+  
+  const countSnap = await db.collection("chapters").where("subjectId", "==", id).count().get();
+  res.json({ id, ...docSnap.data(), ...updates, chapterCount: countSnap.data().count });
 });
 
 router.delete("/subjects/:subjectId", requireAdmin as (req: Request, res: Response, next: () => void) => void, async (req: Request, res: Response): Promise<void> => {
-  const id = parseInt(Array.isArray(req.params.subjectId) ? req.params.subjectId[0] : req.params.subjectId, 10);
-  const [subject] = await db.delete(subjectsTable).where(eq(subjectsTable.id, id)).returning();
-  if (!subject) {
+  const id = Array.isArray(req.params.subjectId) ? req.params.subjectId[0] : req.params.subjectId;
+  const docRef = db.collection("subjects").doc(id);
+  const docSnap = await docRef.get();
+  if (!docSnap.exists) {
     res.status(404).json({ error: "Subject not found" });
     return;
   }
+  await docRef.delete();
   res.sendStatus(204);
 });
 

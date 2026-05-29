@@ -24,7 +24,7 @@ export const LoginBody = zod.object({
 
 export const LoginResponse = zod.object({
   user: zod.object({
-    id: zod.number(),
+    id: zod.string(),
     username: zod.string(),
     role: zod.enum(["admin", "student"]),
     name: zod.string(),
@@ -36,7 +36,7 @@ export const LoginResponse = zod.object({
  * @summary Get current user
  */
 export const GetMeResponse = zod.object({
-  id: zod.number(),
+  id: zod.string(),
   username: zod.string(),
   role: zod.enum(["admin", "student"]),
   name: zod.string(),
@@ -46,7 +46,7 @@ export const GetMeResponse = zod.object({
  * @summary List all subjects
  */
 export const GetSubjectsResponseItem = zod.object({
-  id: zod.number(),
+  id: zod.string(),
   name: zod.string(),
   description: zod.string(),
   icon: zod.string(),
@@ -71,11 +71,11 @@ export const CreateSubjectBody = zod.object({
  * @summary Get a subject
  */
 export const GetSubjectParams = zod.object({
-  subjectId: zod.coerce.number(),
+  subjectId: zod.coerce.string(),
 });
 
 export const GetSubjectResponse = zod.object({
-  id: zod.number(),
+  id: zod.string(),
   name: zod.string(),
   description: zod.string(),
   icon: zod.string(),
@@ -88,7 +88,7 @@ export const GetSubjectResponse = zod.object({
  * @summary Update a subject (admin only)
  */
 export const UpdateSubjectParams = zod.object({
-  subjectId: zod.coerce.number(),
+  subjectId: zod.coerce.string(),
 });
 
 export const UpdateSubjectBody = zod.object({
@@ -100,7 +100,7 @@ export const UpdateSubjectBody = zod.object({
 });
 
 export const UpdateSubjectResponse = zod.object({
-  id: zod.number(),
+  id: zod.string(),
   name: zod.string(),
   description: zod.string(),
   icon: zod.string(),
@@ -113,20 +113,20 @@ export const UpdateSubjectResponse = zod.object({
  * @summary Delete a subject (admin only)
  */
 export const DeleteSubjectParams = zod.object({
-  subjectId: zod.coerce.number(),
+  subjectId: zod.coerce.string(),
 });
 
 /**
  * @summary List chapters (optionally filtered)
  */
 export const GetChaptersQueryParams = zod.object({
-  subjectId: zod.coerce.number().optional(),
+  subjectId: zod.coerce.string().optional(),
   classLevel: zod.coerce.string().optional(),
 });
 
 export const GetChaptersResponseItem = zod.object({
-  id: zod.number(),
-  subjectId: zod.number(),
+  id: zod.string(),
+  subjectId: zod.string(),
   subjectName: zod.string().optional(),
   classLevel: zod.string(),
   title: zod.string(),
@@ -136,6 +136,7 @@ export const GetChaptersResponseItem = zod.object({
   hasMcqs: zod.boolean(),
   hasQa: zod.boolean(),
   hasVideo: zod.boolean(),
+  medium: zod.enum(["English", "Assamese", "Both"]).optional(),
 });
 export const GetChaptersResponse = zod.array(GetChaptersResponseItem);
 
@@ -143,7 +144,7 @@ export const GetChaptersResponse = zod.array(GetChaptersResponseItem);
  * @summary Create a chapter (admin only)
  */
 export const CreateChapterBody = zod.object({
-  subjectId: zod.number(),
+  subjectId: zod.string(),
   classLevel: zod.enum(["Class IX", "Class X"]),
   title: zod.string(),
   chapterNumber: zod.number(),
@@ -154,12 +155,12 @@ export const CreateChapterBody = zod.object({
  * @summary Get a chapter
  */
 export const GetChapterParams = zod.object({
-  chapterId: zod.coerce.number(),
+  chapterId: zod.coerce.string(),
 });
 
 export const GetChapterResponse = zod.object({
-  id: zod.number(),
-  subjectId: zod.number(),
+  id: zod.string(),
+  subjectId: zod.string(),
   subjectName: zod.string().optional(),
   classLevel: zod.string(),
   title: zod.string(),
@@ -169,17 +170,18 @@ export const GetChapterResponse = zod.object({
   hasMcqs: zod.boolean(),
   hasQa: zod.boolean(),
   hasVideo: zod.boolean(),
+  medium: zod.enum(["English", "Assamese", "Both"]).optional(),
 });
 
 /**
  * @summary Update a chapter (admin only)
  */
 export const UpdateChapterParams = zod.object({
-  chapterId: zod.coerce.number(),
+  chapterId: zod.coerce.string(),
 });
 
 export const UpdateChapterBody = zod.object({
-  subjectId: zod.number(),
+  subjectId: zod.string(),
   classLevel: zod.enum(["Class IX", "Class X"]),
   title: zod.string(),
   chapterNumber: zod.number(),
@@ -187,8 +189,8 @@ export const UpdateChapterBody = zod.object({
 });
 
 export const UpdateChapterResponse = zod.object({
-  id: zod.number(),
-  subjectId: zod.number(),
+  id: zod.string(),
+  subjectId: zod.string(),
   subjectName: zod.string().optional(),
   classLevel: zod.string(),
   title: zod.string(),
@@ -198,25 +200,26 @@ export const UpdateChapterResponse = zod.object({
   hasMcqs: zod.boolean(),
   hasQa: zod.boolean(),
   hasVideo: zod.boolean(),
+  medium: zod.enum(["English", "Assamese", "Both"]).optional(),
 });
 
 /**
  * @summary Delete a chapter (admin only)
  */
 export const DeleteChapterParams = zod.object({
-  chapterId: zod.coerce.number(),
+  chapterId: zod.coerce.string(),
 });
 
 /**
  * @summary List notes for a chapter
  */
 export const GetNotesQueryParams = zod.object({
-  chapterId: zod.coerce.number(),
+  chapterId: zod.coerce.string(),
 });
 
 export const GetNotesResponseItem = zod.object({
-  id: zod.number(),
-  chapterId: zod.number(),
+  id: zod.string(),
+  chapterId: zod.string(),
   title: zod.string(),
   content: zod.string(),
   type: zod.enum(["text", "pdf", "image"]),
@@ -229,7 +232,7 @@ export const GetNotesResponse = zod.array(GetNotesResponseItem);
  * @summary Create a note (admin only)
  */
 export const CreateNoteBody = zod.object({
-  chapterId: zod.number(),
+  chapterId: zod.string(),
   title: zod.string(),
   content: zod.string(),
   type: zod.enum(["text", "pdf", "image"]),
@@ -241,11 +244,11 @@ export const CreateNoteBody = zod.object({
  * @summary Update a note (admin only)
  */
 export const UpdateNoteParams = zod.object({
-  noteId: zod.coerce.number(),
+  noteId: zod.coerce.string(),
 });
 
 export const UpdateNoteBody = zod.object({
-  chapterId: zod.number(),
+  chapterId: zod.string(),
   title: zod.string(),
   content: zod.string(),
   type: zod.enum(["text", "pdf", "image"]),
@@ -254,8 +257,8 @@ export const UpdateNoteBody = zod.object({
 });
 
 export const UpdateNoteResponse = zod.object({
-  id: zod.number(),
-  chapterId: zod.number(),
+  id: zod.string(),
+  chapterId: zod.string(),
   title: zod.string(),
   content: zod.string(),
   type: zod.enum(["text", "pdf", "image"]),
@@ -267,19 +270,19 @@ export const UpdateNoteResponse = zod.object({
  * @summary Delete a note (admin only)
  */
 export const DeleteNoteParams = zod.object({
-  noteId: zod.coerce.number(),
+  noteId: zod.coerce.string(),
 });
 
 /**
  * @summary List MCQs for a chapter
  */
 export const GetMcqsQueryParams = zod.object({
-  chapterId: zod.coerce.number(),
+  chapterId: zod.coerce.string(),
 });
 
 export const GetMcqsResponseItem = zod.object({
-  id: zod.number(),
-  chapterId: zod.number(),
+  id: zod.string(),
+  chapterId: zod.string(),
   question: zod.string(),
   options: zod.array(zod.string()),
   correctIndex: zod.number(),
@@ -292,7 +295,7 @@ export const GetMcqsResponse = zod.array(GetMcqsResponseItem);
  * @summary Create an MCQ (admin only)
  */
 export const CreateMcqBody = zod.object({
-  chapterId: zod.number(),
+  chapterId: zod.string(),
   question: zod.string(),
   options: zod.array(zod.string()),
   correctIndex: zod.number(),
@@ -304,11 +307,11 @@ export const CreateMcqBody = zod.object({
  * @summary Update an MCQ (admin only)
  */
 export const UpdateMcqParams = zod.object({
-  mcqId: zod.coerce.number(),
+  mcqId: zod.coerce.string(),
 });
 
 export const UpdateMcqBody = zod.object({
-  chapterId: zod.number(),
+  chapterId: zod.string(),
   question: zod.string(),
   options: zod.array(zod.string()),
   correctIndex: zod.number(),
@@ -317,8 +320,8 @@ export const UpdateMcqBody = zod.object({
 });
 
 export const UpdateMcqResponse = zod.object({
-  id: zod.number(),
-  chapterId: zod.number(),
+  id: zod.string(),
+  chapterId: zod.string(),
   question: zod.string(),
   options: zod.array(zod.string()),
   correctIndex: zod.number(),
@@ -330,23 +333,24 @@ export const UpdateMcqResponse = zod.object({
  * @summary Delete an MCQ (admin only)
  */
 export const DeleteMcqParams = zod.object({
-  mcqId: zod.coerce.number(),
+  mcqId: zod.coerce.string(),
 });
 
 /**
  * @summary List Q&A for a chapter
  */
 export const GetQaQueryParams = zod.object({
-  chapterId: zod.coerce.number(),
+  chapterId: zod.coerce.string(),
 });
 
 export const GetQaResponseItem = zod.object({
-  id: zod.number(),
-  chapterId: zod.number(),
+  id: zod.string(),
+  chapterId: zod.string(),
   question: zod.string(),
   answer: zod.string(),
   explanation: zod.string(),
   isImportant: zod.boolean(),
+  youtubeId: zod.string().nullish(),
   order: zod.number(),
 });
 export const GetQaResponse = zod.array(GetQaResponseItem);
@@ -355,11 +359,12 @@ export const GetQaResponse = zod.array(GetQaResponseItem);
  * @summary Create a Q&A item (admin only)
  */
 export const CreateQaBody = zod.object({
-  chapterId: zod.number(),
+  chapterId: zod.string(),
   question: zod.string(),
   answer: zod.string(),
   explanation: zod.string(),
   isImportant: zod.boolean(),
+  youtubeId: zod.string().nullish(),
   order: zod.number(),
 });
 
@@ -367,25 +372,27 @@ export const CreateQaBody = zod.object({
  * @summary Update a Q&A item (admin only)
  */
 export const UpdateQaParams = zod.object({
-  qaId: zod.coerce.number(),
+  qaId: zod.coerce.string(),
 });
 
 export const UpdateQaBody = zod.object({
-  chapterId: zod.number(),
+  chapterId: zod.string(),
   question: zod.string(),
   answer: zod.string(),
   explanation: zod.string(),
   isImportant: zod.boolean(),
+  youtubeId: zod.string().nullish(),
   order: zod.number(),
 });
 
 export const UpdateQaResponse = zod.object({
-  id: zod.number(),
-  chapterId: zod.number(),
+  id: zod.string(),
+  chapterId: zod.string(),
   question: zod.string(),
   answer: zod.string(),
   explanation: zod.string(),
   isImportant: zod.boolean(),
+  youtubeId: zod.string().nullish(),
   order: zod.number(),
 });
 
@@ -393,19 +400,19 @@ export const UpdateQaResponse = zod.object({
  * @summary Delete a Q&A item (admin only)
  */
 export const DeleteQaParams = zod.object({
-  qaId: zod.coerce.number(),
+  qaId: zod.coerce.string(),
 });
 
 /**
  * @summary Get video for a chapter
  */
 export const GetVideosQueryParams = zod.object({
-  chapterId: zod.coerce.number(),
+  chapterId: zod.coerce.string(),
 });
 
 export const GetVideosResponseItem = zod.object({
-  id: zod.number(),
-  chapterId: zod.number(),
+  id: zod.string(),
+  chapterId: zod.string(),
   youtubeId: zod.string(),
   title: zod.string(),
   description: zod.string(),
@@ -416,7 +423,7 @@ export const GetVideosResponse = zod.array(GetVideosResponseItem);
  * @summary Attach YouTube video to chapter (admin only)
  */
 export const CreateVideoBody = zod.object({
-  chapterId: zod.number(),
+  chapterId: zod.string(),
   youtubeId: zod.string(),
   title: zod.string(),
   description: zod.string(),
@@ -426,19 +433,19 @@ export const CreateVideoBody = zod.object({
  * @summary Update a video (admin only)
  */
 export const UpdateVideoParams = zod.object({
-  videoId: zod.coerce.number(),
+  videoId: zod.coerce.string(),
 });
 
 export const UpdateVideoBody = zod.object({
-  chapterId: zod.number(),
+  chapterId: zod.string(),
   youtubeId: zod.string(),
   title: zod.string(),
   description: zod.string(),
 });
 
 export const UpdateVideoResponse = zod.object({
-  id: zod.number(),
-  chapterId: zod.number(),
+  id: zod.string(),
+  chapterId: zod.string(),
   youtubeId: zod.string(),
   title: zod.string(),
   description: zod.string(),
@@ -448,7 +455,7 @@ export const UpdateVideoResponse = zod.object({
  * @summary Delete a video (admin only)
  */
 export const DeleteVideoParams = zod.object({
-  videoId: zod.coerce.number(),
+  videoId: zod.coerce.string(),
 });
 
 /**
@@ -459,7 +466,7 @@ export const GetExperimentsQueryParams = zod.object({
 });
 
 export const GetExperimentsResponseItem = zod.object({
-  id: zod.number(),
+  id: zod.string(),
   subject: zod.enum(["Physics", "Chemistry"]),
   classLevel: zod.string(),
   title: zod.string(),
@@ -565,11 +572,11 @@ export const CreateExperimentBody = zod.object({
  * @summary Get a single experiment
  */
 export const GetExperimentParams = zod.object({
-  experimentId: zod.coerce.number(),
+  experimentId: zod.coerce.string(),
 });
 
 export const GetExperimentResponse = zod.object({
-  id: zod.number(),
+  id: zod.string(),
   subject: zod.enum(["Physics", "Chemistry"]),
   classLevel: zod.string(),
   title: zod.string(),
@@ -622,7 +629,7 @@ export const GetExperimentResponse = zod.object({
  * @summary Update an experiment (admin only)
  */
 export const UpdateExperimentParams = zod.object({
-  experimentId: zod.coerce.number(),
+  experimentId: zod.coerce.string(),
 });
 
 export const UpdateExperimentBody = zod.object({
@@ -675,7 +682,7 @@ export const UpdateExperimentBody = zod.object({
 });
 
 export const UpdateExperimentResponse = zod.object({
-  id: zod.number(),
+  id: zod.string(),
   subject: zod.enum(["Physics", "Chemistry"]),
   classLevel: zod.string(),
   title: zod.string(),
@@ -728,16 +735,16 @@ export const UpdateExperimentResponse = zod.object({
  * @summary Delete an experiment (admin only)
  */
 export const DeleteExperimentParams = zod.object({
-  experimentId: zod.coerce.number(),
+  experimentId: zod.coerce.string(),
 });
 
 /**
  * @summary Get student progress
  */
 export const GetProgressResponseItem = zod.object({
-  id: zod.number(),
-  userId: zod.number(),
-  chapterId: zod.number(),
+  id: zod.string(),
+  userId: zod.string(),
+  chapterId: zod.string(),
   chapterTitle: zod.string(),
   subjectName: zod.string(),
   mcqScore: zod.number().optional(),
@@ -751,15 +758,15 @@ export const GetProgressResponse = zod.array(GetProgressResponseItem);
  * @summary Save MCQ quiz score
  */
 export const SaveMcqScoreBody = zod.object({
-  chapterId: zod.number(),
+  chapterId: zod.string(),
   score: zod.number(),
   total: zod.number(),
 });
 
 export const SaveMcqScoreResponse = zod.object({
-  id: zod.number(),
-  userId: zod.number(),
-  chapterId: zod.number(),
+  id: zod.string(),
+  userId: zod.string(),
+  chapterId: zod.string(),
   chapterTitle: zod.string(),
   subjectName: zod.string(),
   mcqScore: zod.number().optional(),
@@ -772,7 +779,7 @@ export const SaveMcqScoreResponse = zod.object({
  * @summary Mark chapter as visited
  */
 export const MarkChapterVisitedBody = zod.object({
-  chapterId: zod.number(),
+  chapterId: zod.string(),
 });
 
 /**
@@ -785,9 +792,9 @@ export const GetDashboardSummaryResponse = zod.object({
   averageScore: zod.number(),
   recentChapters: zod.array(
     zod.object({
-      id: zod.number(),
-      userId: zod.number(),
-      chapterId: zod.number(),
+      id: zod.string(),
+      userId: zod.string(),
+      chapterId: zod.string(),
       chapterTitle: zod.string(),
       subjectName: zod.string(),
       mcqScore: zod.number().optional(),
@@ -798,7 +805,7 @@ export const GetDashboardSummaryResponse = zod.object({
   ),
   subjectProgress: zod.array(
     zod.object({
-      subjectId: zod.number(),
+      subjectId: zod.string(),
       subjectName: zod.string(),
       chaptersTotal: zod.number(),
       chaptersVisited: zod.number(),
@@ -816,8 +823,8 @@ export const SearchQueryParams = zod.object({
 export const SearchResponse = zod.object({
   chapters: zod.array(
     zod.object({
-      id: zod.number(),
-      subjectId: zod.number(),
+      id: zod.string(),
+      subjectId: zod.string(),
       subjectName: zod.string().optional(),
       classLevel: zod.string(),
       title: zod.string(),
@@ -827,16 +834,18 @@ export const SearchResponse = zod.object({
       hasMcqs: zod.boolean(),
       hasQa: zod.boolean(),
       hasVideo: zod.boolean(),
+      medium: zod.enum(["English", "Assamese", "Both"]).optional(),
     }),
   ),
   questions: zod.array(
     zod.object({
-      id: zod.number(),
-      chapterId: zod.number(),
+      id: zod.string(),
+      chapterId: zod.string(),
       question: zod.string(),
       answer: zod.string(),
       explanation: zod.string(),
       isImportant: zod.boolean(),
+      youtubeId: zod.string().nullish(),
       order: zod.number(),
     }),
   ),

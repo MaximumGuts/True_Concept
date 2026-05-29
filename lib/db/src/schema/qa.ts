@@ -1,20 +1,19 @@
-import { pgTable, text, serial, timestamp, integer, boolean } from "drizzle-orm/pg-core";
-import { createInsertSchema } from "drizzle-zod";
-import { z } from "zod/v4";
-import { chaptersTable } from "./chapters";
+import { z } from "zod";
 
-export const qaTable = pgTable("qa", {
-  id: serial("id").primaryKey(),
-  chapterId: integer("chapter_id").notNull().references(() => chaptersTable.id, { onDelete: "cascade" }),
-  question: text("question").notNull(),
-  answer: text("answer").notNull(),
-  explanation: text("explanation").notNull(),
-  youtubeId: text("youtube_id"),
-  isImportant: boolean("is_important").notNull().default(false),
-  order: integer("order").notNull().default(0),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+export const insertQaSchema = z.object({
+  chapterId: z.string(),
+  question: z.string(),
+  answer: z.string(),
+  explanation: z.string(),
+  youtubeId: z.string().nullable().optional(),
+  isImportant: z.boolean().default(false),
+  order: z.number().default(0),
 });
 
-export const insertQaSchema = createInsertSchema(qaTable).omit({ id: true, createdAt: true });
+export const qaSchema = insertQaSchema.extend({
+  id: z.string(),
+  createdAt: z.date().default(() => new Date()),
+});
+
 export type InsertQa = z.infer<typeof insertQaSchema>;
-export type QaItem = typeof qaTable.$inferSelect;
+export type QaItem = z.infer<typeof qaSchema>;

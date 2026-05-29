@@ -1,28 +1,47 @@
 import { useState } from "react";
-import { Link } from "wouter";
 import {
   useGetSubjects,
   useCreateSubject,
   useUpdateSubject,
   useDeleteSubject,
 } from "@workspace/api-client-react";
-import { BookOpen, Plus, Edit2, Trash2, X, Check } from "lucide-react";
+import { Link } from "wouter";
+import { BookOpen, Plus, Edit2, Trash2, X, Check, ScrollText, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function AdminSubjectsPage() {
   const { data: subjects, isLoading } = useGetSubjects();
   const queryClient = useQueryClient();
+  const { token } = useAuth();
   const createSubject = useCreateSubject({ mutation: { onSuccess: () => queryClient.invalidateQueries() } });
   const updateSubject = useUpdateSubject({ mutation: { onSuccess: () => queryClient.invalidateQueries() } });
   const deleteSubject = useDeleteSubject({ mutation: { onSuccess: () => queryClient.invalidateQueries() } });
 
   const [showForm, setShowForm] = useState(false);
-  const [editId, setEditId] = useState<number | null>(null);
+  const [editId, setEditId] = useState<string | null>(null);
   const [form, setForm] = useState({ name: "", description: "", icon: "BookOpen", color: "#2563eb", classLevels: ["Class IX", "Class X"] });
-  const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const [cleanupStatus, setCleanupStatus] = useState<string | null>(null);
+
+  async function handleCleanupDuplicates() {
+    setCleanupStatus("Running…");
+    try {
+      const res = await fetch("/api/subjects/cleanup-duplicates", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Failed");
+      setCleanupStatus(`Done — removed ${data.duplicatesDeleted} duplicate(s), migrated ${data.chaptersMigrated} chapter(s).`);
+      queryClient.invalidateQueries();
+    } catch (err: any) {
+      setCleanupStatus(`Error: ${err.message}`);
+    }
+  }
 
   const resetForm = () => {
     setForm({ name: "", description: "", icon: "BookOpen", color: "#2563eb", classLevels: ["Class IX", "Class X"] });
@@ -30,16 +49,16 @@ export default function AdminSubjectsPage() {
     setEditId(null);
   };
 
-  const handleEdit = (s: { id: number; name: string; description: string; icon: string; color: string; classLevels: string[] }) => {
+  const handleEdit = (s: { id: string; name: string; description: string; icon: string; color: string; classLevels: string[] }) => {
     setEditId(s.id);
     setForm({ name: s.name, description: s.description, icon: s.icon, color: s.color, classLevels: s.classLevels });
     setShowForm(true);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: { preventDefault(): void }) => {
     e.preventDefault();
     if (editId) {
-      updateSubject.mutate({ id: editId, data: form });
+      updateSubject.mutate({ subjectId: editId, data: form });
     } else {
       createSubject.mutate({ data: form });
     }
@@ -53,10 +72,43 @@ export default function AdminSubjectsPage() {
           <h1 className="font-serif text-3xl font-bold text-foreground" data-testid="heading-admin-subjects">Subjects</h1>
           <p className="text-muted-foreground text-sm mt-1">Manage all subjects in the portal</p>
         </div>
-        <Button onClick={() => setShowForm(!showForm)} data-testid="button-add-subject">
-          <Plus className="w-4 h-4 mr-1" /> Add Subject
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={handleCleanupDuplicates} title="Remove duplicate subjects and re-parent their chapters">
+            Fix Duplicates
+          </Button>
+          <Button onClick={() => setShowForm(!showForm)} data-testid="button-add-subject">
+            <Plus className="w-4 h-4 mr-1" /> Add Subject
+          </Button>
+        </div>
       </div>
+
+      {cleanupStatus && (
+        <div className={`mb-4 px-4 py-3 rounded-lg text-sm font-medium border ${cleanupStatus.startsWith("Error") ? "bg-destructive/10 text-destructive border-destructive/20" : "bg-green-50 dark:bg-green-950/30 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800"}`}>
+          {cleanupStatus}
+        </div>
+      )}
+
+      {/* ── Full Length Question Papers entry point ─────────────────────
+          Sits above the subject list so the link is easy to find. Sends
+          admins to /admin/papers — a parallel content tree (sets → papers)
+          students reach via the "📜 Full Length Question Papers" card on
+          their /subjects page. */}
+      <Link href="/admin/papers" data-testid="link-manage-paper-sets">
+        <div
+          className="mb-6 flex items-center gap-3 rounded-2xl p-4 cursor-pointer hover:scale-[1.01] transition-transform shadow-md"
+          style={{ background: "linear-gradient(135deg, #a855f7, #7c3aed)" }}
+        >
+          <div className="w-11 h-11 rounded-xl flex items-center justify-center bg-white/20 shrink-0">
+            <ScrollText className="w-5 h-5 text-white" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="font-black text-white text-base leading-tight">📜 Manage Full Length Question Papers</p>
+            <p className="text-white/80 text-xs font-semibold mt-0.5">Create paper sets (e.g. "Class X SEBA Mock 2025") and add individual papers under each</p>
+          </div>
+          <ChevronRight className="w-5 h-5 text-white shrink-0" />
+        </div>
+      </Link>
+
 
       {/* Form */}
       {showForm && (
@@ -131,7 +183,7 @@ export default function AdminSubjectsPage() {
                 </Button>
                 {deleteConfirm === s.id ? (
                   <div className="flex gap-1">
-                    <Button size="sm" variant="destructive" onClick={() => { deleteSubject.mutate({ id: s.id }); setDeleteConfirm(null); }} data-testid={`button-confirm-delete-${s.id}`}>
+                    <Button size="sm" variant="destructive" onClick={() => { deleteSubject.mutate({ subjectId: s.id }); setDeleteConfirm(null); }} data-testid={`button-confirm-delete-${s.id}`}>
                       <Check className="w-3.5 h-3.5" />
                     </Button>
                     <Button size="sm" variant="outline" onClick={() => setDeleteConfirm(null)}>

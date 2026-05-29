@@ -1,0 +1,706 @@
+[
+  {
+    "id": "sun-light-time",
+    "category": "Did you know?",
+    "emoji": "☀️",
+    "title": "Sunlight is 8 minutes old",
+    "body": "Light from the Sun takes 8 minutes 20 seconds to reach Earth. If the Sun suddenly disappeared, Earth wouldn't notice for over 8 minutes — because light needs time to travel.",
+    "related": { "label": "Light – Speed of Light (Class X)" }
+  },
+  {
+    "id": "vibgyor-rainbow",
+    "category": "Memory trick",
+    "emoji": "🌈",
+    "title": "VIBGYOR — the rainbow",
+    "body": "V-I-B-G-Y-O-R: Violet, Indigo, Blue, Green, Yellow, Orange, Red. The seven colours of the visible spectrum, in order from highest to lowest frequency.",
+    "related": { "label": "The Human Eye and the Colourful World (Class X, Ch. 11)" }
+  },
+  {
+    "id": "newton-2nd-law",
+    "category": "Concept refresher",
+    "emoji": "⚙️",
+    "title": "F = m × a",
+    "body": "Newton's Second Law of Motion. Force equals mass times acceleration. A heavier object needs more force to accelerate at the same rate as a lighter one.",
+    "related": { "label": "Force and Laws of Motion (Class IX, Ch. 9)" }
+  },
+  {
+    "id": "feynman-technique",
+    "category": "Study technique",
+    "emoji": "🧠",
+    "title": "The Feynman technique",
+    "body": "Pick a topic. Explain it aloud as if teaching a 10-year-old. When you get stuck or use jargon, that's the gap in your understanding. Go back, read, and try again. This works for any subject."
+  },
+  {
+    "id": "ph-scale",
+    "category": "Concept refresher",
+    "emoji": "🧪",
+    "title": "The pH scale runs 0 to 14",
+    "body": "0 is most acidic, 14 is most basic, 7 is neutral (pure water). Lemon juice is around pH 2, soap is around pH 9, your stomach acid is pH 1.5.",
+    "related": { "label": "Acids, Bases and Salts (Class X, Ch. 2)" }
+  },
+  {
+    "id": "water-molecule",
+    "category": "Did you know?",
+    "emoji": "💧",
+    "title": "A drop of water = 1.67 sextillion molecules",
+    "body": "One small drop of water contains roughly 1,670,000,000,000,000,000,000 H₂O molecules. Each molecule has 3 atoms — so over 5 sextillion atoms in a single drop.",
+    "related": { "label": "Atoms and Molecules (Class IX, Ch. 3)" }
+  },
+  {
+    "id": "ohms-law",
+    "category": "Memory trick",
+    "emoji": "⚡",
+    "title": "V = I × R (Ohm's Law)",
+    "body": "Ohm's Law. Voltage = Current × Resistance. Use the triangle trick: cover the one you want to find. Want V? Cover V → I × R. Want I? Cover I → V/R. Want R? Cover R → V/I.",
+    "related": { "label": "Electricity (Class X, Ch. 12)" }
+  },
+  {
+    "id": "spaced-repetition",
+    "category": "Study technique",
+    "emoji": "📅",
+    "title": "Review at 1 day, 1 week, 1 month",
+    "body": "Spaced repetition: revisit new material 1 day after first learning, again 1 week later, then 1 month later. Each review takes seconds but the topic sticks in long-term memory."
+  },
+  {
+    "id": "mitochondria",
+    "category": "Did you know?",
+    "emoji": "🔬",
+    "title": "Mitochondria have their own DNA",
+    "body": "Mitochondria — the powerhouse of the cell — carry their own circular DNA, separate from the nucleus. Scientists believe they were once free-living bacteria that joined ancient cells billions of years ago.",
+    "related": { "label": "The Fundamental Unit of Life (Class IX, Ch. 5)" }
+  },
+  {
+    "id": "active-recall",
+    "category": "Study technique",
+    "emoji": "📝",
+    "title": "Close the book and write",
+    "body": "Active recall: after reading a section, close the book and write down everything you remember. Compare with the text. The act of retrieving information from memory is what makes it stick — re-reading alone barely helps."
+  },
+  {
+    "id": "periodic-table-mendeleev",
+    "category": "Did you know?",
+    "emoji": "🧬",
+    "title": "Mendeleev predicted missing elements",
+    "body": "When Dmitri Mendeleev created the periodic table in 1869, he left gaps for elements that hadn't been discovered yet — and predicted their properties. Gallium, germanium and scandium were all found later, matching his predictions almost exactly.",
+    "related": { "label": "Periodic Classification of Elements (Class X, Ch. 5)" }
+  },
+  {
+    "id": "energy-conservation",
+    "category": "Concept refresher",
+    "emoji": "🔋",
+    "title": "Energy is never destroyed",
+    "body": "The Law of Conservation of Energy: energy can only change form. The chemical energy in food becomes mechanical energy in your muscles, which becomes heat. Total energy in the universe stays constant.",
+    "related": { "label": "Work and Energy (Class IX, Ch. 11)" }
+  },
+  {
+    "id": "speed-of-sound",
+    "category": "Did you know?",
+    "emoji": "🔊",
+    "title": "Sound is 880,000× slower than light",
+    "body": "Sound travels at about 343 metres per second in air. Light travels at about 300,000,000 metres per second. That's why you see lightning before you hear thunder — the gap tells you how far away the storm is.",
+    "related": { "label": "Sound (Class IX, Ch. 12)" }
+  },
+  {
+    "id": "study-pomodoro",
+    "category": "Study technique",
+    "emoji": "⏱️",
+    "title": "Pomodoro: 25 on, 5 off",
+    "body": "Set a timer for 25 minutes of focused study, then take a 5-minute break. After 4 rounds, take a 20-minute break. Short bursts beat long marathons — your brain stays sharper."
+  },
+  {
+    "id": "law-mass-conservation",
+    "category": "Concept refresher",
+    "emoji": "⚖️",
+    "title": "Mass is conserved in reactions",
+    "body": "Law of Conservation of Mass: in a chemical reaction, the total mass of reactants equals the total mass of products. Nothing disappears — atoms just rearrange. This is why balancing equations work.",
+    "related": { "label": "Chemical Reactions and Equations (Class X, Ch. 1)" }
+  },
+
+  {
+    "id": "electron-drift-vs-signal",
+    "category": "Did you know?",
+    "emoji": "⚡",
+    "title": "Electrons crawl, but signals fly",
+    "body": "Electrons in a wire actually move incredibly slowly — about a millimetre per second. However, the electrical signal itself travels through the wire at nearly the speed of light!",
+    "related": { "label": "Electricity (Class X, Ch. 12)" }
+  },
+  {
+    "id": "stomach-acid-strength",
+    "category": "Did you know?",
+    "emoji": "🧪",
+    "title": "Stomach acid dissolves zinc",
+    "body": "Your stomach acid (hydrochloric acid) is strong enough to dissolve zinc and razor blades. You don't digest yourself because your stomach constantly regenerates a protective layer of mucus.",
+    "related": { "label": "Acids, Bases and Salts (Class X, Ch. 2)" }
+  },
+  {
+    "id": "brain-20-watts",
+    "category": "Did you know?",
+    "emoji": "🧠",
+    "title": "Your brain runs on 20 watts",
+    "body": "The human brain runs on just about 20 watts of power. That is barely enough to power a dim LED lightbulb, yet it can process information faster than the world's greatest supercomputers.",
+    "related": { "label": "Life Processes (Class X, Ch. 6)" }
+  },
+  {
+    "id": "gallium-melts-in-hand",
+    "category": "Did you know?",
+    "emoji": "🔥",
+    "title": "A metal that melts in your hand",
+    "body": "Gallium is a metal with such a low melting point (29.7°C) that if you held a solid piece of it in the palm of your hand, your body heat would melt it into a liquid puddle.",
+    "related": { "label": "Metals and Non-metals (Class X, Ch. 3)" }
+  },
+  {
+    "id": "eyes-see-upside-down",
+    "category": "Did you know?",
+    "emoji": "👁️",
+    "title": "Your eyes see the world upside down",
+    "body": "The lenses in your eyes invert the image, and your brain does the heavy lifting of flipping it right-side up so you can walk around without tripping.",
+    "related": { "label": "The Human Eye and the Colourful World (Class X, Ch. 11)" }
+  },
+  {
+    "id": "diamond-vs-graphite",
+    "category": "Did you know?",
+    "emoji": "💎",
+    "title": "Diamond and pencil lead are the same element",
+    "body": "Diamond and graphite are both made entirely of pure carbon, yet one is the hardest natural substance and the other is soft enough for pencils. The only difference is how the atoms are arranged.",
+    "related": { "label": "Carbon and its Compounds (Class X, Ch. 4)" }
+  },
+  {
+    "id": "pyramid-pythagoras",
+    "category": "Did you know?",
+    "emoji": "📐",
+    "title": "Pyramid builders knew Pythagoras",
+    "body": "Ancient Egyptian builders used the concepts of the Pythagoras theorem to ensure their massive pyramids were perfectly square at the base — centuries before Pythagoras was even born!",
+    "related": { "label": "Triangles / Introduction to Trigonometry (Class X, Ch. 6 & 8)" }
+  },
+  {
+    "id": "earth-is-magnet",
+    "category": "Did you know?",
+    "emoji": "🧲",
+    "title": "Earth is a giant magnet",
+    "body": "Earth behaves like a giant magnet because there is a swirling ocean of liquid iron in its outer core. This magnetic field is literally a shield that protects us from deadly solar radiation.",
+    "related": { "label": "Magnetic Effects of Electric Current (Class X, Ch. 13)" }
+  },
+  {
+    "id": "gauss-arithmetic-progression",
+    "category": "Did you know?",
+    "emoji": "🔢",
+    "title": "Gauss at age 8 invented a formula",
+    "body": "The famous mathematician Carl Friedrich Gauss was just 8 years old when his teacher told the class to add the numbers from 1 to 100. He solved it in seconds by inventing an Arithmetic Progression formula on the spot!",
+    "related": { "label": "Arithmetic Progressions (Class X, Ch. 5)" }
+  },
+  {
+    "id": "statue-of-liberty-copper",
+    "category": "Did you know?",
+    "emoji": "🗽",
+    "title": "Why the Statue of Liberty is green",
+    "body": "The Statue of Liberty is made of copper, which is naturally a shiny brown colour. It looks green today because the metal underwent a chemical reaction with the oxygen and water in the air.",
+    "related": { "label": "Chemical Reactions and Equations (Class X, Ch. 1)" }
+  },
+  {
+    "id": "atoms-empty-space",
+    "category": "Did you know?",
+    "emoji": "⚛️",
+    "title": "Atoms are 99.99999% empty space",
+    "body": "If you removed all the empty space from the atoms in every single human being on Earth, the entire human race could fit into the volume of a single sugar cube.",
+    "related": { "label": "Structure of the Atom (Class IX, Ch. 4)" }
+  },
+  {
+    "id": "drive-to-space",
+    "category": "Did you know?",
+    "emoji": "🚗",
+    "title": "1 hour drive to outer space",
+    "body": "If you could jump into a car and drive straight up into the sky at normal highway speeds (100 km/h), it would take you just one hour to reach outer space.",
+    "related": { "label": "Motion (Class IX, Ch. 8)" }
+  },
+  {
+    "id": "more-bacteria-than-cells",
+    "category": "Did you know?",
+    "emoji": "🦠",
+    "title": "You are more microbe than human",
+    "body": "There are more bacterial cells living inside and on your body right now than there are actual human cells. You are technically more microbe than human!",
+    "related": { "label": "The Fundamental Unit of Life (Class IX, Ch. 5)" }
+  },
+  {
+    "id": "spaghettification",
+    "category": "Did you know?",
+    "emoji": "🌌",
+    "title": "Spaghettification near a black hole",
+    "body": "If you were falling into a black hole, the gravity at your feet would be so much stronger than the gravity at your head that you would be stretched out like a noodle. Physicists officially call this \"Spaghettification.\"",
+    "related": { "label": "Gravitation (Class IX, Ch. 10)" }
+  },
+  {
+    "id": "jumping-pushes-earth",
+    "category": "Did you know?",
+    "emoji": "🦘",
+    "title": "When you jump, you push the Earth down",
+    "body": "According to Newton's Third Law, Earth pushes you up with the exact same force you push down. Earth is just too massive for us to notice it moving.",
+    "related": { "label": "Force and Laws of Motion (Class IX, Ch. 9)" }
+  },
+  {
+    "id": "blood-connective-tissue",
+    "category": "Did you know?",
+    "emoji": "🩸",
+    "title": "Blood is a connective tissue",
+    "body": "Even though blood is a liquid flowing through your veins, in biology it is actually classified as a \"connective tissue\" because it connects the whole body by transporting oxygen and nutrients.",
+    "related": { "label": "Tissues (Class IX, Ch. 6)" }
+  },
+  {
+    "id": "sound-in-iron",
+    "category": "Did you know?",
+    "emoji": "🚂",
+    "title": "Sound travels 15× faster in iron",
+    "body": "Sound travels about 4 times faster in water than in air, and roughly 15 times faster through solid iron! If you put your ear to a steel train track, you can hear a train coming long before you ever see it.",
+    "related": { "label": "Sound (Class IX, Ch. 12)" }
+  },
+  {
+    "id": "triple-point-water",
+    "category": "Did you know?",
+    "emoji": "❄️",
+    "title": "Water can be ice, liquid and vapour at once",
+    "body": "Water can exist in three states at the exact same time — solid ice, liquid water, and water vapour. This rare temperature and pressure sweet spot is called the \"Triple Point.\"",
+    "related": { "label": "Matter in Our Surroundings (Class IX, Ch. 1)" }
+  },
+  {
+    "id": "zero-roman-numerals",
+    "category": "Did you know?",
+    "emoji": "0️⃣",
+    "title": "Zero doesn't exist in Roman numerals",
+    "body": "Zero is the only number that cannot be represented in Roman numerals. The Romans didn't have a concept for zero as a standalone number, treating it only as a placeholder.",
+    "related": { "label": "Number Systems (Class IX, Ch. 1)" }
+  },
+
+  {
+    "id": "gold-malleable",
+    "category": "Did you know?",
+    "emoji": "🏆",
+    "title": "Gold can be stretched 80 km",
+    "body": "Gold is so unbelievably malleable that a single ounce of it can be beaten into a sheet covering 100 square feet, or stretched into a thin wire over 80 kilometres long without breaking!",
+    "related": { "label": "Metals and Non-metals (Class X, Ch. 3)" }
+  },
+  {
+    "id": "venus-sulfuric-acid",
+    "category": "Did you know?",
+    "emoji": "🪐",
+    "title": "Venus rains sulfuric acid",
+    "body": "The atmosphere of Venus is entirely made up of thick clouds of highly corrosive sulfuric acid. If you stood on its surface, the atmospheric pressure would crush you while the acid dissolved your spaceship.",
+    "related": { "label": "Acids, Bases and Salts (Class X, Ch. 2)" }
+  },
+  {
+    "id": "dna-to-pluto",
+    "category": "Did you know?",
+    "emoji": "🧬",
+    "title": "Your DNA could stretch to Pluto twice",
+    "body": "If you uncoiled all the DNA tightly packed inside the cells of your body and laid it end-to-end, it would stretch from Earth to Pluto and back — not just once, but twice!",
+    "related": { "label": "Heredity (Class X, Ch. 9)" }
+  },
+  {
+    "id": "birthday-paradox",
+    "category": "Did you know?",
+    "emoji": "🎂",
+    "title": "23 people = 50% birthday match",
+    "body": "In a room of just 23 people, there is a 50% chance that two of them share the exact same birthday. With 75 people in a room, that probability jumps to 99.9%!",
+    "related": { "label": "Probability (Class X, Ch. 15)" }
+  },
+  {
+    "id": "nerve-impulse-speed",
+    "category": "Did you know?",
+    "emoji": "🏎️",
+    "title": "Nerve signals reach 400 km/h",
+    "body": "Nerve impulses travelling to and from your brain can move at speeds of up to 400 km/h. That means your nervous system transmits signals faster than a Formula 1 race car!",
+    "related": { "label": "Control and Coordination (Class X, Ch. 7)" }
+  },
+  {
+    "id": "graphene-strength",
+    "category": "Did you know?",
+    "emoji": "🦾",
+    "title": "Graphene: 200× stronger than steel",
+    "body": "Graphene, a single layer of carbon atoms arranged in a honeycomb lattice, is roughly 200 times stronger than steel — yet it is a million times thinner than a human hair.",
+    "related": { "label": "Carbon and its Compounds (Class X, Ch. 4)" }
+  },
+  {
+    "id": "diamond-total-internal-reflection",
+    "category": "Did you know?",
+    "emoji": "💍",
+    "title": "Why diamonds sparkle",
+    "body": "A diamond owes its incredible sparkle to a phenomenon called \"Total Internal Reflection.\" Light enters the diamond, gets trapped, and bounces around the intensely angled cuts before finally shooting back out to your eye.",
+    "related": { "label": "Light – Reflection and Refraction (Class X, Ch. 10)" }
+  },
+  {
+    "id": "sine-etymology",
+    "category": "Did you know?",
+    "emoji": "📐",
+    "title": "\"Sine\" began as a mistranslation",
+    "body": "The word \"Sine\" in trigonometry comes from a historical mistranslation! It started as the Sanskrit word jiva (meaning bowstring), was transliterated into Arabic, and then wrongly translated into the Latin sinus (meaning a curve or bay).",
+    "related": { "label": "Introduction to Trigonometry (Class X, Ch. 8)" }
+  },
+  {
+    "id": "sphere-smallest-surface",
+    "category": "Concept refresher",
+    "emoji": "⚪",
+    "title": "Why bubbles are round",
+    "body": "For any given volume, a sphere has the absolute smallest possible surface area. This mathematical law of nature is exactly why soap bubbles, water drops, and planets are round!",
+    "related": { "label": "Surface Areas and Volumes (Class X, Ch. 13)" }
+  },
+  {
+    "id": "heart-pumps-7500-litres",
+    "category": "Did you know?",
+    "emoji": "❤️",
+    "title": "Heart pumps a swimming pool of blood",
+    "body": "Your heart pumps about 7,500 litres of blood through your blood vessels every single day — enough to completely fill a regular-sized swimming pool in just a few months.",
+    "related": { "label": "Life Processes (Class X, Ch. 6)" }
+  },
+  {
+    "id": "plasma-fourth-state",
+    "category": "Did you know?",
+    "emoji": "🌟",
+    "title": "Plasma — the 4th state of matter",
+    "body": "There is a fourth state of matter called \"Plasma\" that isn't solid, liquid, or gas. It is actually the most abundant form of ordinary matter in the universe, making up the Sun, the stars, and glowing neon signs!",
+    "related": { "label": "Matter in Our Surroundings (Class IX, Ch. 1)" }
+  },
+  {
+    "id": "glass-vs-ocean-molecules",
+    "category": "Did you know?",
+    "emoji": "🌊",
+    "title": "A glass beats the ocean — in molecules",
+    "body": "A single standard glass of water contains more individual water molecules in it than there are actual glasses of water in all the oceans of the entire world combined.",
+    "related": { "label": "Atoms and Molecules (Class IX, Ch. 3)" }
+  },
+  {
+    "id": "bone-supports-9-tonnes",
+    "category": "Did you know?",
+    "emoji": "🦴",
+    "title": "Bone is 4× stronger than concrete",
+    "body": "Human bone is exceptionally strong. A matchbox-sized block of bone can support 9 tonnes of weight — that's roughly four times as much weight as solid concrete can hold!",
+    "related": { "label": "Tissues (Class IX, Ch. 6)" }
+  },
+  {
+    "id": "atom-stadium-analogy",
+    "category": "Did you know?",
+    "emoji": "🏟️",
+    "title": "An atom is mostly empty space",
+    "body": "If you placed the nucleus of an atom on the centre line of a giant football stadium, it would be the size of a marble. The electrons would be tiny gnats buzzing all the way up in the highest rows of the stands!",
+    "related": { "label": "Structure of the Atom (Class IX, Ch. 4)" }
+  },
+  {
+    "id": "algebra-aljabr",
+    "category": "Did you know?",
+    "emoji": "➕",
+    "title": "\"Algebra\" comes from bone-setting",
+    "body": "The word \"Algebra\" comes from the Arabic al-jabr, which roughly translates to \"the reunion of broken parts.\" Centuries ago, the term was actually used in medicine for setting broken bones!",
+    "related": { "label": "Polynomials (Class IX, Ch. 2)" }
+  },
+  {
+    "id": "earth-rotation-equator",
+    "category": "Did you know?",
+    "emoji": "🌍",
+    "title": "You're moving at 1670 km/h right now",
+    "body": "Even if you're sitting perfectly still reading this, you are technically in motion! Because the Earth is rotating, you are hurtling through space at a speed of roughly 1,670 km/h (if you are near the equator).",
+    "related": { "label": "Motion (Class IX, Ch. 8)" }
+  },
+  {
+    "id": "liquid-air",
+    "category": "Did you know?",
+    "emoji": "🥶",
+    "title": "Air turns blue and liquid at −200°C",
+    "body": "Air is mostly a mixture of gases, but if you severely drop the temperature down to −200°C, it will actually condense and turn into a pale blue liquid.",
+    "related": { "label": "Is Matter Around Us Pure (Class IX, Ch. 2)" }
+  },
+  {
+    "id": "airbags-newton-2nd",
+    "category": "Concept refresher",
+    "emoji": "💨",
+    "title": "Airbags use Newton's 2nd Law",
+    "body": "Airbags in a car deploy in roughly 30 milliseconds (faster than you can blink!). They use Newton's Second Law by increasing the time of your impact, which drastically reduces the force exerted on your body.",
+    "related": { "label": "Force and Laws of Motion (Class IX, Ch. 9)" }
+  },
+  {
+    "id": "ostrich-egg-largest-cell",
+    "category": "Did you know?",
+    "emoji": "🥚",
+    "title": "The biggest single cell on Earth",
+    "body": "The largest single cell on the planet is an unfertilized ostrich egg. Unlike microscopic human cells, an ostrich egg cell can be over 6 inches long and weigh up to 1.5 kilograms!",
+    "related": { "label": "The Fundamental Unit of Life (Class IX, Ch. 5)" }
+  },
+  {
+    "id": "weight-on-moon",
+    "category": "Concept refresher",
+    "emoji": "🌑",
+    "title": "60 kg on Earth = 10 kg on Moon",
+    "body": "If you weigh 60 kg on Earth, you would only weigh about 10 kg on the Moon. Your mass remains exactly the same, but the Moon's gravitational pull is only one-sixth as strong as Earth's!",
+    "related": { "label": "Gravitation (Class IX, Ch. 10)" }
+  },
+
+  {
+    "id": "lightning-hotter-than-sun",
+    "category": "Did you know?",
+    "emoji": "🌩️",
+    "title": "Lightning is 5× hotter than the Sun",
+    "body": "A bolt of lightning is nearly 5 times hotter than the surface of the Sun for a brief moment! That's why lightning can instantly heat the surrounding air and create thunder.",
+    "related": { "label": "Electricity & Natural Phenomena (Class IX)" }
+  },
+  {
+    "id": "brain-13ms-image",
+    "category": "Did you know?",
+    "emoji": "👀",
+    "title": "Your brain sees in 13 milliseconds",
+    "body": "Your brain can process an image in just 13 milliseconds — faster than the blink of an eye. That's why optical illusions trick us so easily.",
+    "related": { "label": "The Human Eye and the Colourful World (Class X, Ch. 11)" }
+  },
+  {
+    "id": "friction-walking",
+    "category": "Concept refresher",
+    "emoji": "🚶",
+    "title": "Friction lets you walk",
+    "body": "If there were no friction, you couldn't even walk properly. Your feet push backward on the ground, and friction pushes you forward.",
+    "related": { "label": "Force and Laws of Motion (Class IX, Ch. 9)" }
+  },
+  {
+    "id": "space-is-silent",
+    "category": "Did you know?",
+    "emoji": "🚀",
+    "title": "Space is completely silent",
+    "body": "Sound cannot travel through space because there's no medium like air there. If you shouted on the Moon, nobody would hear you — even standing right next to you.",
+    "related": { "label": "Sound (Class IX, Ch. 12)" }
+  },
+  {
+    "id": "iron-in-blood-stardust",
+    "category": "Did you know?",
+    "emoji": "⭐",
+    "title": "You literally carry stardust",
+    "body": "The iron inside your blood was forged billions of years ago inside exploding stars. Every atom of iron in your haemoglobin once travelled through a supernova.",
+    "related": { "label": "Atoms and Molecules (Class IX, Ch. 3)" }
+  },
+  {
+    "id": "eye-lens-accommodation",
+    "category": "Concept refresher",
+    "emoji": "🔍",
+    "title": "Your eye changes shape to focus",
+    "body": "The convex lens in your eye continuously changes shape to help you focus on nearby and distant objects. This automatic adjustment is called accommodation.",
+    "related": { "label": "The Human Eye and the Colourful World (Class X, Ch. 11)" }
+  },
+  {
+    "id": "mpemba-effect",
+    "category": "Did you know?",
+    "emoji": "🥤",
+    "title": "Hot water can freeze faster than cold",
+    "body": "Hot water can sometimes freeze faster than cold water. Scientists call this the Mpemba Effect, and it still surprises researchers today.",
+    "related": { "label": "Matter in Our Surroundings (Class IX, Ch. 1)" }
+  },
+  {
+    "id": "rainbow-refraction",
+    "category": "Did you know?",
+    "emoji": "🌈",
+    "title": "How a rainbow forms",
+    "body": "The rainbow you see is actually sunlight splitting into 7 colours because each colour bends differently in water droplets. This bending is called refraction.",
+    "related": { "label": "The Human Eye and the Colourful World (Class X, Ch. 11)" }
+  },
+  {
+    "id": "plants-chemical-talk",
+    "category": "Did you know?",
+    "emoji": "🌱",
+    "title": "Plants can warn each other",
+    "body": "Plants can \"talk\" chemically. When attacked by insects, some plants release chemicals into the air to warn nearby plants — which then prepare their own chemical defenses.",
+    "related": { "label": "Life Processes (Class X, Ch. 6)" }
+  },
+  {
+    "id": "body-electric-signals",
+    "category": "Did you know?",
+    "emoji": "💓",
+    "title": "Your body generates electricity",
+    "body": "Your body produces tiny electric signals every time your heart beats or your brain thinks. Machines like ECG and EEG detect these signals to monitor your health.",
+    "related": { "label": "Control and Coordination (Class X, Ch. 7)" }
+  },
+  {
+    "id": "hummingbird-heart-rate",
+    "category": "Did you know?",
+    "emoji": "🐦",
+    "title": "Hummingbird heart: 1200 bpm",
+    "body": "A hummingbird's heart can beat more than 1,200 times per minute during flight. Your resting heart, by comparison, beats around 70 times per minute.",
+    "related": { "label": "Life Processes (Class X, Ch. 6)" }
+  },
+  {
+    "id": "moon-illusion",
+    "category": "Did you know?",
+    "emoji": "🌙",
+    "title": "The Moon doesn't grow at the horizon",
+    "body": "The Moon looks bigger near the horizon because of a brain illusion — not because it actually changes size. Take a photo and you'll see it's the same size as when it's overhead.",
+    "related": { "label": "The Human Eye and the Colourful World (Class X, Ch. 11)" }
+  },
+  {
+    "id": "sharks-older-than-trees",
+    "category": "Did you know?",
+    "emoji": "🦈",
+    "title": "Sharks are older than trees",
+    "body": "Sharks have existed on Earth for over 400 million years — they predate trees, which only appeared about 350 million years ago.",
+    "related": { "label": "Heredity and Evolution (Class X, Ch. 9)" }
+  },
+  {
+    "id": "astronauts-grow-taller",
+    "category": "Did you know?",
+    "emoji": "🧑‍🚀",
+    "title": "Astronauts grow taller in space",
+    "body": "When astronauts spend time on the ISS, they grow up to 5 cm taller because reduced gravity allows the spine to stretch slightly. They shrink back to normal once they return to Earth.",
+    "related": { "label": "Gravitation (Class IX, Ch. 10)" }
+  },
+  {
+    "id": "eye-10-million-colours",
+    "category": "Did you know?",
+    "emoji": "🎨",
+    "title": "Your eye sees 10 million colours",
+    "body": "The human eye can distinguish around 10 million different colours under ideal conditions — far more than any printer or standard display can reproduce.",
+    "related": { "label": "The Human Eye and the Colourful World (Class X, Ch. 11)" }
+  },
+  {
+    "id": "sun-fuses-600m-tons",
+    "category": "Did you know?",
+    "emoji": "☀️",
+    "title": "The Sun burns 600 million tons of H every second",
+    "body": "Every second, the Sun converts about 600 million tons of hydrogen into energy through nuclear fusion. And it has been doing this for 4.6 billion years.",
+    "related": { "label": "Sources of Energy (Class X, Ch. 14)" }
+  },
+  {
+    "id": "mirror-front-back",
+    "category": "Concept refresher",
+    "emoji": "🪞",
+    "title": "Mirrors flip front-back, not left-right",
+    "body": "A mirror reverses left and right, but not up and down — because what it really reverses is front and back. Your brain interprets that flip as a left-right swap.",
+    "related": { "label": "Light – Reflection and Refraction (Class X, Ch. 10)" }
+  },
+  {
+    "id": "bananas-radioactive",
+    "category": "Did you know?",
+    "emoji": "🍌",
+    "title": "Bananas are slightly radioactive",
+    "body": "Bananas are naturally slightly radioactive because they contain potassium. But don't worry — the amount is completely safe; you'd need to eat 10 million bananas at once to get sick.",
+    "related": { "label": "Structure of the Atom (Class IX, Ch. 4)" }
+  },
+
+  {
+    "id": "neutron-star-density",
+    "category": "Did you know?",
+    "emoji": "💫",
+    "title": "A teaspoon weighs a billion tons",
+    "body": "A teaspoon of neutron star material would weigh about a billion tons on Earth. Neutron stars are so dense that atoms get crushed together until even the empty space inside vanishes.",
+    "related": { "label": "Gravitation (Class IX, Ch. 10)" }
+  },
+  {
+    "id": "octopus-three-hearts",
+    "category": "Did you know?",
+    "emoji": "🐙",
+    "title": "Octopuses have 3 hearts and blue blood",
+    "body": "Octopuses have three hearts and blue blood. Their blood appears blue because it uses copper instead of iron to carry oxygen — unlike human blood which uses haemoglobin.",
+    "related": { "label": "Life Processes (Class X, Ch. 6)" }
+  },
+  {
+    "id": "glass-amorphous-solid",
+    "category": "Did you know?",
+    "emoji": "🥃",
+    "title": "Glass isn't a true solid",
+    "body": "Glass is technically classified as an \"amorphous solid\" because its particles are not arranged in a regular crystal pattern. It behaves like a solid but lacks the rigid internal structure of one.",
+    "related": { "label": "Matter in Our Surroundings (Class IX, Ch. 1)" }
+  },
+  {
+    "id": "petrichor",
+    "category": "Did you know?",
+    "emoji": "🌧️",
+    "title": "The smell of rain has a name",
+    "body": "The earthy smell after rain is called petrichor. It happens when rainwater releases oils and chemicals trapped in dry soil, mixed with a compound produced by soil bacteria.",
+    "related": { "label": "Natural Resources (Class IX)" }
+  },
+  {
+    "id": "frogs-survive-freezing",
+    "category": "Did you know?",
+    "emoji": "🐸",
+    "title": "Frogs can freeze and come back to life",
+    "body": "Some frogs can freeze almost completely during winter — their hearts even stop beating — and still survive when they thaw out in spring.",
+    "related": { "label": "Diversity in Living Organisms (Class IX, Ch. 7)" }
+  },
+  {
+    "id": "iss-16-sunrises",
+    "category": "Did you know?",
+    "emoji": "🛰️",
+    "title": "Astronauts see 16 sunrises a day",
+    "body": "The International Space Station travels so fast (about 28,000 km/h) that astronauts on board see 16 sunrises and sunsets every single day.",
+    "related": { "label": "Motion (Class IX, Ch. 8)" }
+  },
+  {
+    "id": "fingerprints-unique",
+    "category": "Did you know?",
+    "emoji": "👆",
+    "title": "Your fingerprints formed before birth",
+    "body": "Your fingerprints begin forming before you are born — around 17 weeks into pregnancy — and no two people on Earth have exactly the same pattern. Not even identical twins.",
+    "related": { "label": "Heredity (Class X, Ch. 9)" }
+  },
+  {
+    "id": "water-expands-freezing",
+    "category": "Concept refresher",
+    "emoji": "🧊",
+    "title": "Water expands when it freezes",
+    "body": "Unlike almost every other substance, water expands when it freezes — that's why ice floats on water instead of sinking. This unique property keeps fish alive under frozen ponds.",
+    "related": { "label": "Matter in Our Surroundings (Class IX, Ch. 1)" }
+  },
+  {
+    "id": "venus-hotter-than-mercury",
+    "category": "Did you know?",
+    "emoji": "🪐",
+    "title": "Venus is hotter than Mercury",
+    "body": "Venus is hotter than Mercury even though Mercury is closer to the Sun. Venus traps heat because of its thick carbon dioxide atmosphere — a textbook greenhouse effect.",
+    "related": { "label": "Our Environment (Class X, Ch. 15)" }
+  },
+  {
+    "id": "sneeze-speed",
+    "category": "Did you know?",
+    "emoji": "🤧",
+    "title": "A sneeze hits 160 km/h",
+    "body": "A human sneeze can travel at speeds of nearly 160 km/h and shoots droplets up to 8 metres from your face. That's why covering your mouth matters.",
+    "related": { "label": "Life Processes (Class X, Ch. 6)" }
+  },
+  {
+    "id": "honey-never-spoils",
+    "category": "Did you know?",
+    "emoji": "🍯",
+    "title": "Honey never spoils",
+    "body": "Honey never spoils naturally — its low water content and acidic pH stop bacteria from growing. Archaeologists have even found edible honey in 3,000-year-old Egyptian tombs.",
+    "related": { "label": "Why do we Fall Ill (Class IX, Ch. 13)" }
+  },
+  {
+    "id": "blue-whale-tongue",
+    "category": "Did you know?",
+    "emoji": "🐋",
+    "title": "Blue whale tongue = an elephant",
+    "body": "The blue whale's tongue alone can weigh as much as an elephant — about 2.7 tons. Its heart is the size of a small car, and you could swim through its main artery.",
+    "related": { "label": "Diversity in Living Organisms (Class IX, Ch. 7)" }
+  },
+  {
+    "id": "solar-eclipse-coincidence",
+    "category": "Did you know?",
+    "emoji": "🌒",
+    "title": "Solar eclipse: a cosmic coincidence",
+    "body": "A total solar eclipse happens because the Moon appears almost exactly the same size as the Sun in Earth's sky — even though the Sun is 400 times bigger. It's also 400 times farther away.",
+    "related": { "label": "The Human Eye and the Colourful World (Class X, Ch. 11)" }
+  },
+  {
+    "id": "dna-2-meters-per-cell",
+    "category": "Did you know?",
+    "emoji": "🧬",
+    "title": "2 metres of DNA in every cell",
+    "body": "The DNA inside a single human cell is about 2 metres long when fully stretched out. Multiplied by trillions of cells in your body, your total DNA could wrap around the Sun many times.",
+    "related": { "label": "Heredity (Class X, Ch. 9)" }
+  },
+  {
+    "id": "antarctica-coldest",
+    "category": "Did you know?",
+    "emoji": "❄️",
+    "title": "Coldest place on Earth: −89°C",
+    "body": "The coldest natural temperature ever recorded on Earth was below −89°C, measured at Vostok Station in Antarctica. At that temperature, exposed skin freezes in seconds.",
+    "related": { "label": "Matter in Our Surroundings (Class IX, Ch. 1)" }
+  },
+  {
+    "id": "magnets-lose-power",
+    "category": "Did you know?",
+    "emoji": "🧲",
+    "title": "Magnets can lose their magnetism",
+    "body": "Magnets can lose their magnetic power if heated above their Curie temperature or dropped repeatedly. The shock randomises the alignment of magnetic domains inside.",
+    "related": { "label": "Magnetic Effects of Electric Current (Class X, Ch. 13)" }
+  }
+]

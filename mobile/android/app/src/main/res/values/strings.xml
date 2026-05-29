@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">TRUE CONCEPT</string>
+    <string name="title_activity_main">TRUE CONCEPT</string>
+    <string name="package_name">com.trueconcept.app</string>
+    <string name="custom_url_scheme">com.trueconcept.app</string>
+</resources>

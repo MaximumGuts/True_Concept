@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "wouter";
 import {
   useGetSubjects,
@@ -19,7 +19,7 @@ const MEDIUMS = ["Both", "Assamese", "English"] as const;
 export default function AdminChaptersPage() {
   const queryClient = useQueryClient();
   const { data: subjects } = useGetSubjects();
-  const [selectedSubjectId, setSelectedSubjectId] = useState<number>(0);
+  const [selectedSubjectId, setSelectedSubjectId] = useState<string>("");
   const [selectedClass, setSelectedClass] = useState<"Class IX" | "Class X">("Class IX");
 
   const { data: chapters, isLoading } = useGetChapters(
@@ -27,39 +27,45 @@ export default function AdminChaptersPage() {
     { query: { enabled: !!selectedSubjectId, queryKey: getGetChaptersQueryKey({ subjectId: selectedSubjectId, classLevel: selectedClass }) } }
   );
 
-  const createChapter = useCreateChapter({ mutation: { onSuccess: () => queryClient.invalidateQueries() } });
-  const updateChapter = useUpdateChapter({ mutation: { onSuccess: () => queryClient.invalidateQueries() } });
+  const createChapter = useCreateChapter({ mutation: { onSuccess: () => { queryClient.invalidateQueries(); resetForm(); } } });
+  const updateChapter = useUpdateChapter({ mutation: { onSuccess: () => { queryClient.invalidateQueries(); resetForm(); } } });
   const deleteChapter = useDeleteChapter({ mutation: { onSuccess: () => queryClient.invalidateQueries() } });
 
   const [showForm, setShowForm] = useState(false);
-  const [editId, setEditId] = useState<number | null>(null);
+  const [editId, setEditId] = useState<string | null>(null);
   const [form, setForm] = useState({
     title: "", description: "", chapterNumber: 1,
     classLevel: "Class IX" as "Class IX" | "Class X",
     medium: "Both" as "Both" | "Assamese" | "English",
   });
-  const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
 
-  const resetForm = () => {
+  // Keep form classLevel in sync with the active class filter tab
+  useEffect(() => {
+    setForm(f => ({ ...f, classLevel: selectedClass }));
+  }, [selectedClass]);
+
+  function resetForm() {
     setForm({ title: "", description: "", chapterNumber: 1, classLevel: selectedClass, medium: "Both" });
     setShowForm(false);
     setEditId(null);
-  };
+  }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: { preventDefault(): void }) => {
     e.preventDefault();
     if (editId) {
-      updateChapter.mutate({ id: editId, data: { ...form, subjectId: selectedSubjectId } as any });
+      updateChapter.mutate({ chapterId: editId, data: { ...form, subjectId: selectedSubjectId } as any });
     } else {
       createChapter.mutate({ data: { ...form, subjectId: selectedSubjectId } as any });
     }
-    resetForm();
   };
 
+  const mutationError = createChapter.error || updateChapter.error;
+
   const mediumBadgeColor = (med: string) => {
-    if (med === "Assamese") return "bg-indigo-50 text-indigo-700 border border-indigo-200";
-    if (med === "English") return "bg-sky-50 text-sky-700 border border-sky-200";
-    return "bg-gray-50 text-gray-600 border border-gray-200";
+    if (med === "Assamese") return "bg-indigo-50 text-indigo-700 dark:text-indigo-300 border border-indigo-200";
+    if (med === "English") return "bg-sky-50 text-sky-700 dark:text-sky-300 border border-sky-200";
+    return "bg-gray-50 dark:bg-gray-900 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700";
   };
 
   return (
@@ -76,11 +82,11 @@ export default function AdminChaptersPage() {
         <div className="flex-1 relative">
           <select
             value={selectedSubjectId}
-            onChange={(e) => setSelectedSubjectId(Number(e.target.value))}
+            onChange={(e) => setSelectedSubjectId(e.target.value)}
             className="w-full h-10 px-3 pr-8 rounded-lg border border-border bg-card text-foreground text-sm appearance-none"
             data-testid="select-subject"
           >
-            <option value={0}>Select a subject...</option>
+            <option value="">Select a subject...</option>
             {subjects?.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
           </select>
           <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
@@ -99,7 +105,7 @@ export default function AdminChaptersPage() {
             </button>
           ))}
         </div>
-        {selectedSubjectId > 0 && (
+        {selectedSubjectId && (
           <Button onClick={() => setShowForm(!showForm)} data-testid="button-add-chapter">
             <Plus className="w-4 h-4 mr-1" /> Add
           </Button>
@@ -107,7 +113,7 @@ export default function AdminChaptersPage() {
       </div>
 
       {/* Form */}
-      {showForm && selectedSubjectId > 0 && (
+      {showForm && selectedSubjectId && (
         <form onSubmit={handleSubmit} className="bg-card border border-border rounded-xl p-6 mb-6 space-y-4" data-testid="form-chapter">
           <h2 className="font-semibold text-foreground">{editId ? "Edit Chapter" : "New Chapter"}</h2>
           <div className="grid grid-cols-2 gap-4">
@@ -149,8 +155,11 @@ export default function AdminChaptersPage() {
             </p>
           </div>
 
+          {mutationError && (
+            <p className="text-sm text-destructive">{(mutationError as any)?.message ?? "Failed to save chapter. Please try again."}</p>
+          )}
           <div className="flex gap-3">
-            <Button type="submit" data-testid="button-submit-chapter">
+            <Button type="submit" disabled={createChapter.isPending || updateChapter.isPending} data-testid="button-submit-chapter">
               <Check className="w-4 h-4 mr-1" /> {editId ? "Update" : "Create"}
             </Button>
             <Button type="button" variant="outline" onClick={resetForm}>Cancel</Button>
@@ -189,7 +198,7 @@ export default function AdminChaptersPage() {
               </div>
               <div className="flex gap-2 shrink-0">
                 <Link href={`/admin/chapters/${ch.id}/content`}>
-                  <Button size="sm" className="text-xs font-black gap-1.5 bg-purple-600 hover:bg-purple-700 text-white border-0" data-testid={`button-manage-content-${ch.id}`}>
+                  <Button size="sm" className="text-xs font-black gap-1.5 bg-orange-600 hover:bg-orange-700 text-white border-0" data-testid={`button-manage-content-${ch.id}`}>
                     <BookOpen className="w-3.5 h-3.5" /> Content
                   </Button>
                 </Link>
@@ -213,7 +222,7 @@ export default function AdminChaptersPage() {
                 </Button>
                 {deleteConfirm === ch.id ? (
                   <div className="flex gap-1">
-                    <Button size="sm" variant="destructive" onClick={() => { deleteChapter.mutate({ id: ch.id }); setDeleteConfirm(null); }} data-testid={`button-confirm-delete-${ch.id}`}>
+                    <Button size="sm" variant="destructive" onClick={() => { deleteChapter.mutate({ chapterId: ch.id }); setDeleteConfirm(null); }} data-testid={`button-confirm-delete-${ch.id}`}>
                       <Check className="w-3.5 h-3.5" />
                     </Button>
                     <Button size="sm" variant="outline" onClick={() => setDeleteConfirm(null)}>

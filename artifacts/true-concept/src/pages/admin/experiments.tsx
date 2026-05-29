@@ -7,6 +7,7 @@ import {
 } from "@workspace/api-client-react";
 import { FlaskConical, Plus, Edit2, Trash2, X, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useQueryClient } from "@tanstack/react-query";
@@ -38,21 +39,42 @@ type FormShape = typeof emptyForm;
 
 export default function AdminExperimentsPage() {
   const queryClient = useQueryClient();
+  const { token } = useAuth();
   const { data: experiments, isLoading } = useGetExperiments();
   const createExp = useCreateExperiment({ mutation: { onSuccess: () => queryClient.invalidateQueries() } });
   const updateExp = useUpdateExperiment({ mutation: { onSuccess: () => queryClient.invalidateQueries() } });
   const deleteExp = useDeleteExperiment({ mutation: { onSuccess: () => queryClient.invalidateQueries() } });
 
   const [showForm, setShowForm] = useState(false);
-  const [editId, setEditId] = useState<number | null>(null);
+  const [editId, setEditId] = useState<string | null>(null);
   const [form, setForm] = useState<FormShape>(emptyForm);
-  const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const [bulkDeleteSubject, setBulkDeleteSubject] = useState<string | null>(null);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
 
   const resetForm = () => { setForm(emptyForm); setShowForm(false); setEditId(null); };
 
+  async function handleBulkDelete(subject: string) {
+    setBulkDeleting(true);
+    try {
+      const res = await fetch(`/api/experiments/delete-by-subject?subject=${encodeURIComponent(subject)}`, {
+        method: "DELETE",
+        headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Failed");
+      queryClient.invalidateQueries();
+    } catch (err: any) {
+      alert(`Error: ${err.message}`);
+    } finally {
+      setBulkDeleting(false);
+      setBulkDeleteSubject(null);
+    }
+  }
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleEdit = (exp: any) => {
-    setEditId(Number(exp.id));
+    setEditId(exp.id);
     setForm({
       title: exp.title ?? "",
       type: exp.type ?? "custom",
@@ -82,7 +104,7 @@ export default function AdminExperimentsPage() {
     };
     if (editId) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      updateExp.mutate({ id: editId, data: data as any });
+      updateExp.mutate({ experimentId: editId, data: data as any });
     } else {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       createExp.mutate({ data: data as any });
@@ -100,9 +122,29 @@ export default function AdminExperimentsPage() {
           <h1 className="font-serif text-3xl font-bold text-foreground" data-testid="heading-admin-experiments">Experiments</h1>
           <p className="text-muted-foreground text-sm mt-1">Manage virtual lab experiments</p>
         </div>
-        <Button onClick={() => setShowForm(!showForm)} data-testid="button-add-experiment">
-          <Plus className="w-4 h-4 mr-1" /> Add Experiment
-        </Button>
+        <div className="flex gap-2 flex-wrap justify-end">
+          {bulkDeleteSubject ? (
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-destructive font-semibold">Delete ALL {bulkDeleteSubject} experiments?</span>
+              <Button size="sm" variant="destructive" disabled={bulkDeleting} onClick={() => handleBulkDelete(bulkDeleteSubject)}>
+                {bulkDeleting ? "Deleting…" : <><Check className="w-3.5 h-3.5 mr-1" /> Confirm</>}
+              </Button>
+              <Button size="sm" variant="outline" onClick={() => setBulkDeleteSubject(null)}><X className="w-3.5 h-3.5" /></Button>
+            </div>
+          ) : (
+            <>
+              <Button variant="outline" size="sm" onClick={() => setBulkDeleteSubject("Chemistry")} className="text-destructive border-destructive/30 hover:bg-destructive/10">
+                <Trash2 className="w-3.5 h-3.5 mr-1" /> Delete All Chemistry
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => setBulkDeleteSubject("Physics")} className="text-destructive border-destructive/30 hover:bg-destructive/10">
+                <Trash2 className="w-3.5 h-3.5 mr-1" /> Delete All Physics
+              </Button>
+            </>
+          )}
+          <Button onClick={() => setShowForm(!showForm)} data-testid="button-add-experiment">
+            <Plus className="w-4 h-4 mr-1" /> Add Experiment
+          </Button>
+        </div>
       </div>
 
       {showForm && (
@@ -199,10 +241,10 @@ export default function AdminExperimentsPage() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
                   <p className="font-medium text-foreground">{exp.title}</p>
-                  <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-medium">{exp.subject}</span>
+                  <span className="text-xs bg-orange-100 text-orange-700 dark:text-orange-300 px-2 py-0.5 rounded-full font-medium">{exp.subject}</span>
                   <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                    exp.difficulty === "easy" ? "bg-green-100 text-green-700" :
-                    exp.difficulty === "medium" ? "bg-amber-100 text-amber-700" : "bg-red-100 text-red-700"
+                    exp.difficulty === "easy" ? "bg-green-100 text-green-700 dark:text-green-300" :
+                    exp.difficulty === "medium" ? "bg-amber-100 text-amber-700 dark:text-amber-300" : "bg-red-100 text-red-700 dark:text-red-300"
                   }`}>{exp.difficulty}</span>
                   <span className="text-xs bg-muted text-muted-foreground px-2 py-0.5 rounded-full">{exp.classLevel}</span>
                 </div>
@@ -214,7 +256,7 @@ export default function AdminExperimentsPage() {
                 </Button>
                 {deleteConfirm === exp.id ? (
                   <div className="flex gap-1">
-                    <Button size="sm" variant="destructive" onClick={() => { deleteExp.mutate({ id: exp.id }); setDeleteConfirm(null); }}>
+                    <Button size="sm" variant="destructive" onClick={() => { deleteExp.mutate({ experimentId: exp.id }); setDeleteConfirm(null); }}>
                       <Check className="w-3.5 h-3.5" />
                     </Button>
                     <Button size="sm" variant="outline" onClick={() => setDeleteConfirm(null)}>

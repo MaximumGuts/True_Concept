@@ -1,0 +1,119 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Helpers ────────────────────────────────────────────────────────────
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+    function isAdmin() {
+      // Admin custom claim — set on admin login via the Functions API
+      return isSignedIn() && request.auth.token.role == 'admin';
+    }
+
+    // ── Public reads (subjects/chapters/content) ──────────────────────────
+    // These are managed by admins via the Functions API, but students read
+    // them directly to populate the curriculum.
+    match /subjects/{subjectId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+    match /chapters/{chapterId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+    match /content/{contentId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+    match /experiments/{experimentId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    // ── Students collection (profile data) ────────────────────────────────
+    match /students/{uid} {
+      allow read: if isOwner(uid) || isAdmin();
+      // Profile is created/updated by the API server (phone-login route),
+      // not by clients directly. Block direct writes from clients.
+      allow write: if false;
+    }
+
+    // ── Notifications — server-emitted, students read in real-time ────────
+    // Created by Functions (Admin SDK bypasses these rules) when admin adds
+    // new notes/MCQs/QnA/videos. Students can ONLY read; never write.
+    match /notifications/{notificationId} {
+      allow read: if isSignedIn();
+      allow write: if false;
+    }
+
+    // ── AI Broadcast Messages — admin content alerts (one per new content) ─
+    // Written by the broadcastNewContent Cloud Function via Admin SDK.
+    // All signed-in students read in real-time via useBroadcastMessages.
+    match /broadcastMessages/{messageId} {
+      allow read: if isSignedIn();
+      allow write: if false;
+    }
+
+    // ── AI Recommendations — per-student daily AI mentor output ───────────
+    // Written by the aiMentor Cloud Function (Admin SDK) after Gemini call.
+    // Each student reads only their own; clients never write directly.
+    match /aiRecommendations/{uid} {
+      allow read: if isOwner(uid) || isAdmin();
+      allow write: if false;
+    }
+
+    // ── Student Knowledge Profile — AI source of truth ────────────────────
+    // Written by the rebuildKnowledgeProfile Firestore trigger (Admin SDK).
+    // Read by the aiMentor function (Admin SDK) and optionally by clients
+    // for debugging. Clients never write directly.
+    match /studentKnowledgeProfiles/{uid} {
+      allow read: if isOwner(uid) || isAdmin();
+      allow write: if false;
+    }
+
+    // ── Student progress (the new tracking system) ────────────────────────
+    // Each student can read/write only their own progress tree.
+    match /studentProgress/{uid} {
+      allow read:   if isOwner(uid) || isAdmin();
+      allow write:  if isOwner(uid);
+
+      // All subcollections inherit the same access rules
+      match /notes/{noteId} {
+        allow read, write: if isOwner(uid);
+        allow read:        if isAdmin();
+      }
+      match /mcqs/{setKey} {
+        allow read, write: if isOwner(uid);
+        allow read:        if isAdmin();
+      }
+      match /activity/{activityId} {
+        allow read, write: if isOwner(uid);
+        allow read:        if isAdmin();
+      }
+
+      // ── AI / Analytics subcollections (added with the AI Mentor system) ──
+      match /chapterMastery/{chapterId} {
+        allow read, write: if isOwner(uid);
+        allow read:        if isAdmin();
+      }
+      match /sessions/{sessionId} {
+        allow read, write: if isOwner(uid);
+        allow read:        if isAdmin();
+      }
+      match /questionResults/{questionId} {
+        allow read, write: if isOwner(uid);
+        allow read:        if isAdmin();
+      }
+    }
+
+    // ── Default deny ──────────────────────────────────────────────────────
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

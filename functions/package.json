@@ -1,0 +1,33 @@
+{
+  "name": "@workspace/functions",
+  "version": "1.0.0",
+  "description": "TRUE CONCEPT — Firebase Functions Backend",
+  "main": "lib/index.js",
+  "type": "module",
+  "scripts": {
+    "build": "node ./build.mjs",
+    "build:tsc": "tsc --noEmit",
+    "serve": "pnpm run build && firebase emulators:start --only functions",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "engines": {
+    "node": "22"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "firebase-admin": "^13.0.0",
+    "firebase-functions": "^6.3.0",
+    "jsonwebtoken": "^9.0.3"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^22.0.0",
+    "@workspace/db": "workspace:*",
+    "esbuild": "^0.27.3",
+    "tsx": "catalog:",
+    "typescript": "^5.8.3"
+  },
+  "private": true
+}

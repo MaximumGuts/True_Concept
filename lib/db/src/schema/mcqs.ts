@@ -1,19 +1,21 @@
-import { pgTable, text, serial, timestamp, integer } from "drizzle-orm/pg-core";
-import { createInsertSchema } from "drizzle-zod";
-import { z } from "zod/v4";
-import { chaptersTable } from "./chapters";
+import { z } from "zod";
 
-export const mcqsTable = pgTable("mcqs", {
-  id: serial("id").primaryKey(),
-  chapterId: integer("chapter_id").notNull().references(() => chaptersTable.id, { onDelete: "cascade" }),
-  question: text("question").notNull(),
-  options: text("options").array().notNull(),
-  correctIndex: integer("correct_index").notNull(),
-  explanation: text("explanation").notNull(),
-  order: integer("order").notNull().default(0),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+export const insertMcqSchema = z.object({
+  chapterId: z.string(),
+  question: z.string(),
+  options: z.array(z.string()),
+  correctIndex: z.number(),
+  explanation: z.string(),
+  order: z.number().default(0),
+  // Set grouping inside a chapter. Defaults to 1 so legacy MCQs that pre-date
+  // this field land in "Set 1" without any backfill.
+  setNumber: z.number().int().min(1).default(1),
 });
 
-export const insertMcqSchema = createInsertSchema(mcqsTable).omit({ id: true, createdAt: true });
+export const mcqSchema = insertMcqSchema.extend({
+  id: z.string(),
+  createdAt: z.date().default(() => new Date()),
+});
+
 export type InsertMcq = z.infer<typeof insertMcqSchema>;
-export type Mcq = typeof mcqsTable.$inferSelect;
+export type Mcq = z.infer<typeof mcqSchema>;

@@ -130,7 +130,7 @@ paths:
           in: path
           required: true
           schema:
-            type: integer
+            type: string
       responses:
         "200":
           description: Subject
@@ -147,7 +147,7 @@ paths:
           in: path
           required: true
           schema:
-            type: integer
+            type: string
       requestBody:
         required: true
         content:
@@ -170,7 +170,7 @@ paths:
           in: path
           required: true
           schema:
-            type: integer
+            type: string
       responses:
         "204":
           description: Deleted
@@ -184,7 +184,7 @@ paths:
         - name: subjectId
           in: query
           schema:
-            type: integer
+            type: string
         - name: classLevel
           in: query
           schema:
@@ -226,7 +226,7 @@ paths:
           in: path
           required: true
           schema:
-            type: integer
+            type: string
       responses:
         "200":
           description: Chapter
@@ -243,7 +243,7 @@ paths:
           in: path
           required: true
           schema:
-            type: integer
+            type: string
       requestBody:
         required: true
         content:
@@ -266,7 +266,7 @@ paths:
           in: path
           required: true
           schema:
-            type: integer
+            type: string
       responses:
         "204":
           description: Deleted
@@ -281,7 +281,7 @@ paths:
           in: query
           required: true
           schema:
-            type: integer
+            type: string
       responses:
         "200":
           description: List of notes
@@ -319,7 +319,7 @@ paths:
           in: path
           required: true
           schema:
-            type: integer
+            type: string
       requestBody:
         required: true
         content:
@@ -342,7 +342,7 @@ paths:
           in: path
           required: true
           schema:
-            type: integer
+            type: string
       responses:
         "204":
           description: Deleted
@@ -357,7 +357,7 @@ paths:
           in: query
           required: true
           schema:
-            type: integer
+            type: string
       responses:
         "200":
           description: List of MCQs
@@ -395,7 +395,7 @@ paths:
           in: path
           required: true
           schema:
-            type: integer
+            type: string
       requestBody:
         required: true
         content:
@@ -418,7 +418,7 @@ paths:
           in: path
           required: true
           schema:
-            type: integer
+            type: string
       responses:
         "204":
           description: Deleted
@@ -433,7 +433,7 @@ paths:
           in: query
           required: true
           schema:
-            type: integer
+            type: string
       responses:
         "200":
           description: List of Q&A items
@@ -471,7 +471,7 @@ paths:
           in: path
           required: true
           schema:
-            type: integer
+            type: string
       requestBody:
         required: true
         content:
@@ -494,7 +494,7 @@ paths:
           in: path
           required: true
           schema:
-            type: integer
+            type: string
       responses:
         "204":
           description: Deleted
@@ -509,7 +509,7 @@ paths:
           in: query
           required: true
           schema:
-            type: integer
+            type: string
       responses:
         "200":
           description: Video info
@@ -547,7 +547,7 @@ paths:
           in: path
           required: true
           schema:
-            type: integer
+            type: string
       requestBody:
         required: true
         content:
@@ -570,7 +570,7 @@ paths:
           in: path
           required: true
           schema:
-            type: integer
+            type: string
       responses:
         "204":
           description: Deleted
@@ -622,7 +622,7 @@ paths:
           in: path
           required: true
           schema:
-            type: integer
+            type: string
       responses:
         "200":
           description: Experiment
@@ -639,7 +639,7 @@ paths:
           in: path
           required: true
           schema:
-            type: integer
+            type: string
       requestBody:
         required: true
         content:
@@ -662,7 +662,7 @@ paths:
           in: path
           required: true
           schema:
-            type: integer
+            type: string
       responses:
         "204":
           description: Deleted
@@ -784,7 +784,7 @@ components:
       type: object
       properties:
         id:
-          type: integer
+          type: string
         username:
           type: string
         role:
@@ -802,7 +802,7 @@ components:
       type: object
       properties:
         id:
-          type: integer
+          type: string
         name:
           type: string
         description:
@@ -851,9 +851,9 @@ components:
       type: object
       properties:
         id:
-          type: integer
+          type: string
         subjectId:
-          type: integer
+          type: string
         subjectName:
           type: string
         classLevel:
@@ -872,6 +872,9 @@ components:
           type: boolean
         hasVideo:
           type: boolean
+        medium:
+          type: string
+          enum: [English, Assamese, Both]
       required:
         - id
         - subjectId
@@ -888,7 +891,7 @@ components:
       type: object
       properties:
         subjectId:
-          type: integer
+          type: string
         classLevel:
           type: string
           enum: ["Class IX", "Class X"]
@@ -909,9 +912,9 @@ components:
       type: object
       properties:
         id:
-          type: integer
+          type: string
         chapterId:
-          type: integer
+          type: string
         title:
           type: string
         content:
@@ -935,7 +938,7 @@ components:
       type: object
       properties:
         chapterId:
-          type: integer
+          type: string
         title:
           type: string
         content:
@@ -958,9 +961,9 @@ components:
       type: object
       properties:
         id:
-          type: integer
+          type: string
         chapterId:
-          type: integer
+          type: string
         question:
           type: string
         options:
@@ -986,7 +989,7 @@ components:
       type: object
       properties:
         chapterId:
-          type: integer
+          type: string
         question:
           type: string
         options:
@@ -1011,9 +1014,9 @@ components:
       type: object
       properties:
         id:
-          type: integer
+          type: string
         chapterId:
-          type: integer
+          type: string
         question:
           type: string
         answer:
@@ -1022,6 +1025,9 @@ components:
           type: string
         isImportant:
           type: boolean
+        youtubeId:
+          type: string
+          nullable: true
         order:
           type: integer
       required:
@@ -1037,7 +1043,7 @@ components:
       type: object
       properties:
         chapterId:
-          type: integer
+          type: string
         question:
           type: string
         answer:
@@ -1046,6 +1052,9 @@ components:
           type: string
         isImportant:
           type: boolean
+        youtubeId:
+          type: string
+          nullable: true
         order:
           type: integer
       required:
@@ -1060,9 +1069,9 @@ components:
       type: object
       properties:
         id:
-          type: integer
+          type: string
         chapterId:
-          type: integer
+          type: string
         youtubeId:
           type: string
         title:
@@ -1080,7 +1089,7 @@ components:
       type: object
       properties:
         chapterId:
-          type: integer
+          type: string
         youtubeId:
           type: string
         title:
@@ -1097,7 +1106,7 @@ components:
       type: object
       properties:
         id:
-          type: integer
+          type: string
         subject:
           type: string
           enum: [Physics, Chemistry]
@@ -1199,11 +1208,11 @@ components:
       type: object
       properties:
         id:
-          type: integer
+          type: string
         userId:
-          type: integer
+          type: string
         chapterId:
-          type: integer
+          type: string
         chapterTitle:
           type: string
         subjectName:
@@ -1228,7 +1237,7 @@ components:
       type: object
       properties:
         chapterId:
-          type: integer
+          type: string
         score:
           type: integer
         total:
@@ -1242,7 +1251,7 @@ components:
       type: object
       properties:
         chapterId:
-          type: integer
+          type: string
       required:
         - chapterId
 
@@ -1267,7 +1276,7 @@ components:
             type: object
             properties:
               subjectId:
-                type: integer
+                type: string
               subjectName:
                 type: string
               chaptersTotal:

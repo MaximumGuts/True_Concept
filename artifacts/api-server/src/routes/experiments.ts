@@ -1,7 +1,6 @@
 import { Router, type IRouter } from "express";
-import { eq } from "drizzle-orm";
-import { db, experimentsTable } from "@workspace/db";
-import { requireAdmin } from "../middlewares/auth";
+import { db } from "@workspace/db";
+import { requireAdmin } from "../middlewares/auth.js";
 import type { Request, Response } from "express";
 
 const router: IRouter = Router();
@@ -22,43 +21,52 @@ function pick(body: Record<string, unknown>) {
 
 router.get("/experiments", async (req: Request, res: Response): Promise<void> => {
   const { classLevel } = req.query;
-  const exps = classLevel
-    ? await db.select().from(experimentsTable).where(eq(experimentsTable.classLevel, classLevel as "Class IX" | "Class X"))
-    : await db.select().from(experimentsTable);
+  let query: any = db.collection("experiments");
+  if (classLevel) {
+    query = query.where("classLevel", "==", classLevel);
+  }
+  
+  const snap = await query.get();
+  const exps = snap.docs.map((doc: any) => ({ id: doc.id, ...doc.data() }));
   res.json(exps);
 });
 
 router.post("/experiments", requireAdmin as (req: Request, res: Response, next: () => void) => void, async (req: Request, res: Response): Promise<void> => {
-  const data = pick(req.body) as Parameters<typeof db.insert>[0] extends infer _ ? Record<string, unknown> : never;
+  const data = pick(req.body);
   const required = ["subject", "classLevel", "title", "objective", "procedure", "expectedResult", "explanation", "type"];
   for (const f of required) {
     if (!data[f]) { res.status(400).json({ error: `Missing field: ${f}` }); return; }
   }
   if (!data.difficulty) data.difficulty = "medium";
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [exp] = await db.insert(experimentsTable).values(data as any).returning();
-  res.status(201).json(exp);
+  
+  const newRef = db.collection("experiments").doc();
+  const newData = { ...data, createdAt: new Date() };
+  await newRef.set(newData);
+  res.status(201).json({ id: newRef.id, ...newData });
 });
 
 router.get("/experiments/:experimentId", async (req: Request, res: Response): Promise<void> => {
-  const id = parseInt(Array.isArray(req.params.experimentId) ? req.params.experimentId[0] : req.params.experimentId, 10);
-  const [exp] = await db.select().from(experimentsTable).where(eq(experimentsTable.id, id));
-  if (!exp) { res.status(404).json({ error: "Experiment not found" }); return; }
-  res.json(exp);
+  const id = Array.isArray(req.params.experimentId) ? req.params.experimentId[0] : req.params.experimentId;
+  const docSnap = await db.collection("experiments").doc(id).get();
+  if (!docSnap.exists) { res.status(404).json({ error: "Experiment not found" }); return; }
+  res.json({ id: docSnap.id, ...docSnap.data() });
 });
 
 router.put("/experiments/:experimentId", requireAdmin as (req: Request, res: Response, next: () => void) => void, async (req: Request, res: Response): Promise<void> => {
-  const id = parseInt(Array.isArray(req.params.experimentId) ? req.params.experimentId[0] : req.params.experimentId, 10);
+  const id = Array.isArray(req.params.experimentId) ? req.params.experimentId[0] : req.params.experimentId;
   const data = pick(req.body);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [exp] = await db.update(experimentsTable).set(data as any).where(eq(experimentsTable.id, id)).returning();
-  if (!exp) { res.status(404).json({ error: "Experiment not found" }); return; }
-  res.json(exp);
+  
+  const docRef = db.collection("experiments").doc(id);
+  const docSnap = await docRef.get();
+  if (!docSnap.exists) { res.status(404).json({ error: "Experiment not found" }); return; }
+  
+  await docRef.update(data);
+  res.json({ id, ...docSnap.data(), ...data });
 });
 
 router.delete("/experiments/:experimentId", requireAdmin as (req: Request, res: Response, next: () => void) => void, async (req: Request, res: Response): Promise<void> => {
-  const id = parseInt(Array.isArray(req.params.experimentId) ? req.params.experimentId[0] : req.params.experimentId, 10);
-  await db.delete(experimentsTable).where(eq(experimentsTable.id, id));
+  const id = Array.isArray(req.params.experimentId) ? req.params.experimentId[0] : req.params.experimentId;
+  await db.collection("experiments").doc(id).delete();
   res.sendStatus(204);
 });
 

@@ -1,6 +1,6 @@
-import { lazy, type LazyExoticComponent } from "react";
+import React, { lazy, type LazyExoticComponent } from "react";
 
-type SimComp = LazyExoticComponent<() => JSX.Element>;
+type SimComp = LazyExoticComponent<() => React.JSX.Element>;
 
 export const simRegistry: Record<string, SimComp> = {
   // Motion
@@ -14,13 +14,14 @@ export const simRegistry: Record<string, SimComp> = {
   // Gravitation & Fluids
   "gravitation": lazy(() => import("./sims/gravitation-fluids").then((m) => ({ default: m.GravitationSim }))),
   "archimedes": lazy(() => import("./sims/gravitation-fluids").then((m) => ({ default: m.ArchimedesSim }))),
-  "density": lazy(() => import("./sims/gravitation-fluids").then((m) => ({ default: m.DensitySim }))),
+
   // Optics
   "reflection": lazy(() => import("./sims/optics").then((m) => ({ default: m.ReflectionSim }))),
   "plane-mirror": lazy(() => import("./sims/optics").then((m) => ({ default: m.PlaneMirrorSim }))),
   "convex-lens": lazy(() => import("./sims/optics").then((m) => ({ default: m.ConvexLensSim }))),
   "refraction": lazy(() => import("./sims/optics").then((m) => ({ default: m.RefractionSim }))),
   "power-of-lens": lazy(() => import("./sims/optics").then((m) => ({ default: m.PowerOfLensSim }))),
+  "human-eye": lazy(() => import("./sims/optics-human-eye").then((m) => ({ default: m.HumanEyeLab }))),
   // Electricity
   "ohms-law": lazy(() => import("./sims/electricity").then((m) => ({ default: m.OhmsLawSim }))),
   "series-circuit": lazy(() => import("./sims/electricity").then((m) => ({ default: m.SeriesCircuitSim }))),
@@ -30,16 +31,53 @@ export const simRegistry: Record<string, SimComp> = {
   "sound-wave": lazy(() => import("./sims/sound").then((m) => ({ default: m.SoundWaveSim }))),
   "pitch": lazy(() => import("./sims/sound").then((m) => ({ default: m.PitchSim }))),
   "echo": lazy(() => import("./sims/sound").then((m) => ({ default: m.EchoSim }))),
-  // Chemistry
+  // Chemistry (basic)
   "filtration": lazy(() => import("./sims/chemistry").then((m) => ({ default: m.FiltrationSim }))),
   "crystallization": lazy(() => import("./sims/chemistry").then((m) => ({ default: m.CrystallizationSim }))),
   "ph-testing": lazy(() => import("./sims/chemistry").then((m) => ({ default: m.PHTestingSim }))),
+  // Chapter 1: Chemical Reactions and Equations
+  "chem-mg-combustion": lazy(() => import("./sims/chemistry-ncert").then((m) => ({ default: m.MgCombustionSim }))),
+  "chem-slaking-lime": lazy(() => import("./sims/chemistry-ncert").then((m) => ({ default: m.SlakingOfLimeSim }))),
+  "chem-feso4-decomp": lazy(() => import("./sims/chemistry-ncert").then((m) => ({ default: m.FeSO4DecompSim }))),
+  "chem-water-electrolysis": lazy(() => import("./sims/chemistry-ncert").then((m) => ({ default: m.WaterElectrolysisSim }))),
+  "chem-iron-cuso4": lazy(() => import("./sims/chemistry-ncert").then((m) => ({ default: m.IronCuSO4Sim }))),
+  "chem-zn-hcl": lazy(() => import("./sims/chemistry-ncert").then((m) => ({ default: m.ZnHClSim }))),
+  "chem-lead-iodide": lazy(() => import("./sims/chemistry-ncert").then((m) => ({ default: m.LeadIodideSim }))),
+  "chem-baso4": lazy(() => import("./sims/chemistry-ncert").then((m) => ({ default: m.BaSO4Sim }))),
+  "chem-cu-oxidation": lazy(() => import("./sims/chemistry-ncert").then((m) => ({ default: m.CuOxidationSim }))),
+  "chem-cuo-reduction": lazy(() => import("./sims/chemistry-ncert").then((m) => ({ default: m.CuOReductionSim }))),
+  // Chapter 2: Acids, Bases and Salts
+  "chem-acid-metal": lazy(() => import("./sims/chemistry-ncert").then((m) => ({ default: m.AcidMetalSim }))),
+  "chem-co2-evolution": lazy(() => import("./sims/chemistry-ncert").then((m) => ({ default: m.CO2EvolutionSim }))),
+  "chem-lime-water": lazy(() => import("./sims/chemistry-ncert").then((m) => ({ default: m.LimeWaterTestSim }))),
+  "chem-neutralization": lazy(() => import("./sims/chemistry-ncert").then((m) => ({ default: m.NeutralizationSim }))),
+  "chem-brine-electrolysis": lazy(() => import("./sims/chemistry-ncert").then((m) => ({ default: m.BrineElectrolysisSim }))),
+  "chem-nahco3-heat": lazy(() => import("./sims/chemistry-ncert").then((m) => ({ default: m.NaHCO3HeatSim }))),
+  // Chapter 3: Metals and Non-metals
+  "chem-na-water": lazy(() => import("./sims/chemistry-ncert").then((m) => ({ default: m.NaWaterSim }))),
+  "chem-amphoteric": lazy(() => import("./sims/chemistry-ncert").then((m) => ({ default: m.AmphoterixSim }))),
+  "chem-thermite": lazy(() => import("./sims/chemistry-ncert").then((m) => ({ default: m.ThermiteSim }))),
+  "chem-reactivity-series": lazy(() => import("./sims/chemistry-ncert").then((m) => ({ default: m.MetalReactivitySim }))),
+  "chem-reactive-metals": lazy(() => import("./sims/reactive-metals").then((m) => ({ default: m.ReactiveMetalsModule }))),
+  "chem-mineral-acids": lazy(() => import("./sims/mineral-acids").then((m) => ({ default: m.MineralAcidsModule }))),
+  "chem-organic-reactions": lazy(() => import("./sims/organic-reactions").then((m) => ({ default: m.OrganicReactionsModule }))),
+  "biology-animal-cell":      lazy(() => import("./sims/biology/animal-cell").then((m) => ({ default: m.AnimalCellModule }))),
+  "biology-plant-cell": lazy(() => import("./sims/biology/plant-cell").then((m) => ({ default: m.PlantCellModule }))),
+  "biology-digestive-system":    lazy(() => import("./sims/biology/digestive-system").then((m) => ({ default: m.DigestiveSystemModule }))),
+  "biology-respiratory-system": lazy(() => import("./sims/biology/respiratory-system").then((m) => ({ default: m.RespiratorySystemModule }))),
+  "biology-heart-circulation":  lazy(() => import("./sims/biology/heart-circulation").then((m) => ({ default: m.HeartCirculationModule }))),
+  "biology-excretory-system":   lazy(() => import("./sims/biology/excretory-system").then((m) => ({ default: m.ExcretorySystemModule }))),
+  // Chapter 4: Carbon and its Compounds
+  "chem-methane-combustion": lazy(() => import("./sims/chemistry-ncert").then((m) => ({ default: m.MethaneCombustionSim }))),
+  "chem-hydrogenation": lazy(() => import("./sims/chemistry-ncert").then((m) => ({ default: m.HydrogenationSim }))),
+  "chem-ethanol-na": lazy(() => import("./sims/chemistry-ncert").then((m) => ({ default: m.EthanolNaSim }))),
+  "chem-esterification": lazy(() => import("./sims/chemistry-ncert").then((m) => ({ default: m.EsterificationSim }))),
+  "chem-soap-hard-water": lazy(() => import("./sims/chemistry-ncert").then((m) => ({ default: m.SoapHardWaterSim }))),
   // Legacy (existing)
   "light-reflection": lazy(() => import("./LightReflection")),
   "light-refraction": lazy(() => import("./LightRefraction")),
   "electric-circuit": lazy(() => import("./ElectricCircuit")),
   "lens": lazy(() => import("./LensSim")),
-  "magnet": lazy(() => import("./MagnetSim")),
 };
 
 export const SIM_TYPE_LABELS: Record<string, string> = {
@@ -49,7 +87,7 @@ export const SIM_TYPE_LABELS: Record<string, string> = {
   "motion-accel": "Motion with Constant Acceleration",
   "gravitation": "Universal Gravitation",
   "archimedes": "Archimedes' Principle",
-  "density": "Density Determination",
+
   "kinetic-energy": "Kinetic Energy",
   "potential-energy": "Potential Energy",
   "pendulum": "Pendulum / Conservation of Energy",
@@ -58,6 +96,7 @@ export const SIM_TYPE_LABELS: Record<string, string> = {
   "convex-lens": "Image Formation by Lens & Mirror",
   "refraction": "Refraction (Glass Slab)",
   "power-of-lens": "Power of Lens",
+  "human-eye": "Human Eye — Structure & Defects",
   "ohms-law": "Ohm's Law",
   "series-circuit": "Series Circuit",
   "parallel-circuit": "Parallel Circuit",
@@ -74,15 +113,69 @@ export const SIM_TYPE_LABELS: Record<string, string> = {
   "lens": "Lens (legacy)",
   "magnet": "Magnet (legacy)",
   "custom": "Custom (no simulation)",
+  // Ch1
+  "chem-mg-combustion": "Combustion of Magnesium",
+  "chem-slaking-lime": "Slaking of Lime (CaO + H₂O)",
+  "chem-feso4-decomp": "Decomposition of Ferrous Sulphate",
+  "chem-water-electrolysis": "Electrolysis of Water",
+  "chem-iron-cuso4": "Iron in Copper Sulphate Solution",
+  "chem-zn-hcl": "Zinc + Hydrochloric Acid",
+  "chem-lead-iodide": "Lead Iodide Formation (Yellow Ppt.)",
+  "chem-baso4": "Barium Sulphate Formation (White Ppt.)",
+  "chem-cu-oxidation": "Oxidation of Copper",
+  "chem-cuo-reduction": "Reduction of Copper Oxide",
+  // Ch2
+  "chem-acid-metal": "Acid + Metal Reaction",
+  "chem-co2-evolution": "CO₂ Evolution from Carbonate",
+  "chem-lime-water": "Lime Water CO₂ Test",
+  "chem-neutralization": "Neutralization — HCl + NaOH",
+  "chem-brine-electrolysis": "Electrolysis of Brine (Chlor-Alkali)",
+  "chem-nahco3-heat": "Decomposition of Baking Soda",
+  // Ch3
+  "chem-na-water": "Sodium + Water Reaction",
+  "chem-amphoteric": "Amphoteric Nature of Al₂O₃",
+  "chem-thermite": "Thermite Reaction",
+  "chem-reactivity-series": "Metal Reactivity Series",
+  "chem-reactive-metals": "Reactions with Oxygen and Water",
+  "chem-mineral-acids": "Reactions with Mineral Acids",
+  // Ch4
+  "chem-methane-combustion": "Combustion of Methane",
+  "chem-hydrogenation": "Hydrogenation of Ethene",
+  "chem-ethanol-na": "Ethanol + Sodium Reaction",
+  "chem-esterification": "Esterification (Ester Formation)",
+  "chem-soap-hard-water": "Soap in Hard Water (Scum)",
+  // Biology
+  "biology-animal-cell":        "Animal Cell Explorer",
+  "biology-plant-cell":         "Plant Cell Explorer",
+  "biology-digestive-system":   "Human Digestive System",
+  "biology-respiratory-system": "Human Respiratory System",
+  "biology-heart-circulation":  "Human Heart & Blood Circulation",
+  "biology-excretory-system":   "Human Excretory System & Nephron",
 };
 
 export const SIM_EMOJIS: Record<string, string> = {
   "distance-time": "📈", "velocity-time": "📊", "free-fall": "🪂", "motion-accel": "🏃",
-  "gravitation": "🪐", "archimedes": "🛁", "density": "⚖️",
+  "gravitation": "🪐", "archimedes": "🛁",
   "kinetic-energy": "💨", "potential-energy": "📦", "pendulum": "🕰️",
   "reflection": "🪞", "plane-mirror": "🪞", "convex-lens": "🔭", "refraction": "🌈", "power-of-lens": "🔍",
+  "human-eye": "👁️",
   "ohms-law": "⚡", "series-circuit": "🔗", "parallel-circuit": "🔀", "heating-effect": "🔥",
   "sound-wave": "🌊", "pitch": "🎵", "echo": "📢",
   "filtration": "🧪", "crystallization": "💎", "ph-testing": "🧫",
   "light-reflection": "🪞", "light-refraction": "🌈", "electric-circuit": "⚡", "lens": "🔭", "magnet": "🧲", "custom": "🔬",
+  // Ch1
+  "chem-mg-combustion": "✨", "chem-slaking-lime": "💨", "chem-feso4-decomp": "🟢",
+  "chem-water-electrolysis": "⚡", "chem-iron-cuso4": "🔵", "chem-zn-hcl": "🫧",
+  "chem-lead-iodide": "🟡", "chem-baso4": "⬜", "chem-cu-oxidation": "🟠", "chem-cuo-reduction": "🔴",
+  // Ch2
+  "chem-acid-metal": "⚗️", "chem-co2-evolution": "🫧", "chem-lime-water": "🥛",
+  "chem-neutralization": "⚖️", "chem-brine-electrolysis": "🧂", "chem-nahco3-heat": "🍞",
+  // Ch3
+  "chem-na-water": "💥", "chem-amphoteric": "↔️", "chem-thermite": "🔥", "chem-reactivity-series": "📊", "chem-reactive-metals": "⚗️", "chem-mineral-acids": "🧪",
+  // Ch4
+  "chem-methane-combustion": "🔵", "chem-hydrogenation": "🫙", "chem-ethanol-na": "🍶",
+  "chem-esterification": "🍑", "chem-soap-hard-water": "🧼",
+  "biology-animal-cell": "🔬", "biology-plant-cell": "🌿", "biology-digestive-system": "🫀", "biology-respiratory-system": "🫁",
+  "biology-heart-circulation": "❤️",
+  "biology-excretory-system":  "🫘",
 };

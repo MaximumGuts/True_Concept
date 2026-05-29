@@ -1,16 +1,16 @@
-import { drizzle } from "drizzle-orm/node-postgres";
-import pg from "pg";
-import * as schema from "./schema";
+import { initializeApp, cert, getApps, applicationDefault } from "firebase-admin/app";
+import { getFirestore } from "firebase-admin/firestore";
+import { getAuth } from "firebase-admin/auth";
+import * as schema from "./schema/index.js";
 
-const { Pool } = pg;
+if (getApps().length === 0) {
+  const credential = process.env.TRUE_CONCEPT_SERVICE_KEY
+    ? cert(JSON.parse(Buffer.from(process.env.TRUE_CONCEPT_SERVICE_KEY, 'base64').toString('utf8')))
+    : applicationDefault();
 
-if (!process.env.DATABASE_URL) {
-  throw new Error(
-    "DATABASE_URL must be set. Did you forget to provision a database?",
-  );
+  initializeApp({ credential });
 }
 
-export const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-export const db = drizzle(pool, { schema });
-
-export * from "./schema";
+export const db = getFirestore();
+export const firebaseAuth = getAuth();
+export * from "./schema/index.js";
