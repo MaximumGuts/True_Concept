@@ -27,19 +27,21 @@ interface Props {
 
 // ── Per-feature visual theme ────────────────────────────────────────────────
 const THEMES: Record<UnlockFeature, { icon: string; gradFrom: string; gradTo: string; glow: string }> = {
-  notes: { icon: "📚", gradFrom: "#6366f1", gradTo: "#4f46e5", glow: "rgba(99,102,241,0.40)" },
-  lab:   { icon: "🧪", gradFrom: "#10b981", gradTo: "#059669", glow: "rgba(16,185,129,0.40)" },
-  mcq:   { icon: "🎯", gradFrom: "#f59e0b", gradTo: "#d97706", glow: "rgba(245,158,11,0.40)" },
-  qna:   { icon: "❓", gradFrom: "#ec4899", gradTo: "#db2777", glow: "rgba(236,72,153,0.40)" },
+  notes:     { icon: "📚", gradFrom: "#6366f1", gradTo: "#4f46e5", glow: "rgba(99,102,241,0.40)" },
+  lab:       { icon: "🧪", gradFrom: "#10b981", gradTo: "#059669", glow: "rgba(16,185,129,0.40)" },
+  mcq:       { icon: "🎯", gradFrom: "#f59e0b", gradTo: "#d97706", glow: "rgba(245,158,11,0.40)" },
+  qna:       { icon: "❓", gradFrom: "#ec4899", gradTo: "#db2777", glow: "rgba(236,72,153,0.40)" },
+  mock_exam: { icon: "📋", gradFrom: "#f97316", gradTo: "#ea580c", glow: "rgba(249,115,22,0.40)" },
 };
 
 // ── Bilingual strings — kept inline so this file is self-contained ──────────
 const STRINGS = {
   title: {
-    notes: { en: "Unlock Notes",       as: "টোকা আনলক কৰক" },
-    lab:   { en: "Unlock Lab",         as: "পৰীক্ষাগাৰ আনলক কৰক" },
-    mcq:   { en: "Unlock MCQ",         as: "MCQ আনলক কৰক" },
-    qna:   { en: "Unlock Q&A",         as: "প্ৰশ্নোত্তৰ আনলক কৰক" },
+    notes:     { en: "Unlock Notes",     as: "টোকা আনলক কৰক" },
+    lab:       { en: "Unlock Lab",       as: "পৰীক্ষাগাৰ আনলক কৰক" },
+    mcq:       { en: "Unlock MCQ",       as: "MCQ আনলক কৰক" },
+    qna:       { en: "Unlock Q&A",       as: "প্ৰশ্নোত্তৰ আনলক কৰক" },
+    mock_exam: { en: "Unlock Mock Exam", as: "মক পৰীক্ষা আনলক কৰক" },
   },
   description: {
     en: "Watch a short ad to get 1 hour of free access — across every chapter.",
@@ -67,10 +69,11 @@ const STRINGS = {
   },
   // Per-feature reward description
   reward: {
-    notes: { en: "1 hour of reading any chapter's notes",     as: "যিকোনো অধ্যায়ৰ টোকা এক ঘণ্টা পঢ়িব পাৰিব" },
-    lab:   { en: "1 hour of running any experiment's simulation", as: "যিকোনো পৰীক্ষাৰ চিমুলেচন এক ঘণ্টা চলাব পাৰিব" },
-    mcq:   { en: "1 hour of taking any chapter's MCQ tests",  as: "যিকোনো অধ্যায়ৰ MCQ পৰীক্ষা এক ঘণ্টা দিব পাৰিব" },
-    qna:   { en: "1 hour of viewing any chapter's Q&A",       as: "যিকোনো অধ্যায়ৰ প্ৰশ্নোত্তৰ এক ঘণ্টা চাব পাৰিব" },
+    notes:     { en: "1 hour of reading any chapter's notes",         as: "যিকোনো অধ্যায়ৰ টোকা এক ঘণ্টা পঢ়িব পাৰিব" },
+    lab:       { en: "1 hour of running any experiment's simulation",  as: "যিকোনো পৰীক্ষাৰ চিমুলেচন এক ঘণ্টা চলাব পাৰিব" },
+    mcq:       { en: "1 hour of taking any chapter's MCQ tests",       as: "যিকোনো অধ্যায়ৰ MCQ পৰীক্ষা এক ঘণ্টা দিব পাৰিব" },
+    qna:       { en: "1 hour of viewing any chapter's Q&A",            as: "যিকোনো অধ্যায়ৰ প্ৰশ্নোত্তৰ এক ঘণ্টা চাব পাৰিব" },
+    mock_exam: { en: "Unlocked for today — both strict and practice mode", as: "আজিৰ বাবে আনলক — কঠোৰ আৰু অভ্যাস উভয় মোড" },
   },
 };
 

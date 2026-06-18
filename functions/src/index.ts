@@ -23,6 +23,16 @@ export { health } from "./routes/health.js";
 // Firestore triggers
 export { rebuildKnowledgeProfile } from "./triggers/knowledge-profile.js";
 export { broadcastNewContent }     from "./triggers/broadcast-recommendation.js";
+export {
+  onMcqWriteRebuildIndex,
+  onQaWriteRebuildIndex,
+  onPaperWriteRebuildIndex,
+  onChapterWriteRebuildIndex,
+  onSubjectWriteRebuildIndex,
+} from "./triggers/content-index.js";
 
 // AI
 export { aiMentor } from "./routes/ai-mentor.js";
+
+// Gamification
+export { updateLeaderboardOnXPWrite } from "./triggers/leaderboard.js";

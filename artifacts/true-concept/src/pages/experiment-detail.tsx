@@ -10,6 +10,7 @@ import LanguageToggle from "@/components/LanguageToggle";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { EXPERIMENT_AS, pickExpField } from "@/i18n/experimentTranslations";
 import UnlockGate from "@/ads/components/UnlockGate";
+import YouTubeThumbnail from "@/components/YouTubeThumbnail";
 
 const diffBadgeStyle: Record<string, React.CSSProperties> = {
   easy:   { background: "rgba(16,185,129,0.15)", color: "#059669" },
@@ -275,15 +276,7 @@ export default function ExperimentDetailPage() {
       {/* Video */}
       {ytId && (
         <SectionCard icon="🎬" title={isAs ? "ব্যাখ্যা ভিডিঅ'" : "Explanation Video"}>
-          <div className="relative w-full pb-[56.25%] rounded-2xl overflow-hidden bg-black">
-            <iframe
-              className="absolute inset-0 w-full h-full"
-              src={`https://www.youtube.com/embed/${ytId}`}
-              title={titleText}
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-            />
-          </div>
+          <YouTubeThumbnail youtubeId={ytId} label={titleText} />
         </SectionCard>
       )}
 

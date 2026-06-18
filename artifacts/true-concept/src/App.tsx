@@ -4,6 +4,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { StudentPrefsProvider } from "@/contexts/StudentPrefsContext";
+import { BookmarksProvider } from "@/contexts/BookmarksContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { LabTrackingRoute } from "@/lib/analytics/lab-tracking-context";
@@ -55,6 +56,12 @@ import AdminPaperSetDetailPage from "@/pages/admin/paper-set-detail";
 import AdminSettingsPage from "@/pages/admin/settings";
 import PrivacyPolicyPage from "@/pages/privacy";
 import AboutPage from "@/pages/about";
+import PracticePage from "@/pages/practice";
+import DailyChallengePage from "@/pages/daily-challenge";
+import MockExamPage from "@/pages/mock-exam";
+import MockExamSubjectsPage from "@/pages/mock-exam-subjects";
+import AchievementsPage from "@/pages/achievements";
+import BookmarksPage from "@/pages/bookmarks";
 import PaperSetsPage from "@/pages/paper-sets";
 import PaperSetDetailPage from "@/pages/paper-set-detail";
 import PaperReaderPage from "@/pages/paper-reader";
@@ -109,10 +116,58 @@ function AppRoutes() {
       <StudentPrefsModal />
       {user?.role === "student" && <WhatsAppPopup />}
       <Switch>
-        <Route path="/" component={HomePage} />
+        <Route path="/">
+          {() => {
+            // Logged-in users land on their app home, not the marketing page.
+            if (user) return <Redirect to={user.role === "admin" ? "/admin" : "/dashboard"} />;
+            return <HomePage />;
+          }}
+        </Route>
         <Route path="/login" component={LoginPage} />
         <Route path="/privacy" component={PrivacyPolicyPage} />
         <Route path="/about" component={AboutPage} />
+        <Route path="/practice">
+          {() => (
+            <ProtectedRoute>
+              <PracticePage />
+            </ProtectedRoute>
+          )}
+        </Route>
+        <Route path="/practice/challenge">
+          {() => (
+            <ProtectedRoute>
+              <DailyChallengePage />
+            </ProtectedRoute>
+          )}
+        </Route>
+        <Route path="/achievements">
+          {() => (
+            <ProtectedRoute>
+              <AchievementsPage />
+            </ProtectedRoute>
+          )}
+        </Route>
+        <Route path="/bookmarks">
+          {() => (
+            <ProtectedRoute>
+              <BookmarksPage />
+            </ProtectedRoute>
+          )}
+        </Route>
+        <Route path="/practice/mock-exam-subjects">
+          {() => (
+            <ProtectedRoute>
+              <MockExamSubjectsPage />
+            </ProtectedRoute>
+          )}
+        </Route>
+        <Route path="/practice/mock-exam">
+          {() => (
+            <ProtectedRoute>
+              <MockExamPage />
+            </ProtectedRoute>
+          )}
+        </Route>
 
         <Route path="/subjects">
           {() => (
@@ -450,10 +505,12 @@ export default function App() {
           <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
             <AuthProvider>
               <StudentPrefsProvider>
-                {/* LanguageProvider is mounted inside each virtual-lab route
-                    via VirtualLabRoute — never at app root — so the Assamese
-                    toggle's effect is strictly scoped to the lab. */}
-                <AppRoutes />
+                <BookmarksProvider>
+                  {/* LanguageProvider is mounted inside each virtual-lab route
+                      via VirtualLabRoute — never at app root — so the Assamese
+                      toggle's effect is strictly scoped to the lab. */}
+                  <AppRoutes />
+                </BookmarksProvider>
               </StudentPrefsProvider>
             </AuthProvider>
           </WouterRouter>

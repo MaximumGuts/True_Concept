@@ -1,11 +1,15 @@
 /**
- * Gemini 2.0 Flash API helper — uses fetch directly, no extra dependencies.
+ * Gemini API helper — uses fetch directly, no extra dependencies.
  * Key is read from GEMINI_API_KEY environment variable (set in functions/.env).
  */
 
-// Use gemini-2.5-flash — the current free-tier model.
-// (gemini-2.0-flash was removed from the free tier in 2026.)
-const GEMINI_MODEL   = "gemini-2.5-flash";
+// Use gemini-2.5-flash-lite — the cheapest Gemini, built for high-volume /
+// low-cost generation. ~5-6x cheaper output than 2.5-flash with equally strong
+// Indic-language (Assamese) quality, and a higher free-tier daily limit. The
+// mentor task (structured profile → bilingual JSON) doesn't need a frontier
+// model, so Flash-Lite is the right cost/quality fit. See the cost analysis in
+// chat (~₹62K/mo → ~₹14K/mo at 50K DAU).
+const GEMINI_MODEL   = "gemini-2.5-flash-lite";
 const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
 
 export async function callGemini(prompt: string): Promise<string> {

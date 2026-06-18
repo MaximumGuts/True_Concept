@@ -1,9 +1,18 @@
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/contexts/AuthContext";
 import { useState, useEffect } from "react";
-import { BookOpen, FlaskConical, LogOut, Menu, Search, X, ChevronRight, LayoutDashboard, Users, Home, Settings } from "lucide-react";
+import {
+  BookOpen, FlaskConical, LogOut, Menu, Search, X, ChevronRight,
+  LayoutDashboard, Users, Home, Settings, Trophy, Bookmark,
+} from "lucide-react";
 import { adManager } from "@/ads/ad-manager";
 import ThemeToggle from "@/components/ThemeToggle";
+import XPToastDisplay from "@/components/gamification/XPToastDisplay";
+import XPCelebrationOverlay from "@/components/gamification/XPCelebrationOverlay";
+import RecommendationPopup from "@/components/RecommendationPopup";
+import LevelUpModal from "@/components/gamification/LevelUpModal";
+import { useGamification } from "@/hooks/useGamification";
+import { AnimatePresence } from "framer-motion";
 import NotificationBell from "@/components/NotificationBell";
 import StudentSettingsModal from "@/components/StudentSettingsModal";
 
@@ -19,115 +28,103 @@ export default function Layout({ children }: LayoutProps) {
 
   const navLinks = user?.role === "admin"
     ? [
-        { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
-        { href: "/admin/subjects", label: "Subjects", icon: BookOpen },
-        { href: "/admin/chapters", label: "Chapters", icon: BookOpen },
-        { href: "/admin/experiments", label: "Lab", icon: FlaskConical },
-        { href: "/admin/students", label: "Students", icon: Users },
+        { href: "/admin",           label: "Dashboard", icon: LayoutDashboard },
+        { href: "/admin/subjects",  label: "Subjects",  icon: BookOpen },
+        { href: "/admin/chapters",  label: "Chapters",  icon: BookOpen },
+        { href: "/admin/experiments", label: "Lab",     icon: FlaskConical },
+        { href: "/admin/students",  label: "Students",  icon: Users },
       ]
     : [
-        { href: "/dashboard", label: "Home", icon: Home },
-        { href: "/subjects", label: "Subjects", icon: BookOpen },
-        { href: "/virtual-lab", label: "Lab", icon: FlaskConical },
-        { href: "/search", label: "Search", icon: Search },
+        { href: "/dashboard",   label: "Home",     icon: Home },
+        { href: "/subjects",    label: "Subjects", icon: BookOpen },
+        { href: "/virtual-lab", label: "Lab",      icon: FlaskConical },
+        { href: "/practice",    label: "Practice", icon: Trophy },
       ];
 
-  const isActive = (href: string) => location === href || (href !== "/" && location.startsWith(href));
+  const isActive = (href: string) =>
+    location === href || (href !== "/" && location.startsWith(href));
 
-  // ── Bottom-pill visibility (mobile only) ────────────────────────────────
-  // Hide the floating bottom nav on detail / lab-runner screens so an ad
-  // banner can take that space. PC view is unaffected (the pill is already
-  // `md:hidden`); this predicate only changes whether it's mounted at all.
-  // Patterns that hide the pill:
-  //   /subjects/<id>           — chapters list inside a subject
-  //   /chapters/<id>           — note / quiz / Q&A view of a chapter
-  //   /virtual-lab/<anything>  — any lab hub (physics/chemistry/biology) or
-  //                              experiment-runner page
-  //   /papers (and deeper)     — Full Length Question Papers picker, set
-  //                              detail, and the immersive paper reader
-  // Top-level /subjects, /dashboard, /virtual-lab, /search keep the pill.
+  // ── Bottom-pill visibility ──────────────────────────────────────────────────
   const hideBottomNav =
     /^\/subjects\/[^/]+/.test(location) ||
     /^\/chapters\/[^/]+/.test(location) ||
     /^\/virtual-lab\/[^/]+/.test(location) ||
-    /^\/papers(\/|$)/.test(location);
+    /^\/papers(\/|$)/.test(location) ||
+    /^\/practice(\/|$)/.test(location);
 
-  // ── Bottom AdMob banner visibility (mobile only, native Android only) ──
-  // The native AdMob banner sits on top of the WebView at the OS bottom and
-  // appears on EXACTLY the same screens where the pill is hidden:
-  //   • Subject → chapters list
-  //   • Chapter → notes / MCQ / Q&A tabs (and the immersive note reader on top)
-  //   • Any lab hub or experiment-runner page
-  // The web build uses the AdSense stub provider which is a no-op for now.
-  // The provider's showAdaptiveBanner() / hideBanner() are idempotent, so
-  // navigating between two banner-pages doesn't flicker.
+  const isStrictMockExam =
+    /^\/practice\/mock-exam/.test(location) &&
+    (typeof window !== "undefined"
+      ? new URLSearchParams(window.location.search).get("mode") === "strict"
+      : false);
+
+  const showBanner = hideBottomNav && !isStrictMockExam;
+
   const isStudent = user?.role === "student";
   useEffect(() => {
-    if (isStudent && hideBottomNav) {
-      void adManager.showAdaptiveBanner();
-    } else {
-      void adManager.hideBanner();
-    }
-  }, [isStudent, hideBottomNav]);
+    if (isStudent && showBanner) void adManager.showAdaptiveBanner();
+    else void adManager.hideBanner();
+  }, [isStudent, showBanner]);
+
+  const closeMenu = () => setMobileMenuOpen(false);
 
   return (
     <div className="min-h-screen flex flex-col">
-      {/* ── Header ──────────────────────────── */}
-      {/* Premium polish:
-          • Deep cosmic gradient extends from the OS status-bar safe area
-            down into the header — replaces the previously-harsh seam where
-            the orange Android status bar met the dark page.
-          • Soft top-edge accent (1 px) glows in the brand orange for a hint
-            of warmth without dominating.
-          • Bottom edge fades to transparent so the header feels welded to
-            the page below instead of cut off by a hard border. */}
+
+      {/* ── Header ────────────────────────────────────────────────────────── */}
       <header
         className="sticky top-0 z-50 backdrop-blur-2xl shadow-xl relative"
         style={{
-          // max() picks whichever is larger: the device-reported safe area
-          // (non-zero on notched phones / iOS) or the Capacitor fallback
-          // injected via the .is-capacitor class on <html> (Android tablets
-          // without a notch report 0 here even though the status bar exists).
           paddingTop: "max(env(safe-area-inset-top, 0px), var(--cap-status-bar, 0px))",
-          // Header background is theme-aware via CSS variables in index.css.
-          // Light → soft cream, Dark → deep cosmic gradient.
           background: "var(--header-bg)",
         }}
       >
-        {/* Top hairline glow — warm orange whisper at the very top */}
-        <div
-          className="absolute top-0 left-0 right-0 h-px pointer-events-none"
-          style={{ background: "var(--header-glow-top)" }}
-        />
-        {/* Bottom soft fade — replaces the old border-b */}
-        <div
-          className="absolute bottom-0 left-0 right-0 h-[2px] pointer-events-none"
-          style={{ background: "var(--header-glow-bottom)" }}
-        />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            {/* Top-left cluster: Notification Bell (students only) + Logo */}
-            <div className="flex items-center gap-2">
-              {user?.role === "student" && <NotificationBell />}
+        <div className="absolute top-0 left-0 right-0 h-px pointer-events-none"
+          style={{ background: "var(--header-glow-top)" }} />
+        <div className="absolute bottom-0 left-0 right-0 h-[2px] pointer-events-none"
+          style={{ background: "var(--header-glow-bottom)" }} />
+
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+          <div className="flex items-center h-14 sm:h-16 gap-2">
+
+            {/* ── LEFT: hamburger (mobile) + logo ──────────────────── */}
+            <div className="flex items-center gap-1.5 shrink-0">
+              {/* Hamburger — mobile only, always leftmost */}
+              {user && (
+                <button
+                  className="md:hidden p-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 text-gray-600 dark:text-gray-300 transition-colors"
+                  onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                  data-testid="button-mobile-menu"
+                  aria-label="Menu"
+                >
+                  {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+                </button>
+              )}
+
               <Link href={user ? (user.role === "admin" ? "/admin" : "/dashboard") : "/"}>
-                <div className="flex items-center gap-2.5 cursor-pointer" data-testid="logo">
-                  <div className="w-9 h-9 rounded-xl flex items-center justify-center font-black text-white text-sm shadow-lg"
-                    style={{ background: "linear-gradient(135deg, #da6b45, #b85535)" }}>TC</div>
-                  <span className="font-black text-lg tracking-tight hidden sm:inline" style={{
-                    background: "linear-gradient(135deg, #da6b45, #fbbf24)",
-                    WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text"
-                  }}>TRUE CONCEPT</span>
+                <div className="flex items-center gap-2 cursor-pointer" data-testid="logo">
+                  <div
+                    className="w-9 h-9 rounded-xl flex items-center justify-center font-black text-white text-sm shadow-lg shrink-0"
+                    style={{ background: "linear-gradient(135deg, #da6b45, #b85535)" }}
+                  >TC</div>
+                  <span
+                    className="font-black text-lg tracking-tight hidden sm:inline"
+                    style={{
+                      background: "linear-gradient(135deg, #da6b45, #fbbf24)",
+                      WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text",
+                    }}
+                  >TRUE CONCEPT</span>
                 </div>
               </Link>
             </div>
 
-            {/* Desktop Nav — liquid glass pill */}
+            {/* ── CENTER: desktop nav pill ──────────────────────────── */}
             {user && (
-              <nav className="hidden md:flex items-center gap-1 liquid-inner rounded-2xl p-1">
+              <nav className="hidden md:flex items-center gap-1 liquid-inner rounded-2xl p-1 mx-auto">
                 {navLinks.map(({ href, label, icon: Icon }) => (
                   <Link key={href} href={href}>
                     <button
-                      data-testid={`nav-${label.toLowerCase().replace(/\s+/g, '-')}`}
+                      data-testid={`nav-${label.toLowerCase().replace(/\s+/g, "-")}`}
                       className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-black transition-all duration-200 ${
                         isActive(href)
                           ? "text-white shadow-md"
@@ -143,74 +140,101 @@ export default function Layout({ children }: LayoutProps) {
               </nav>
             )}
 
-            {/* Right */}
-            <div className="flex items-center gap-2">
-              <ThemeToggle />
-              {user ? (
+            {/* ── RIGHT: action icons ───────────────────────────────── */}
+            <div className="flex items-center gap-0.5 ml-auto">
+
+              {/* Student icons: search, bookmark, notification (all screen sizes) */}
+              {user?.role === "student" && (
                 <>
-                  <div className="hidden sm:flex items-center gap-2 liquid-inner rounded-xl px-3 py-1.5">
-                    <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-black text-white"
-                      style={{ background: "linear-gradient(135deg, #f59e0b, #f97316)" }}>
-                      {user.name.charAt(0).toUpperCase()}
-                    </div>
-                    <span className="text-sm font-bold text-gray-700 dark:text-gray-200">{user.role === "admin" ? "Admin" : "Student"}</span>
-                  </div>
-                  {user.role === "student" && (
+                  <Link href="/search">
                     <button
-                      onClick={() => setSettingsOpen(true)}
-                      data-testid="button-settings"
-                      title="Settings"
-                      className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-sm font-bold text-indigo-600 dark:text-indigo-300 hover:bg-indigo-50/60 dark:hover:bg-indigo-500/10 transition-colors"
+                      title="Search"
+                      data-testid="button-header-search"
+                      className="p-2 rounded-xl text-gray-600 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
                     >
-                      <Settings className="w-4 h-4" />
+                      <Search className="w-[18px] h-[18px]" />
                     </button>
-                  )}
+                  </Link>
+                  <Link href="/bookmarks">
+                    <button
+                      title="Bookmarks"
+                      data-testid="button-header-bookmarks"
+                      className={`p-2 rounded-xl transition-colors ${
+                        isActive("/bookmarks")
+                          ? "text-amber-500"
+                          : "text-gray-600 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/10"
+                      }`}
+                    >
+                      <Bookmark className={`w-[18px] h-[18px] ${isActive("/bookmarks") ? "fill-current" : ""}`} />
+                    </button>
+                  </Link>
+                  <NotificationBell />
+                </>
+              )}
+
+              {/* Desktop-only extras: theme toggle, settings, logout */}
+              <div className="hidden md:flex items-center gap-0.5 ml-1">
+                <ThemeToggle />
+                {user?.role === "student" && (
+                  <button
+                    onClick={() => setSettingsOpen(true)}
+                    data-testid="button-settings"
+                    title="Settings"
+                    className="p-2 rounded-xl text-indigo-600 dark:text-indigo-300 hover:bg-indigo-50/60 dark:hover:bg-indigo-500/10 transition-colors"
+                  >
+                    <Settings className="w-4 h-4" />
+                  </button>
+                )}
+                {user && (
                   <button
                     onClick={logout}
                     data-testid="button-logout"
+                    title="Logout"
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-bold text-red-500 dark:text-red-400 hover:bg-red-50/60 dark:hover:bg-red-500/10 transition-colors"
                   >
                     <LogOut className="w-4 h-4" />
-                    <span className="hidden sm:inline">Logout</span>
+                    <span className="hidden lg:inline">Logout</span>
                   </button>
-                </>
-              ) : (
+                )}
+                {!user && (
+                  <Link href="/login">
+                    <button
+                      className="font-black text-sm px-5 py-2 rounded-xl text-white shadow-lg hover:opacity-90 transition-opacity"
+                      data-testid="button-login-nav"
+                      style={{ background: "linear-gradient(135deg, #da6b45, #b85535)" }}
+                    >Login</button>
+                  </Link>
+                )}
+              </div>
+
+              {/* Mobile: login button if not authenticated */}
+              {!user && (
                 <Link href="/login">
-                  <button className="font-black text-sm px-5 py-2 rounded-xl text-white shadow-lg hover:opacity-90 transition-opacity"
+                  <button
+                    className="md:hidden font-black text-sm px-4 py-1.5 rounded-xl text-white shadow-lg hover:opacity-90 transition-opacity"
                     data-testid="button-login-nav"
-                    style={{ background: "linear-gradient(135deg, #da6b45, #b85535)" }}>
-                    Login
-                  </button>
+                    style={{ background: "linear-gradient(135deg, #da6b45, #b85535)" }}
+                  >Login</button>
                 </Link>
-              )}
-              {user && (
-                <button
-                  className="md:hidden p-2 rounded-xl hover:bg-white/40 dark:hover:bg-white/10 text-gray-600 dark:text-gray-300 transition-colors"
-                  onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                  data-testid="button-mobile-menu"
-                >
-                  {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-                </button>
               )}
             </div>
           </div>
         </div>
 
-        {/* Mobile Menu — keeps the same gradient family so it feels like part of the header */}
+        {/* ── Mobile slide-down menu ──────────────────────────────────────── */}
         {user && mobileMenuOpen && (
-          <div
-            className="md:hidden px-4 py-3 space-y-1.5 backdrop-blur-2xl"
-            style={{
-              background: "linear-gradient(180deg, rgba(28,18,68,0.92), rgba(20,14,48,0.95))",
-              borderTop: "1px solid rgba(255,255,255,0.06)",
-            }}
-          >
+          <div className="md:hidden px-4 py-3 space-y-1 backdrop-blur-xl
+            bg-white/95 dark:bg-[rgba(20,14,48,0.97)]
+            border-t border-gray-200 dark:border-white/6">
+            {/* Nav links */}
             {navLinks.map(({ href, label, icon: Icon }) => (
               <Link key={href} href={href}>
                 <button
-                  onClick={() => setMobileMenuOpen(false)}
+                  onClick={closeMenu}
                   className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-black transition-all ${
-                    isActive(href) ? "text-white shadow-md" : "text-gray-600 dark:text-gray-300 hover:bg-white/50 dark:hover:bg-white/10"
+                    isActive(href)
+                      ? "text-white shadow-md"
+                      : "text-gray-700 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/10"
                   }`}
                   style={isActive(href) ? { background: "linear-gradient(135deg, #da6b45, #b85535)" } : {}}
                 >
@@ -220,17 +244,39 @@ export default function Layout({ children }: LayoutProps) {
                 </button>
               </Link>
             ))}
+
+            {/* Divider */}
+            <div className="h-px bg-gray-200 dark:bg-white/10 my-1.5" />
+
+            {/* Theme toggle row */}
+            <div className="flex items-center gap-3 px-4 py-2.5 rounded-2xl text-gray-700 dark:text-gray-300">
+              <span className="text-sm font-black flex-1">Theme</span>
+              <ThemeToggle />
+            </div>
+
+            {/* Settings (students) */}
             {user.role === "student" && (
               <button
-                onClick={() => { setMobileMenuOpen(false); setSettingsOpen(true); }}
+                onClick={() => { closeMenu(); setSettingsOpen(true); }}
                 data-testid="mobile-button-settings"
-                className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-black text-indigo-600 dark:text-indigo-300 hover:bg-indigo-50/60 dark:hover:bg-indigo-500/10 transition-colors"
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-black text-indigo-600 dark:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 transition-colors"
               >
                 <Settings className="w-4 h-4" />
                 Settings
                 <ChevronRight className="w-4 h-4 ml-auto opacity-40" />
               </button>
             )}
+
+            {/* Logout */}
+            <button
+              onClick={() => { closeMenu(); logout(); }}
+              data-testid="mobile-button-logout"
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-black text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
+            >
+              <LogOut className="w-4 h-4" />
+              Logout
+              <ChevronRight className="w-4 h-4 ml-auto opacity-40" />
+            </button>
           </div>
         )}
       </header>
@@ -239,18 +285,12 @@ export default function Layout({ children }: LayoutProps) {
         <StudentSettingsModal open={settingsOpen} onClose={() => setSettingsOpen(false)} />
       )}
 
-      {/* ── Main ───────────────────────────────── */}
+      {/* ── Main ──────────────────────────────────────────────────────────── */}
       <main className="flex-1">
         {children}
       </main>
 
-      {/*
-        ── Footer ─────────────────────────────────────────────────────
-        Minimal footer so AdSense (and search engines) can find the
-        Privacy Policy and About page from any route. Hidden on the
-        Android APK because the system back / nav handles legal links
-        through the OS app info screen instead.
-      */}
+      {/* ── Footer ────────────────────────────────────────────────────────── */}
       <footer className="w-full mt-8 mb-2 px-4 text-center text-[11px] text-gray-500 dark:text-gray-500 font-semibold opacity-80">
         <div className="flex items-center justify-center gap-3 flex-wrap">
           <span>© {new Date().getFullYear()} TRUE CONCEPT</span>
@@ -261,17 +301,18 @@ export default function Layout({ children }: LayoutProps) {
         </div>
       </footer>
 
-      {/* ── Mobile bottom nav — floating pill, solid bg, immersive-aware ─── */}
-      {user && user.role === "student" && !hideBottomNav && (
+      {/* ── Mobile bottom nav — floating pill ─────────────────────────────
+          Uses inset-x-0 + justify-center instead of left-1/2 + translateX so
+          position:fixed is not broken by any transform on the nav element itself
+          (a known WebView quirk with transform + fixed together).            */}
+      {user?.role === "student" && !hideBottomNav && (
         <nav
-          className="md:hidden fixed left-1/2 -translate-x-1/2 z-40"
-          style={{
-            bottom: `calc(env(safe-area-inset-bottom, 0px) + 12px)`,
-          }}
+          className="md:hidden fixed inset-x-0 z-40 flex justify-center pointer-events-none"
+          style={{ bottom: `calc(env(safe-area-inset-bottom, 0px) + 12px)` }}
           data-testid="mobile-bottom-nav"
         >
           <div
-            className="flex items-center gap-1 px-2 py-2 rounded-full shadow-2xl"
+            className="pointer-events-auto flex items-center gap-1 px-2 py-2 rounded-full shadow-2xl"
             style={{
               background: "var(--bottom-nav-bg)",
               border: "1px solid var(--bottom-nav-border)",
@@ -291,11 +332,7 @@ export default function Layout({ children }: LayoutProps) {
                         ? "text-white shadow-lg scale-105"
                         : "text-gray-600 dark:text-gray-300 hover:text-orange-700 dark:hover:text-orange-300"
                     }`}
-                    style={
-                      active
-                        ? { background: "linear-gradient(135deg, #da6b45, #b85535)" }
-                        : {}
-                    }
+                    style={active ? { background: "linear-gradient(135deg, #da6b45, #b85535)" } : {}}
                   >
                     <Icon className={`shrink-0 transition-all ${active ? "w-4 h-4" : "w-5 h-5"}`} />
                     {active && <span className="whitespace-nowrap">{label}</span>}
@@ -307,17 +344,32 @@ export default function Layout({ children }: LayoutProps) {
         </nav>
       )}
 
-      {user && user.role === "student" && (
-        // 80 px spacer always present for student-mobile pages:
-        //   • non-banner pages → holds the floating pill above the safe area
-        //   • banner pages     → reserves room so the native AdMob banner
-        //                        doesn't overlap content (e.g. Mark-as-Read,
-        //                        experiment controls)
+      {/* Spacer — reserves room for the floating pill (or AdMob banner on
+          banner-visible pages) so content is never obscured. */}
+      {user?.role === "student" && (
         <div
           className="md:hidden"
           style={{ height: `calc(env(safe-area-inset-bottom, 0px) + 80px)` }}
         />
       )}
+
+      {/* XP toast (all pages) + level-up modal (students only) */}
+      <XPToastDisplay />
+      {user?.role === "student" && <StudentGamificationModals />}
+      {/* Confetti celebration for big wins (badges, perfect scores, streaks) */}
+      <XPCelebrationOverlay />
+      {/* Lively AI recommendation popup — once per app open, students only */}
+      {user?.role === "student" && <RecommendationPopup />}
     </div>
+  );
+}
+
+/** Mounts unconditionally so hooks are never called conditionally. */
+function StudentGamificationModals() {
+  const { newLevelUp, clearLevelUp } = useGamification();
+  return (
+    <AnimatePresence>
+      {newLevelUp && <LevelUpModal newLevel={newLevelUp} onClose={clearLevelUp} />}
+    </AnimatePresence>
   );
 }

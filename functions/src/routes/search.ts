@@ -38,6 +38,7 @@ interface SearchDoc {
   chapterNumber?: number;
   classLevel?:   string | null;
   medium?:       string | null;
+  board?:        string | null;
   href:          string;
   /** Pre-computed lowercase title + body + tags, ready for substring matching. */
   searchableText: string;
@@ -246,13 +247,14 @@ async function buildIndex(): Promise<SearchDoc[]> {
   const subjectMap = new Map<string, string>(
     subjectsSnap.docs.map((d: any) => [d.id, d.data().name ?? ""]),
   );
-  type ChapterMeta = { classLevel: string | null; medium: string | null; subjectId: string; subjectName: string; chapterNumber?: number; title: string };
+  type ChapterMeta = { classLevel: string | null; medium: string | null; board: string | null; subjectId: string; subjectName: string; chapterNumber?: number; title: string };
   const chapterMetaMap = new Map<string, ChapterMeta>();
   chaptersSnap.docs.forEach((d: any) => {
     const data = d.data();
     chapterMetaMap.set(d.id, {
       classLevel: data.classLevel ?? null,
       medium:     data.medium ?? "Both",
+      board:      data.board ?? "Both",
       subjectId:  data.subjectId,
       subjectName: subjectMap.get(data.subjectId) ?? "",
       chapterNumber: data.chapterNumber,
@@ -274,7 +276,7 @@ async function buildIndex(): Promise<SearchDoc[]> {
     docs.push({
       id: d.id, type: "chapter", title, body,
       subjectId: meta.subjectId, subjectName: meta.subjectName,
-      chapterNumber: meta.chapterNumber, classLevel: meta.classLevel, medium: meta.medium,
+      chapterNumber: meta.chapterNumber, classLevel: meta.classLevel, medium: meta.medium, board: meta.board,
       href: `/chapters/${d.id}`,
       searchableText: normalizeText(`${title} ${body} ${meta.subjectName}`),
     });
@@ -291,7 +293,7 @@ async function buildIndex(): Promise<SearchDoc[]> {
       id: d.id, type: "note", title, body,
       chapterId: data.chapterId,
       subjectId: meta.subjectId, subjectName: meta.subjectName,
-      classLevel: meta.classLevel, medium: meta.medium,
+      classLevel: meta.classLevel, medium: meta.medium, board: meta.board,
       href: `/chapters/${data.chapterId}?tab=notes&open=${d.id}`,
       searchableText: normalizeText(`${title} ${body} ${meta.title}`),
     });
@@ -308,7 +310,7 @@ async function buildIndex(): Promise<SearchDoc[]> {
       id: d.id, type: "mcq", title, body,
       chapterId: data.chapterId,
       subjectId: meta.subjectId, subjectName: meta.subjectName,
-      classLevel: meta.classLevel, medium: meta.medium,
+      classLevel: meta.classLevel, medium: meta.medium, board: meta.board,
       href: `/chapters/${data.chapterId}?tab=mcq`,
       searchableText: normalizeText(`${title} ${body} ${meta.title}`),
       extra: { setNumber: data.setNumber ?? 1 },
@@ -326,7 +328,7 @@ async function buildIndex(): Promise<SearchDoc[]> {
       id: d.id, type: "qa", title, body,
       chapterId: data.chapterId,
       subjectId: meta.subjectId, subjectName: meta.subjectName,
-      classLevel: meta.classLevel, medium: meta.medium,
+      classLevel: meta.classLevel, medium: meta.medium, board: meta.board,
       href: `/chapters/${data.chapterId}?tab=qa`,
       searchableText: normalizeText(`${title} ${body} ${meta.title} ${data.explanation ?? ""}`),
     });
@@ -342,6 +344,7 @@ async function buildIndex(): Promise<SearchDoc[]> {
       id: d.id, type: "lab", title, body,
       classLevel: data.classLevel ?? null,
       medium:     null,  // labs are not bound to a single medium
+      board:      null,  // labs apply to all boards
       href: `/virtual-lab/${slug}`,
       searchableText: normalizeText(`${title} ${body} ${data.subject ?? ""} lab experiment`),
     });
@@ -358,6 +361,7 @@ async function buildIndex(): Promise<SearchDoc[]> {
       subjectId: set?.subjectId, subjectName: set ? set.title : "",
       classLevel: data.classLevel ?? null,
       medium:     data.medium ?? null,
+      board:      data.board ?? null,
       href: `/papers/${data.setId}/${d.id}`,
       searchableText: normalizeText(`${title} ${body} ${set?.title ?? ""} paper`),
     });

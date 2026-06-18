@@ -10,6 +10,10 @@ import type { ActivityEntry } from "@/lib/progress/types";
 import AiMentorCard from "@/components/AiMentorCard";
 import NextRecommendationCard from "@/components/NextRecommendationCard";
 import BroadcastBanner from "@/components/BroadcastBanner";
+import DailyChallengeCard from "@/components/DailyChallengeCard";
+import XPLevelWidget from "@/components/gamification/XPLevelWidget";
+import BadgesWidget from "@/components/gamification/BadgesWidget";
+import LeaderboardWidget from "@/components/gamification/LeaderboardWidget";
 
 // ── Activity feed helpers ──────────────────────────────────────────────────
 
@@ -118,13 +122,14 @@ export default function DashboardPage() {
   const { user } = useAuth();
   const { prefs } = useStudentPrefs();
   const { data: summary, isLoading } = useQuery<DashboardSummary>({
-    // Key includes prefs so a class/medium change auto-refetches with new totals.
-    queryKey: ["dashboardSummary", user?.id, prefs?.class ?? null, prefs?.medium ?? null],
+    // Key includes prefs so a class/medium/board change auto-refetches with new totals.
+    queryKey: ["dashboardSummary", user?.id, prefs?.class ?? null, prefs?.medium ?? null, prefs?.board ?? null],
     enabled: !!user,
     queryFn: async () => {
       const params = new URLSearchParams();
       if (prefs?.class)  params.set("classLevel", prefs.class);
       if (prefs?.medium) params.set("medium", prefs.medium);
+      if (prefs?.board)  params.set("board", prefs.board);
       const token = localStorage.getItem("trueconcept_token");
       const qs = params.toString();
       const res = await fetch(`${DASHBOARD_BASE}/api/dashboard/summary${qs ? `?${qs}` : ""}`, {
@@ -162,12 +167,20 @@ export default function DashboardPage() {
         <div className="relative">
           <div className="flex items-center gap-3 mb-2">
             <div className="text-3xl">{greeting.emoji}</div>
-            <div>
+            <div className="flex-1 min-w-0">
               <h1 className="font-black text-2xl sm:text-3xl text-gray-900 dark:text-white" data-testid="heading-dashboard">
                 {greeting.text}, {user?.name.split(" ")[0]}!
               </h1>
               <p className="text-orange-600 dark:text-orange-300 text-sm font-semibold">{msg}</p>
             </div>
+            {/* Streak pill */}
+            {(summary?.currentStreak ?? 0) > 0 && (
+              <div className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full font-black text-sm text-white shadow-md"
+                style={{ background: "linear-gradient(135deg, #f97316, #ea580c)" }}>
+                <Flame className="w-4 h-4" />
+                <span>{summary?.currentStreak}d</span>
+              </div>
+            )}
           </div>
           {summary?.totalChapters ? (
             <div className="mt-4">
@@ -183,6 +196,20 @@ export default function DashboardPage() {
             </div>
           ) : null}
         </div>
+      </div>
+
+      {/* Gamification snapshot — Level progress paired with Badges, Leaderboard
+          below as a wider social panel. Sits right under the greeting so the
+          student sees their standing before anything else. */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <XPLevelWidget />
+        <BadgesWidget />
+      </div>
+      <LeaderboardWidget />
+
+      {/* Daily Challenge Card — active task above AI Mentor */}
+      <div className="pb-2">
+        <DailyChallengeCard />
       </div>
 
       {/* AI Mentor Card */}

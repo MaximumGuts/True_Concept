@@ -26,6 +26,13 @@ export interface AdProvider {
   hideBanner(): Promise<void>;
 
   /**
+   * Show a full-screen interstitial ad and resolve once it is dismissed
+   * (or immediately if it fails / isn't available). Per Rule #4 this never
+   * throws and never blocks the student — the caller proceeds regardless.
+   */
+  showInterstitial(): Promise<void>;
+
+  /**
    * Show a rewarded ad for a specific feature.
    * @returns `true` if the user watched it and earned the reward,
    *          `false` if they closed it early, the ad failed to load,

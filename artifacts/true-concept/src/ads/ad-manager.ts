@@ -52,6 +52,10 @@ class AdManager implements AdProvider {
     return this.getProvider().hideBanner();
   }
 
+  showInterstitial(): Promise<void> {
+    return this.getProvider().showInterstitial();
+  }
+
   showRewardedAd(feature: UnlockFeature): Promise<boolean> {
     return this.getProvider().showRewardedAd(feature);
   }

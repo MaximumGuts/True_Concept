@@ -4,6 +4,8 @@ import { BookOpen, Sparkles, ArrowRight, Rocket, GraduationCap } from "lucide-re
 import { motion } from "framer-motion";
 import { MotionList, MotionItem, FadeIn } from "@/components/MotionList";
 import { getSubjectTheme } from "@/lib/subject-theme";
+import { simRegistry } from "@/components/lab/sim-registry";
+import { usePlatformStats } from "@/hooks/usePlatformStats";
 import HomeGreeting from "@/components/HomeGreeting";
 
 const features = [
@@ -15,15 +17,23 @@ const features = [
   { icon: "📊", title: "Track Progress",  desc: "See how much you've studied and how well you're doing", grad: "linear-gradient(135deg, #ec4899, #db2777)" },
 ];
 
-const stats = [
-  { value: "14+",  label: "Chapters", emoji: "📚" },
-  { value: "100+", label: "MCQs",     emoji: "✅" },
-  { value: "5",    label: "Lab Sims", emoji: "🔬" },
-  { value: "2",    label: "Boards",   emoji: "🏆" },
-];
+// "Boards" is a fixed curriculum fact (SEBA & CBSE — also stated in the hero
+// copy above), not a content count that grows, so it stays a constant.
+const TOTAL_BOARDS = 2;
+const TOTAL_LAB_SIMS = Object.keys(simRegistry).length;
 
 export default function HomePage() {
   const { data: subjects } = useGetSubjects();
+  const { data: platformStats } = usePlatformStats();
+
+  const totalChapters = subjects?.reduce((sum, s) => sum + (s.chapterCount ?? 0), 0);
+
+  const stats = [
+    { value: totalChapters != null ? `${totalChapters}` : "—",            label: "Chapters", emoji: "📚" },
+    { value: platformStats ? `${platformStats.totalMcqs}` : "—",          label: "MCQs",     emoji: "✅" },
+    { value: `${TOTAL_LAB_SIMS}`,                                          label: "Lab Sims", emoji: "🔬" },
+    { value: `${TOTAL_BOARDS}`,                                            label: "Boards",   emoji: "🏆" },
+  ];
 
   return (
     <div className="overflow-hidden">
@@ -143,7 +153,7 @@ export default function HomePage() {
 
         <MotionList className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {subjects?.map((subject, idx) => {
-            const theme = getSubjectTheme(subject.name, idx);
+            const theme = getSubjectTheme(subject.name, idx, subject.color);
             return (
               <MotionItem key={subject.id}>
                 <Link href={`/subjects/${subject.id}`}>

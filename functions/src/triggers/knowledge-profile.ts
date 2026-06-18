@@ -1,6 +1,7 @@
 import { onDocumentWritten } from "firebase-functions/v2/firestore";
 import { db } from "@workspace/db";
 import { FieldValue, Timestamp } from "firebase-admin/firestore";
+import { getContentIndex } from "../lib/content-index.js";
 
 /**
  * Firestore trigger: rebuilds the Student Knowledge Profile whenever a
@@ -37,15 +38,11 @@ export const rebuildKnowledgeProfile = onDocumentWritten(
     })();
 
     if (isCoolingDown) {
-      // Even when we skip the rebuild, ALWAYS invalidate the AI recommendation
-      // cache so the next dashboard fetch picks up whatever profile exists.
-      // Without this, the old recommendations stuck around for 6 h regardless
-      // of how many MCQs the student completed in quick succession.
-      try {
-        await db.collection("aiRecommendations").doc(uid).delete();
-      } catch (err) {
-        console.warn("[rebuildKnowledgeProfile] cache delete during cooldown failed:", uid, err);
-      }
+      // During cooldown we skip the rebuild entirely. We intentionally do NOT
+      // bust the AI recommendation cache here — the 48h cache TTL in
+      // ai-mentor.ts governs regeneration to cap Gemini cost. (The profile doc
+      // still updates dashboard stats on the next full rebuild; only the
+      // Gemini-generated text is throttled.)
       return;
     }
 
@@ -64,20 +61,83 @@ const PROFILE_VERSION          = 1;
 async function computeAndPersistProfile(uid: string): Promise<void> {
   try {
     // ── Parallel reads ────────────────────────────────────────────────────────
-    const [masterySnap, questionSnap, sessionSnap, statsSnap, studentSnap] = await Promise.all([
+    const [
+      masterySnap, questionSnap, sessionSnap, statsSnap, studentSnap, labSnap,
+      challengeSnap, mockSnap, contentIndex,
+    ] = await Promise.all([
       db.collection("studentProgress").doc(uid).collection("chapterMastery").get(),
       db.collection("studentProgress").doc(uid).collection("questionResults").get(),
       db.collection("studentProgress").doc(uid).collection("sessions")
         .orderBy("startedAt", "desc").limit(30).get(),
       db.collection("studentProgress").doc(uid).get(),
       db.collection("students").doc(uid).get(),
+      db.collection("studentProgress").doc(uid).collection("experimentMastery").get(),
+      db.collection("studentProgress").doc(uid).collection("dailyChallenges")
+        .orderBy("dateKey", "desc").limit(7).get(),
+      db.collection("studentProgress").doc(uid).collection("mockExamSessions")
+        .orderBy("completedAt", "desc").limit(5).get(),
+      // Single-doc read of the shared content index (curriculum-wide counts).
+      // Replaces reading the whole mcqs/qa/papers/chapters/subjects collections
+      // per student — cost is now O(1) per rebuild instead of O(total content).
+      getContentIndex(),
     ]);
 
     const masteries  = masterySnap.docs.map((d) => d.data());
     const questions  = questionSnap.docs.map((d) => d.data());
     const sessions   = sessionSnap.docs.map((d) => d.data());
-    const stats      = statsSnap.exists ? statsSnap.data() : null;
     const student    = studentSnap.exists ? studentSnap.data() : null;
+
+    // ── Daily challenge stats ─────────────────────────────────────────────────
+    const challenges = challengeSnap.docs.map((d) => d.data());
+    const completedChallenges = challenges.filter((c: any) => c.status === "completed");
+    const dailyChallengeStreak = (() => {
+      // Count consecutive completed days ending today
+      const today = new Date().toISOString().slice(0, 10);
+      const datesCompleted = new Set(completedChallenges.map((c: any) => c.dateKey as string));
+      let streak = 0;
+      const d = new Date();
+      while (true) {
+        const key = d.toISOString().slice(0, 10);
+        if (!datesCompleted.has(key)) break;
+        streak++;
+        d.setDate(d.getDate() - 1);
+        if (streak > 7) break; // cap at 7 days lookback
+      }
+      void today; // suppress unused warning
+      return streak;
+    })();
+    const lastChallengeScore = completedChallenges[0]?.score ?? null;
+    const avgChallengeScore  = completedChallenges.length > 0
+      ? Math.round(completedChallenges.reduce((s: number, c: any) => s + (c.score ?? 0), 0) / completedChallenges.length)
+      : null;
+
+    // ── Mock exam stats ───────────────────────────────────────────────────────
+    const mockExams = mockSnap.docs.map((d) => d.data());
+    const lastMockScore = mockExams[0]?.score ?? null;
+    const mockExamCount = mockExams.length;
+
+    // Count completed labs (any experiment where completionPct >= 80 or completed flag is set)
+    const completedLabCount = labSnap.docs.filter((d) => {
+      const data = d.data();
+      return data.completed === true || (data.completionPct ?? 0) >= 80;
+    }).length;
+    const totalLabCount = labSnap.docs.length; // labs the student has touched
+
+    // Total chapters for this student's class — used to make examReadinessScore
+    // cover ALL chapters, not just the ones the student has studied. Without
+    // this, a student who aced 3 chapters out of 29 would score ~90 instead
+    // of the honest ~10-15.
+    const studentClass = student?.classLevel ?? null;
+    const studentBoard = student?.board ?? null;
+    // Chapter is in the student's track if class + board both match (or "Both").
+    const inTrack = (c: { classLevel: string; board: string }) =>
+      (!studentClass || c.classLevel === studentClass || c.classLevel === "Both") &&
+      (!studentBoard || c.board === studentBoard || c.board === "Both" || !c.board);
+    const totalChaptersForClass = contentIndex.chapters.filter(inTrack).length;
+    // Floor at masteries.length so we never divide by a smaller number than
+    // what the student has actually studied (edge case: chapters not yet in DB).
+    const effectiveTotalChapters = Math.max(masteries.length, totalChaptersForClass || 1);
+    const stats      = statsSnap.exists ? statsSnap.data() : null;
 
     // ── Mastery maps ──────────────────────────────────────────────────────────
     const masteryMap: Record<string, number> = {};
@@ -240,11 +300,112 @@ async function computeAndPersistProfile(uid: string): Promise<void> {
         consecutiveWrong: q.consecutiveWrong ?? 0,
       }));
 
+    // ── Content gap analysis (curriculum-wide awareness) ───────────────────────
+    // The AI needs to know what content EXISTS so it can recommend new chapters,
+    // unpracticed MCQs, unviewed Q&A, available papers, and untouched subjects —
+    // including anything an admin just added.
+    const studiedChapterIds = new Set(masteries.map((m: any) => m.chapterId));
+
+    // Chapters belonging to this student's class + board track (from the index).
+    const classChapters = contentIndex.chapters.filter(inTrack);
+
+    // MCQ / Q&A counts per chapter come straight from the cached index.
+    const mcqCountByChapter = contentIndex.mcqCountByChapter;
+    const qaCountByChapter  = contentIndex.qaCountByChapter;
+
+    // (a) Chapters never opened — top discovery candidates.
+    const unexploredChapters = classChapters
+      .filter((c) => !studiedChapterIds.has(c.id))
+      .slice(0, 8)
+      .map((c) => ({
+        chapterId: c.id, chapterTitle: c.title,
+        subjectId: c.subjectId, subjectName: c.subjectName,
+      }));
+
+    // (b) Chapters studied (notes/started) but MCQs never attempted, where MCQs exist.
+    const chaptersWithUnpracticedMcqs = masteries
+      .filter((m: any) =>
+        (mcqCountByChapter[m.chapterId] ?? 0) > 0 && (m.mcqAttemptCount ?? 0) === 0)
+      .slice(0, 6)
+      .map((m: any) => ({
+        chapterId: m.chapterId, chapterTitle: m.chapterTitle ?? "",
+        subjectName: m.subjectName ?? "",
+        mcqAvailable: mcqCountByChapter[m.chapterId] ?? 0,
+      }));
+
+    // (c) Chapters the student has studied that also have Q&A available to review.
+    const chaptersWithQaToReview = masteries
+      .filter((m: any) => (qaCountByChapter[m.chapterId] ?? 0) > 0)
+      .slice(0, 6)
+      .map((m: any) => ({
+        chapterId: m.chapterId, chapterTitle: m.chapterTitle ?? "",
+        subjectName: m.subjectName ?? "",
+        qaAvailable: qaCountByChapter[m.chapterId] ?? 0,
+      }));
+
+    // (d) Full-length papers available (no per-student tracking by product design).
+    const availablePapersCount = contentIndex.paperCount;
+
+    // (e) Subjects with ZERO activity (student never opened any of their chapters).
+    const subjectChapterIds: Record<string, { name: string; ids: string[] }> = {};
+    for (const c of classChapters) {
+      const sid = c.subjectId || "unknown";
+      if (!subjectChapterIds[sid]) subjectChapterIds[sid] = { name: c.subjectName, ids: [] };
+      subjectChapterIds[sid].ids.push(c.id);
+    }
+    const allClassSubjects = contentIndex.subjects
+      .filter((s) =>
+        !studentClass || s.classLevel === studentClass || s.classLevel === "Both" || !s.classLevel);
+    const emptySubjects = Object.entries(subjectChapterIds)
+      .filter(([, v]) => v.ids.every((id) => !studiedChapterIds.has(id)))
+      .map(([sid, v]) => ({ subjectId: sid, subjectName: v.name, chapterCount: v.ids.length }));
+
+    // (f) Content coverage percentages (for scoring + AI context).
+    const uniqueMcqsAttempted = questions.length; // questionResults = one doc per unique MCQ
+    const totalMcqsForClass = classChapters.reduce(
+      (sum, c) => sum + (mcqCountByChapter[c.id] ?? 0), 0);
+    const chapterCoveragePct = totalChaptersForClass > 0
+      ? Math.round((studiedChapterIds.size / totalChaptersForClass) * 100) : 0;
+    const mcqCoveragePct = totalMcqsForClass > 0
+      ? Math.round((Math.min(uniqueMcqsAttempted, totalMcqsForClass) / totalMcqsForClass) * 100) : 0;
+    const subjectsStarted = Object.values(subjectChapterIds)
+      .filter((v) => v.ids.some((id) => studiedChapterIds.has(id))).length;
+
+    const contentCoverage = {
+      chapterCoveragePct,
+      mcqCoveragePct,
+      subjectsStarted,
+      totalSubjects: allClassSubjects.length || Object.keys(subjectChapterIds).length,
+      chaptersStudied: studiedChapterIds.size,
+      totalChapters: totalChaptersForClass,
+      mcqsAttempted: uniqueMcqsAttempted,
+      totalMcqs: totalMcqsForClass,
+      availablePapersCount,
+    };
+
     // ── AI scores ─────────────────────────────────────────────────────────────
-    const avgMastery = masteries.length > 0
-      ? masteries.reduce((a, m) => a + (m.masteryScore ?? 0), 0) / masteries.length : 0;
+    // examReadinessScore — holistic blend across the WHOLE curriculum:
+    //   60%  chapter mastery coverage   (sum of mastery / total chapters)
+    //   15%  MCQ breadth                (unique MCQs attempted / total available)
+    //   15%  exam performance           (avg of last mock + avg daily challenge)
+    //   10%  consistency                (active days / 30)
+    // Falls back gracefully when a component has no data so new students aren't
+    // unfairly penalised. Chapter coverage stays dominant → score stays honest.
+    const studiedMasterySum = masteries.reduce((a: number, m: any) => a + (m.masteryScore ?? 0), 0);
+    const chapterCoverageScore = Math.min(100, studiedMasterySum / effectiveTotalChapters);
+
+    const examPerfParts: number[] = [];
+    if (lastMockScore != null)      examPerfParts.push(lastMockScore);
+    if (avgChallengeScore != null)  examPerfParts.push(avgChallengeScore);
+    const examPerfScore = examPerfParts.length > 0
+      ? examPerfParts.reduce((a, b) => a + b, 0) / examPerfParts.length
+      : chapterCoverageScore; // neutral fallback
+
     const examReadinessScore = Math.min(100, Math.round(
-      avgMastery + Math.min((stats?.currentStreak ?? 0) * 2, 10) + consistencyScore * 0.1
+        chapterCoverageScore * 0.60
+      + mcqCoveragePct       * 0.15
+      + examPerfScore        * 0.15
+      + consistencyScore     * 0.10
     ));
     const confidenceScore = Math.min(100, Math.round(
       avgMcqAcc * 0.4 + Math.min((stats?.currentStreak ?? 0) * 3, 30) + Math.min(activeDays * 2, 30)
@@ -259,20 +420,38 @@ async function computeAndPersistProfile(uid: string): Promise<void> {
       studyBehavior, learningPattern, revisionProfile,
       examReadinessScore, confidenceScore,
       suggestedRetryQuestions: retryQuestions,
+      // Daily challenge + mock exam for AI prompt context
+      dailyChallengeStreak,
+      lastChallengeScore,
+      avgChallengeScore,
+      lastMockScore,
+      mockExamCount,
+      // Lab engagement
+      completedLabCount,
+      totalLabCount,
+      // ── Content gap map — makes the AI aware of ALL available content ────────
+      contentCoverage,
+      unexploredChapters,
+      chaptersWithUnpracticedMcqs,
+      chaptersWithQaToReview,
+      emptySubjects,
+      availablePapersCount,
+      // lastActiveAt — this trigger only fires when the student writes a
+      // chapterMastery doc (a real study action), so "now" is an accurate
+      // last-active timestamp. Drives activity tiering in ai-mentor.ts to
+      // throttle Gemini for infrequent/returning users. See lib/activity-tier.ts.
+      lastActiveAt: FieldValue.serverTimestamp(),
       version: PROFILE_VERSION,
       updatedAt: FieldValue.serverTimestamp(),
     });
 
-    // Invalidate the AI mentor cache so the next /api/ai/mentor call regenerates
-    // using this fresh profile. Without this, the AI keeps serving 6-hour-stale
-    // recommendations and won't react to recent MCQ scores or wrong answers.
-    // The 5-minute rate limit on this trigger caps cost: max ~12 Gemini calls
-    // per hour per active student, only when their profile actually changed.
-    try {
-      await db.collection("aiRecommendations").doc(uid).delete();
-    } catch (cacheErr) {
-      console.warn("[rebuildKnowledgeProfile] failed to bust aiRecommendations cache for uid:", uid, cacheErr);
-    }
+    // NOTE: We intentionally do NOT delete the AI mentor cache here anymore.
+    // The profile doc above is always fresh (it drives dashboard stats, exam
+    // readiness, content gaps — all read directly). Only the Gemini-GENERATED
+    // recommendation TEXT is governed by the 48h cache TTL in ai-mentor.ts.
+    // This caps Gemini cost to ~1 call per student per 2 days — the single
+    // biggest variable cost. Students who want fresher AI advice immediately
+    // can tap the manual refresh button (POST /api/ai/refresh).
   } catch (err) {
     console.error("[rebuildKnowledgeProfile] failed for uid:", uid, err);
   }

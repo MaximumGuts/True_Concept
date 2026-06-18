@@ -30,6 +30,11 @@ node_modules
 # secrets
 *.env
 *.env.local
+.secret.local
+*.secret.local
+**/.secret.local
+service-account.json
+*-service-account.json
 
 # misc
 /.sass-cache

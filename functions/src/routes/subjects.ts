@@ -34,6 +34,21 @@ export const subjects = onRequest({ region: "asia-south1", invoker: "public" }, 
       return;
     }
 
+    // GET /api/subjects/stats — platform-wide content totals (landing page stats strip).
+    // Firestore .count() aggregations cost a single read each regardless of
+    // collection size, so this stays cheap even as content grows.
+    if (req.method === "GET" && subPath === "/stats") {
+      const [chaptersCount, mcqsCount] = await Promise.all([
+        db.collection("chapters").count().get(),
+        db.collection("mcqs").count().get(),
+      ]);
+      res.json({
+        totalChapters: chaptersCount.data().count,
+        totalMcqs:     mcqsCount.data().count,
+      });
+      return;
+    }
+
     // POST /api/subjects/cleanup-duplicates — admin: merge & delete duplicate subjects
     if (req.method === "POST" && subPath === "/cleanup-duplicates") {
       requireAdmin(req);

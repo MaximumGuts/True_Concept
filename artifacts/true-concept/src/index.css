@@ -254,7 +254,7 @@ html.is-capacitor {
    The .has-adsense-banner class is toggled on <body> by adsense-provider.ts. */
 @media (min-width: 768px) {
   body.has-adsense-banner {
-    padding-bottom: 100px;
+    padding-bottom: 96px;  /* matches the 90px banner + 6px breathing room */
   }
 }
 
@@ -565,7 +565,27 @@ html.is-capacitor {
   .assamese-input {
     font-family: "Noto Sans Bengali", "Noto Sans", "Inter", system-ui, sans-serif;
   }
-  .note-reading-prose, .note-reading-prose * {
+  /* Assamese/Bengali script for note body text. Deliberately NOT a blanket
+     `.note-reading-prose *` — that directly hit every KaTeX glyph span and
+     forced the Bengali font onto math symbols like `\neq` (U+2260), which the
+     Bengali font has no glyph for, so it rendered a wrong fallback glyph (目).
+     Listing the prose-text elements instead leaves `.katex` untouched so KaTeX
+     renders math in its own fonts. */
+  .note-reading-prose,
+  .note-reading-prose p,
+  .note-reading-prose li,
+  .note-reading-prose h1,
+  .note-reading-prose h2,
+  .note-reading-prose h3,
+  .note-reading-prose h4,
+  .note-reading-prose h5,
+  .note-reading-prose h6,
+  .note-reading-prose th,
+  .note-reading-prose td,
+  .note-reading-prose blockquote,
+  .note-reading-prose strong,
+  .note-reading-prose em,
+  .note-reading-prose a {
     font-family: "Noto Sans Bengali", "Noto Sans", "Inter", system-ui, sans-serif;
   }
 
@@ -592,8 +612,43 @@ html.is-capacitor {
   .note-reading-prose .math-display { overflow-x: auto; padding: 1rem 0; text-align: center; }
   /* Images inside notes — responsive, rounded, subtle shadow */
   .note-reading-prose img { max-width: 100%; height: auto; border-radius: 0.75rem; box-shadow: 0 2px 12px rgba(0,0,0,0.08); margin-top: 0.75rem; margin-bottom: 0.75rem; }
-  .note-reading-prose .katex-display { margin: 1rem 0; overflow-x: auto; }
-  .note-reading-prose .katex { font-size: 1.15em; }
+  /* ── Long-formula horizontal scrolling ──────────────────────────────
+     Only KaTeX math ever gets a scrollbar — plain text always wraps, so a
+     non-math note never looks "scrollable". We use plain descendant
+     specificity (no Level-4 `:not()`, which some mobile WebViews/older Safari
+     silently drop, leaving long formulas clipped with no way to scroll).
+     Font-family is left to KaTeX's own CSS now that the prose font rule above
+     no longer touches `.katex`.
+
+     1) Every `.katex` (inline math) is an inline-block capped at the column
+        width; a formula wider than the screen scrolls horizontally on its own.
+        Its height is exact (KaTeX-computed) so overflow-y:hidden never clips
+        superscripts/fractions — only the horizontal axis overflows. */
+  .note-reading-prose .katex {
+    font-size: 1.15em;
+    display: inline-block;
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    vertical-align: middle;
+  }
+  /* 2) Display math ($$…$$): the `.katex-display` wrapper owns the scrolling,
+        and its inner `.katex` is reset (more specific than the rule above, so
+        no double scrollbar). */
+  .note-reading-prose .katex-display {
+    margin: 1rem 0;
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 4px; /* keeps the scrollbar from overlapping descenders */
+  }
+  .note-reading-prose .katex-display > .katex {
+    display: block;
+    max-width: none;
+    overflow: visible;
+  }
 
   /* =======================
      MOTION & EFFECTS

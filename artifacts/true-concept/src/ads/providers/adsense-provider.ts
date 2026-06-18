@@ -110,13 +110,54 @@ export const adSenseProvider: AdProvider = {
   },
 
   async showAdaptiveBanner(): Promise<void> {
-    if (isLocalDevHost()) return;
-    if (!isConfigured()) return;
     if (typeof document === "undefined") return;
     // Idempotent — Layout.tsx may call this on every route change. If the
     // banner is already mounted, do nothing (don't push() again either, or
     // AdSense will warn about an already-filled slot).
     if (document.getElementById(BANNER_CONTAINER_ID)) return;
+
+    // ── Fixed-bottom container ──────────────────────────────────────────
+    // overflow:hidden is CRITICAL — without it the <ins> iframe can expand
+    // well beyond the fixed height and cover page content (large white box).
+    // Fixed 90px height keeps it a slim leaderboard strip on every screen.
+    const container = document.createElement("div");
+    container.id = BANNER_CONTAINER_ID;
+    container.style.cssText = [
+      "position:fixed",
+      "left:0",
+      "right:0",
+      "bottom:0",
+      "z-index:40",
+      "overflow:hidden",
+      "background:var(--adsense-banner-bg)",
+      "backdrop-filter:blur(8px)",
+      "-webkit-backdrop-filter:blur(8px)",
+      "border-top:1px solid var(--adsense-banner-border)",
+      "padding-bottom:env(safe-area-inset-bottom, 0px)",
+      "height:90px",
+      "max-height:90px",
+      "display:flex",
+      "align-items:center",
+      "justify-content:center",
+      "pointer-events:auto",
+    ].join(";");
+
+    // ── Local-dev / unconfigured preview ───────────────────────────────
+    // AdSense won't serve on an unverified domain (localhost) — it would
+    // render a giant empty placeholder. So on localhost (or before the
+    // publisher/slot IDs exist) we show a small labelled strip instead, so
+    // the banner's footprint is still visible for layout testing. Production
+    // (configured + non-localhost) renders the real ad below.
+    if (isLocalDevHost() || !isConfigured()) {
+      const placeholder = document.createElement("div");
+      placeholder.style.cssText =
+        "font-size:12px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;opacity:0.5;color:#9ca3af;";
+      placeholder.textContent = "Ad space (preview)";
+      container.appendChild(placeholder);
+      document.body.appendChild(container);
+      document.body.classList.add(BODY_CLASS);
+      return;
+    }
 
     try {
       await loadAdSenseScript();
@@ -124,43 +165,14 @@ export const adSenseProvider: AdProvider = {
       return; // ad-blocked / offline → silent skip
     }
 
-    // ── Fixed-bottom container ──────────────────────────────────────────
-    // Sits under the floating mobile pill (z=40 vs pill z=40 but pill is
-    // bottom:env-inset+12px, banner is bottom:0 — they don't overlap because
-    // banner sits ON pages where hideBottomNav=true so the pill isn't rendered
-    // anyway). On desktop we add body padding via the .has-adsense-banner
-    // class (see index.css) so content isn't covered.
-    const container = document.createElement("div");
-    container.id = BANNER_CONTAINER_ID;
-    // Background + border come from CSS vars so the strip stays theme-aware
-    // (light cream on light theme, dark cosmic on dark theme).
-    container.style.cssText = [
-      "position:fixed",
-      "left:0",
-      "right:0",
-      "bottom:0",
-      "z-index:40",
-      "background:var(--adsense-banner-bg)",
-      "backdrop-filter:blur(8px)",
-      "-webkit-backdrop-filter:blur(8px)",
-      "border-top:1px solid var(--adsense-banner-border)",
-      "padding:4px 0",
-      "padding-bottom:calc(env(safe-area-inset-bottom, 0px) + 4px)",
-      "min-height:60px",
-      "max-height:110px",
-      "display:flex",
-      "align-items:center",
-      "justify-content:center",
-      "pointer-events:auto",
-    ].join(";");
-
     const ins = document.createElement("ins");
     ins.className = "adsbygoogle";
-    ins.style.cssText = "display:block; width:100%; max-width:728px;";
-    ins.setAttribute("data-ad-client",            ADSENSE_PUBLISHER_ID);
-    ins.setAttribute("data-ad-slot",              ADSENSE_BANNER_SLOT_ID);
-    ins.setAttribute("data-ad-format",            "auto");
-    ins.setAttribute("data-full-width-responsive", "true");
+    // height: 90px + horizontal format → forces a leaderboard/banner slot
+    // that never renders taller than the container regardless of fill status.
+    ins.style.cssText = "display:block; width:100%; max-width:728px; height:90px;";
+    ins.setAttribute("data-ad-client",  ADSENSE_PUBLISHER_ID);
+    ins.setAttribute("data-ad-slot",    ADSENSE_BANNER_SLOT_ID);
+    ins.setAttribute("data-ad-format",  "horizontal");
 
     container.appendChild(ins);
     document.body.appendChild(container);
@@ -186,5 +198,11 @@ export const adSenseProvider: AdProvider = {
     // (the "tip of the day" popup) will replace this later.
     console.info(`[adsense] no rewarded format — auto-granting ${feature} unlock`);
     return true;
+  },
+
+  async showInterstitial(): Promise<void> {
+    // No-op on web: the caller renders the <WebInterstitial> component (30s
+    // tip + AdSense slot) directly instead of going through the provider.
+    return;
   },
 };

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useStudentPrefs, type StudentClass, type StudentMedium } from "@/contexts/StudentPrefsContext";
+import { useStudentPrefs, type StudentClass, type StudentMedium, type StudentBoard } from "@/contexts/StudentPrefsContext";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function StudentPrefsModal() {
@@ -7,11 +7,14 @@ export default function StudentPrefsModal() {
   const { prefs, setPrefs } = useStudentPrefs();
   const [selectedClass, setSelectedClass] = useState<StudentClass>("Class IX");
   const [selectedMedium, setSelectedMedium] = useState<StudentMedium>("English");
+  const [selectedBoard, setSelectedBoard] = useState<StudentBoard>("SEBA");
 
-  if (!user || user.role !== "student" || prefs) return null;
+  // Show if prefs are missing entirely OR an existing pref lacks a board
+  // (so users who set prefs before board existed get prompted once).
+  if (!user || user.role !== "student" || (prefs && prefs.board)) return null;
 
   const handleSave = () => {
-    setPrefs({ class: selectedClass, medium: selectedMedium });
+    setPrefs({ class: selectedClass, medium: selectedMedium, board: selectedBoard });
   };
 
   return (
@@ -66,6 +69,28 @@ export default function StudentPrefsModal() {
                 >
                   <div className="text-2xl mb-1">{med === "Assamese" ? "🇮🇳" : "🌐"}</div>
                   {med === "Assamese" ? "অসমীয়া" : "English"}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Board selection */}
+          <div>
+            <p className="text-sm font-black text-gray-700 dark:text-gray-200 mb-2.5">Which board do you follow?</p>
+            <div className="grid grid-cols-2 gap-3">
+              {(["SEBA", "CBSE"] as StudentBoard[]).map((bd) => (
+                <button
+                  key={bd}
+                  onClick={() => setSelectedBoard(bd)}
+                  className={`py-4 rounded-2xl font-black text-sm transition-all border-2 ${
+                    selectedBoard === bd
+                      ? "border-indigo-500 text-white shadow-lg scale-105"
+                      : "border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:border-indigo-300"
+                  }`}
+                  style={selectedBoard === bd ? { background: "linear-gradient(135deg, #6366f1, #8b5cf6)" } : {}}
+                >
+                  <div className="text-2xl mb-1">{bd === "SEBA" ? "🏫" : "🏛️"}</div>
+                  {bd}
                 </button>
               ))}
             </div>

@@ -15,6 +15,7 @@ import { useQueryClient } from "@tanstack/react-query";
 
 const CLASS_LEVELS = ["Class IX", "Class X"] as const;
 const MEDIUMS = ["Both", "Assamese", "English"] as const;
+const BOARDS = ["Both", "SEBA", "CBSE"] as const;
 
 export default function AdminChaptersPage() {
   const queryClient = useQueryClient();
@@ -37,6 +38,7 @@ export default function AdminChaptersPage() {
     title: "", description: "", chapterNumber: 1,
     classLevel: "Class IX" as "Class IX" | "Class X",
     medium: "Both" as "Both" | "Assamese" | "English",
+    board: "Both" as "Both" | "SEBA" | "CBSE",
   });
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
 
@@ -46,7 +48,7 @@ export default function AdminChaptersPage() {
   }, [selectedClass]);
 
   function resetForm() {
-    setForm({ title: "", description: "", chapterNumber: 1, classLevel: selectedClass, medium: "Both" });
+    setForm({ title: "", description: "", chapterNumber: 1, classLevel: selectedClass, medium: "Both", board: "Both" });
     setShowForm(false);
     setEditId(null);
   }
@@ -155,6 +157,28 @@ export default function AdminChaptersPage() {
             </p>
           </div>
 
+          {/* Board selector */}
+          <div>
+            <Label>Board</Label>
+            <div className="flex gap-2 mt-1.5">
+              {BOARDS.map(bd => (
+                <button
+                  key={bd}
+                  type="button"
+                  onClick={() => setForm(f => ({ ...f, board: bd }))}
+                  className={`px-4 py-2 rounded-lg text-sm font-black transition-colors border ${
+                    form.board === bd ? "bg-primary text-primary-foreground border-primary" : "bg-muted text-muted-foreground border-border hover:border-primary/40"
+                  }`}
+                >
+                  {bd === "SEBA" ? "🏫 SEBA" : bd === "CBSE" ? "🏛️ CBSE" : "🔀 Both"}
+                </button>
+              ))}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1.5">
+              "Both" = shown to all students regardless of board. CBSE content is never shown to SEBA students and vice versa.
+            </p>
+          </div>
+
           {mutationError && (
             <p className="text-sm text-destructive">{(mutationError as any)?.message ?? "Failed to save chapter. Please try again."}</p>
           )}
@@ -193,6 +217,11 @@ export default function AdminChaptersPage() {
                       {ch.medium === "Assamese" ? "🇮🇳 অসমীয়া" : ch.medium === "English" ? "🌐 Eng" : "🔀 Both"}
                     </span>
                   )}
+                  {(ch as any).board && (ch as any).board !== "Both" && (
+                    <span className="text-xs px-2 py-0.5 rounded-full font-black bg-violet-50 text-violet-700 dark:text-violet-300 border border-violet-200">
+                      {(ch as any).board === "SEBA" ? "🏫 SEBA" : "🏛️ CBSE"}
+                    </span>
+                  )}
                 </div>
                 <p className="text-sm text-muted-foreground truncate assamese-text">{ch.description}</p>
               </div>
@@ -213,6 +242,7 @@ export default function AdminChaptersPage() {
                       chapterNumber: ch.chapterNumber,
                       classLevel: ch.classLevel as "Class IX" | "Class X",
                       medium: (ch.medium as "Both" | "Assamese" | "English") ?? "Both",
+                      board: ((ch as any).board as "Both" | "SEBA" | "CBSE") ?? "Both",
                     });
                     setShowForm(true);
                   }}

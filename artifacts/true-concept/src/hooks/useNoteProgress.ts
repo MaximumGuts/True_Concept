@@ -8,6 +8,8 @@ import {
   fetchNotesProgressForChapter,
 } from "@/lib/progress/notes-service";
 import type { NoteProgress } from "@/lib/progress/types";
+import { awardXP } from "@/lib/gamification/xp-service";
+import { XP_VALUES } from "@/lib/gamification/xp-config";
 
 /**
  * Tracks reading progress for a single note. Call this hook inside the note
@@ -124,10 +126,20 @@ export function useNoteProgress(args: {
       totalNotesInChapter: argsRef.current.totalNotesInChapter,
       readingTimeMs,
     });
+    // Award XP for completing a note (fire-and-forget, never blocks UI)
+    const today = new Date().toISOString().slice(0, 10);
+    void awardXP({
+      uid:     user.id,
+      xp:      XP_VALUES.NOTE_COMPLETED,
+      eventId: `note-${argsRef.current.noteId}-${today}`,
+      type:    "note_completed",
+      statDelta: { totalNotesRead: 1 },
+    });
     // Invalidate so badges + dashboard refresh immediately
     qc.invalidateQueries({ queryKey: ["notesProgress", user.id, argsRef.current.chapterId] });
     qc.invalidateQueries({ queryKey: ["dashboardStats", user.id] });
     qc.invalidateQueries({ queryKey: ["recentActivity", user.id] });
+    qc.invalidateQueries({ queryKey: ["studentXP", user.id] });
   }, [user, qc]);
 
   return { manualMarkComplete };

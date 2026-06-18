@@ -11,58 +11,29 @@
 import { Link } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, RefreshCw, Compass, Sparkles } from "lucide-react";
-import { useNextRecommendation, type NextRecommendation, type BilingualField } from "@/hooks/useNextRecommendation";
+import { useNextRecommendation, type NextRecommendation } from "@/hooks/useNextRecommendation";
 import { useStudentPrefs } from "@/contexts/StudentPrefsContext";
+import { useTheme } from "@/contexts/ThemeContext";
 import { useState } from "react";
+import { RUNG_LABELS, CTA_LABEL, HEADER_LABEL, pickLang } from "@/lib/recommendation-labels";
 
-// ── Brand DNA theme — unified orange (#ff9450) across all rungs ─────────────
-// The card visual identity is intentionally consistent so it reads as part
-// of the app's signature look. Action type (read vs lab vs quiz etc) is
-// signaled by the chip's LABEL text + emoji, not by color.
-const ORANGE_THEME = {
-  border:  "rgba(255,148,80,0.40)",
-  bg:      "rgba(255,148,80,0.08)",
-  chip:    "linear-gradient(135deg,#ffb380,#ff9450)",
-  ctaBg:   "linear-gradient(135deg,#ff9450,#f97316)",
-  glow:    "rgba(255,148,80,0.50)",
-  orb:     "radial-gradient(circle, rgba(255,148,80,0.55), transparent 70%)",
-  orbAlt:  "radial-gradient(circle, rgba(251,146,60,0.45), transparent 70%)",
-  titleColor: "#ffedd5",                      // orange-100, warm bright
-  msgColor:   "rgba(254,215,170,0.85)",       // orange-200 @ 85%
+// ── Brand DNA theme — two variants: dark (original) + light ─────────────────
+const ORANGE_THEME_DARK = {
+  border:     "rgba(255,148,80,0.40)",
+  bg:         "rgba(255,148,80,0.08)",
+  chip:       "linear-gradient(135deg,#ffb380,#ff9450)",
+  ctaBg:      "linear-gradient(135deg,#ff9450,#f97316)",
+  glow:       "rgba(255,148,80,0.50)",
+  orb:        "radial-gradient(circle, rgba(255,148,80,0.55), transparent 70%)",
+  orbAlt:     "radial-gradient(circle, rgba(251,146,60,0.45), transparent 70%)",
+  titleColor: "#ffedd5",
+  msgColor:   "rgba(254,215,170,0.85)",
 };
-
-const RUNG_LABELS: Record<string, string> = {
-  unread_note:   "READ",
-  note_video:    "WATCH",
-  lab:           "LAB",
-  lab_quiz:      "QUIZ",
-  chapter_mcq:   "MCQ",
-  qna:           "Q&A",
-  qna_video:     "VIDEO",
-  next_chapter:  "NEXT",
-  all_caught_up: "DONE",
+const ORANGE_THEME_LIGHT = {
+  ...ORANGE_THEME_DARK,
+  titleColor: "#92400e",   // amber-800 — readable on cream
+  msgColor:   "rgba(120,53,15,0.80)", // amber-900 @ 80%
 };
-
-const CTA_LABEL: Record<string, { en: string; as: string }> = {
-  unread_note:   { en: "Read now",     as: "এতিয়াই পঢ়ক" },
-  note_video:    { en: "Watch video",  as: "ভিডিঅ' চাওক" },
-  lab:           { en: "Open lab",     as: "পৰীক্ষাগাৰ খোলক" },
-  lab_quiz:      { en: "Take lab quiz", as: "ল্যাব কুইজ দিয়ক" },
-  chapter_mcq:   { en: "Try MCQs",     as: "MCQ চেষ্টা কৰক" },
-  qna:           { en: "Review Q&A",   as: "Q&A চাওক" },
-  qna_video:     { en: "Watch video",  as: "ভিডিঅ' চাওক" },
-  next_chapter:  { en: "Start chapter", as: "অধ্যায় আৰম্ভ কৰক" },
-  all_caught_up: { en: "Explore",      as: "অন্বেষণ" },
-};
-
-const HEADER_LABEL = {
-  en: "Next Best Step",
-  as: "পৰৱৰ্তী পদক্ষেপ",
-};
-
-function pickLang<T>(field: BilingualField<T>, isAssamese: boolean): T {
-  return isAssamese ? field.as : field.en;
-}
 
 // ── Skeleton ─────────────────────────────────────────────────────────────────
 
@@ -129,7 +100,8 @@ function Card({ data, isAssamese, refreshing, onRefresh }: {
   refreshing: boolean;
   onRefresh: () => void;
 }) {
-  const theme = ORANGE_THEME;
+  const { resolvedTheme } = useTheme();
+  const theme = resolvedTheme === "dark" ? ORANGE_THEME_DARK : ORANGE_THEME_LIGHT;
   const rungLabel = RUNG_LABELS[data.kind] ?? "AI";
   const title = pickLang(data.target.title, isAssamese);
   const reason = pickLang(data.reason, isAssamese);

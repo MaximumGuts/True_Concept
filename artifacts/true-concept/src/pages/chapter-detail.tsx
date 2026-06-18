@@ -8,8 +8,11 @@ import rehypeRaw from "rehype-raw";
 import remarkGfm from "remark-gfm";
 import remarkBreaks from "remark-breaks";
 import "katex/dist/katex.min.css";
+import { preserveSpaces } from "@/lib/preserve-spaces";
+import { markdownComponents } from "@/lib/markdown-components";
 import {
   useGetChapter, getGetChapterQueryKey,
+  useGetSubject, getGetSubjectQueryKey,
   useGetNotes, getGetNotesQueryKey,
   useGetMcqs, getGetMcqsQueryKey,
   useGetQa, getGetQaQueryKey,
@@ -29,6 +32,10 @@ import { tracker } from "@/lib/analytics";
 import NextStepCard from "@/components/NextStepCard";
 import { nextStepAfterNote, nextStepAfterMcq } from "@/lib/next-step";
 import UnlockGate from "@/ads/components/UnlockGate";
+import YouTubeThumbnail from "@/components/YouTubeThumbnail";
+import { awardXP } from "@/lib/gamification/xp-service";
+import { XP_VALUES } from "@/lib/gamification/xp-config";
+import BookmarkButton from "@/components/BookmarkButton";
 
 /** Minimal chapter info passed down to tabs for progress tracking. */
 interface ChapterCtx {
@@ -67,17 +74,8 @@ type Tab = "notes" | "mcq" | "qa";
 
 function YouTubeEmbed({ youtubeId }: { youtubeId: string }) {
   return (
-    <div className="mt-6 rounded-2xl overflow-hidden shadow-lg" style={{ background: "#000" }}>
-      <div className="relative w-full" style={{ paddingTop: "56.25%" }}>
-        <iframe
-          className="absolute inset-0 w-full h-full"
-          src={`https://www.youtube.com/embed/${youtubeId}`}
-          title="Lecture Video"
-          style={{ border: 0 }}
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowFullScreen
-        />
-      </div>
+    <div className="mt-6">
+      <YouTubeThumbnail youtubeId={youtubeId} label="Lecture Video" />
     </div>
   );
 }
@@ -98,9 +96,10 @@ function getNoteYoutubeIds(note: NoteData): string[] {
 
 /* Note preview card — clickable, opens the immersive reader */
 function NoteCard({
-  note, onOpen, progressStatus, scrollPercent,
+  note, chapter, onOpen, progressStatus, scrollPercent,
 }: {
   note: NoteData;
+  chapter: ChapterCtx;
   onOpen: () => void;
   progressStatus?: "unread" | "in_progress" | "completed";
   scrollPercent?: number;
@@ -113,6 +112,7 @@ function NoteCard({
     .slice(0, 140);
 
   return (
+    <div className="relative">
     <motion.button
       onClick={onOpen}
       whileHover={{ y: -3, scale: 1.005 }}
@@ -130,7 +130,7 @@ function NoteCard({
           style={{ background: "linear-gradient(135deg, #da6b45, #b85535)" }}>
           📝
         </div>
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0 pr-9">
           <h2 className="text-base sm:text-lg font-black text-foreground leading-snug assamese-text mb-1.5">
             {note.title}
           </h2>
@@ -156,10 +156,27 @@ function NoteCard({
         </div>
       </div>
     </motion.button>
+      {/* Bookmark toggle — sibling (not nested) so it isn't a button-in-button */}
+      <div className="absolute top-3 right-3 z-10">
+        <BookmarkButton
+          size={18}
+          data={{
+            type: "note",
+            refId: note.id,
+            chapterId: chapter.id,
+            subjectId: chapter.subjectId,
+            chapterTitle: chapter.title,
+            subjectName: chapter.subjectName ?? null,
+            title: note.title,
+            preview,
+          }}
+        />
+      </div>
+    </div>
   );
 }
 
-/** Single embeddable video card — manages its own expand-to-play state. */
+/** Single video card — opens YouTube app/site on tap so ads play correctly. */
 function NoteVideoEmbed({
   youtubeId, index, total, noteId, chapter,
 }: {
@@ -170,10 +187,8 @@ function NoteVideoEmbed({
   chapter?: ChapterCtx;
 }) {
   const { user } = useAuth();
-  const [expanded, setExpanded] = useState(false);
 
-  const handlePlay = () => {
-    setExpanded(true);
+  const trackPlay = () => {
     if (user?.role === "student" && chapter) {
       tracker.track({
         type:        "video_played",
@@ -185,54 +200,21 @@ function NoteVideoEmbed({
         chapterTitle: chapter.title,
         subjectName: chapter.subjectName,
       });
+      // Award XP for watching a video (once per video per day)
+      const today = new Date().toISOString().slice(0, 10);
+      void awardXP({
+        uid: user.id, xp: XP_VALUES.VIDEO_WATCHED,
+        eventId: `video-${youtubeId}-${today}`, type: "video_watched",
+      });
     }
   };
 
-  if (expanded) {
-    return (
-      <div className="rounded-2xl overflow-hidden shadow-xl border border-border bg-black"
-        style={{ aspectRatio: "16 / 9" }}>
-        <iframe
-          className="w-full h-full"
-          src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&rel=0`}
-          title={`Lecture Video ${index}`}
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
-          allowFullScreen
-        />
-      </div>
-    );
-  }
   return (
-    <button
-      onClick={handlePlay}
-      data-testid={`button-play-video-${index}`}
-      className="group relative w-full rounded-2xl overflow-hidden shadow-xl border border-border"
-      style={{ aspectRatio: "16 / 9" }}
-    >
-      <img
-        src={`https://img.youtube.com/vi/${youtubeId}/maxresdefault.jpg`}
-        onError={(e) => {
-          (e.target as HTMLImageElement).src = `https://img.youtube.com/vi/${youtubeId}/hqdefault.jpg`;
-        }}
-        alt={`Video ${index} thumbnail`}
-        className="absolute inset-0 w-full h-full object-cover transition-transform group-hover:scale-105"
-      />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-      <div className="absolute inset-0 flex items-center justify-center">
-        <motion.div
-          whileHover={{ scale: 1.08 }}
-          whileTap={{ scale: 0.95 }}
-          className="w-20 h-20 rounded-full bg-red-600 flex items-center justify-center shadow-2xl ring-4 ring-white/30"
-        >
-          <Play className="w-9 h-9 text-white fill-current ml-1" />
-        </motion.div>
-      </div>
-      <div className="absolute bottom-0 left-0 right-0 p-4 text-left">
-        <p className="text-white text-sm font-bold drop-shadow">
-          {total > 1 ? `Video ${index} of ${total} — Tap to play` : "Tap to play video"}
-        </p>
-      </div>
-    </button>
+    <YouTubeThumbnail
+      youtubeId={youtubeId}
+      label={total > 1 ? `Video ${index} of ${total}` : "Lecture Video"}
+      onBeforeOpen={trackPlay}
+    />
   );
 }
 
@@ -337,8 +319,9 @@ function NoteReaderModal({
               <ReactMarkdown
                 remarkPlugins={[remarkMath, remarkGfm, remarkBreaks]}
                 rehypePlugins={[rehypeRaw, rehypeKatex]}
+                components={markdownComponents}
               >
-                {note.content}
+                {preserveSpaces(note.content)}
               </ReactMarkdown>
             </div>
 
@@ -430,7 +413,10 @@ function NotesTab({ chapter }: { chapter: ChapterCtx }) {
     { query: { enabled: !!chapterId, queryKey: getGetNotesQueryKey({ chapterId }) } }
   );
   const { progressById } = useChapterNotesProgress(chapterId);
-  const [openNoteId, setOpenNoteId] = useState<string | null>(null);
+  // Honor a `?note=<id>` deep link (used by the Bookmarks page) — auto-open it.
+  const [openNoteId, setOpenNoteId] = useState<string | null>(
+    () => new URLSearchParams(window.location.search).get("note"),
+  );
 
   // Browser-history integration: pushState on open, popstate (Android back) closes.
   useEffect(() => {
@@ -484,6 +470,7 @@ function NotesTab({ chapter }: { chapter: ChapterCtx }) {
             <NoteCard
               key={note.id}
               note={note}
+              chapter={chapter}
               onOpen={() => setOpenNoteId(note.id)}
               progressStatus={p?.status}
               scrollPercent={p?.scrollPercent}
@@ -523,8 +510,13 @@ function McqTab({ chapter }: { chapter: ChapterCtx }) {
   const recordAttempt = useRecordMcqAttempt();
 
   // ── Set-picker state ────────────────────────────────────────────────────
-  // null = picker view; number = currently-active set's MCQs
-  const [activeSet, setActiveSet] = useState<number | null>(null);
+  // null = picker view; number = currently-active set's MCQs.
+  // Honor a `?set=<n>` deep link (used by the Bookmarks page).
+  const [activeSet, setActiveSet] = useState<number | null>(() => {
+    const s = new URLSearchParams(window.location.search).get("set");
+    const n = s ? parseInt(s, 10) : NaN;
+    return Number.isFinite(n) && n >= 1 ? n : null;
+  });
   // Per-set best score (kept in memory for the picker badge — Firestore is
   // source of truth long-term, but the in-session memory gives instant feedback)
   const [setBest, setSetBest] = useState<Record<number, { correct: number; total: number }>>({});
@@ -672,18 +664,18 @@ function McqTab({ chapter }: { chapter: ChapterCtx }) {
             const best = setBest[n];
             const bestPct = best ? Math.round((best.correct / best.total) * 100) : null;
             return (
+              <div className="relative" key={n}>
               <button
-                key={n}
                 onClick={() => setActiveSet(n)}
                 data-testid={`set-card-${n}`}
-                className="text-left p-5 rounded-3xl liquid-panel border border-transparent hover:border-orange-300 hover:scale-[1.01] active:scale-[0.99] transition-all"
+                className="w-full text-left p-5 rounded-3xl liquid-panel border border-transparent hover:border-orange-300 hover:scale-[1.01] active:scale-[0.99] transition-all"
               >
                 <div className="flex items-start gap-3">
                   <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-white font-black text-base shrink-0 shadow-md"
                        style={{ background: "linear-gradient(135deg, #e58359, #f08766)" }}>
                     S{n}
                   </div>
-                  <div className="flex-1 min-w-0">
+                  <div className="flex-1 min-w-0 pr-9">
                     <p className="font-black text-foreground text-base leading-tight">Set {n}</p>
                     <p className="text-xs text-muted-foreground font-medium mt-0.5">
                       {setQs.length} {setQs.length === 1 ? "question" : "questions"}
@@ -703,6 +695,23 @@ function McqTab({ chapter }: { chapter: ChapterCtx }) {
                   <span className="text-orange-500 text-xl shrink-0">›</span>
                 </div>
               </button>
+              <div className="absolute top-3 right-3 z-10">
+                <BookmarkButton
+                  size={18}
+                  data={{
+                    type: "mcq_set",
+                    refId: `${chapterId}__set${n}`,
+                    chapterId,
+                    subjectId: chapter.subjectId,
+                    chapterTitle: chapter.title,
+                    subjectName: chapter.subjectName ?? null,
+                    title: `Set ${n}`,
+                    setNumber: n,
+                    preview: `${setQs.length} ${setQs.length === 1 ? "question" : "questions"}`,
+                  }}
+                />
+              </div>
+              </div>
             );
           })}
         </div>
@@ -795,7 +804,26 @@ function McqTab({ chapter }: { chapter: ChapterCtx }) {
     </div>
     <div className="liquid-panel rounded-3xl p-6" data-testid="mcq-question">
       <div className="flex items-center justify-between mb-6">
-        <span className="text-sm font-black text-gray-500 dark:text-gray-400">Question {currentIdx + 1} of {currentMcqs.length}</span>
+        <div className="flex items-center gap-1">
+          <span className="text-sm font-black text-gray-500 dark:text-gray-400">Question {currentIdx + 1} of {currentMcqs.length}</span>
+          <BookmarkButton
+            size={16}
+            data={{
+              type: "mcq",
+              refId: current.id,
+              chapterId,
+              subjectId: chapter.subjectId,
+              chapterTitle: chapter.title,
+              subjectName: chapter.subjectName ?? null,
+              title: current.question,
+              setNumber: activeSet,
+              question: current.question,
+              options: current.options,
+              correctIndex: current.correctIndex,
+              explanation: current.explanation ?? null,
+            }}
+          />
+        </div>
         <div className="flex gap-1.5">
           {currentMcqs.map((_, i) => (
             <div key={i} className={`h-1.5 rounded-full transition-all ${
@@ -844,7 +872,7 @@ function McqTab({ chapter }: { chapter: ChapterCtx }) {
           data-testid="text-explanation">
           <p className="font-black mb-1">{isCorrect ? "🎉 Correct!" : "💡 Not quite!"}</p>
           <div className="note-reading-prose">
-            <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]} rehypePlugins={[rehypeRaw]}>{current.explanation}</ReactMarkdown>
+            <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]} rehypePlugins={[rehypeRaw]} components={markdownComponents}>{preserveSpaces(current.explanation)}</ReactMarkdown>
           </div>
         </div>
       )}
@@ -896,6 +924,12 @@ function QaTab({ chapter }: { chapter: ChapterCtx }) {
             chapterTitle: chapter.title,
             subjectName: chapter.subjectName,
           });
+          // Award XP for viewing Q&A
+          const today = new Date().toISOString().slice(0, 10);
+          void awardXP({
+            uid: user.id, xp: XP_VALUES.QA_SECTION_VIEWED,
+            eventId: `qa-${id}-${today}`, type: "qa_viewed",
+          });
           // Also emit video_played for each video attached to this Q&A so the
           // AI mentor's recommendation ladder knows the QnA-video rung was reached.
           const item = qa.find(q => q.id === id) as unknown as { youtubeIds?: string[] | null; youtubeId?: string | null } | undefined;
@@ -934,10 +968,26 @@ function QaTab({ chapter }: { chapter: ChapterCtx }) {
         const heading = (itemAny.title && itemAny.title.trim()) ? itemAny.title : item.question;
         const body    = (itemAny.content && itemAny.content.length > 0) ? itemAny.content : item.answer;
         return (
-        <div key={item.id} className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden" data-testid={`qa-${item.id}`}>
+        <div key={item.id} className="relative bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden" data-testid={`qa-${item.id}`}>
+          <div className="absolute top-2.5 right-2.5 z-10">
+            <BookmarkButton
+              size={17}
+              data={{
+                type: "qna",
+                refId: item.id,
+                chapterId,
+                subjectId: chapter.subjectId,
+                chapterTitle: chapter.title,
+                subjectName: chapter.subjectName ?? null,
+                title: heading,
+                question: heading,
+                answer: body,
+              }}
+            />
+          </div>
           <button
             onClick={() => toggle(item.id)}
-            className="w-full text-left p-4 sm:p-5 flex items-start justify-between gap-3 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
+            className="w-full text-left p-4 sm:p-5 pr-12 flex items-start justify-between gap-3 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
           >
             <div className="flex items-start gap-3 flex-1">
               <div className="w-8 h-8 rounded-xl flex items-center justify-center text-white font-black text-xs shrink-0 mt-0.5 shadow-md"
@@ -968,8 +1018,9 @@ function QaTab({ chapter }: { chapter: ChapterCtx }) {
                 <ReactMarkdown
                   remarkPlugins={[remarkMath, remarkGfm, remarkBreaks]}
                   rehypePlugins={[rehypeRaw, rehypeKatex]}
+                  components={markdownComponents}
                 >
-                  {body}
+                  {preserveSpaces(body)}
                 </ReactMarkdown>
               </div>
 
@@ -1031,15 +1082,24 @@ export default function ChapterDetailPage() {
     query: { enabled: !!chapterId, queryKey: getGetChapterQueryKey(chapterId) },
   });
 
+  // Fetch the parent subject so the header can use its admin-chosen color.
+  // (The chapter payload only carries subjectName, not the subject's color.)
+  const subjectId = chapter?.subjectId;
+  const { data: subject } = useGetSubject(subjectId!, {
+    query: { enabled: !!subjectId, queryKey: getGetSubjectQueryKey(subjectId!) },
+  });
+
   const isStudent = user?.role === "student";
   // Does this chapter belong to the student's current class/medium?
   // Admins bypass the guard entirely.
+  const chapterBoard = chapter ? ((chapter as any).board as string | undefined) : undefined;
   const chapterMatchesPrefs =
     !isStudent ||
     !prefs ||
     !chapter ||
     ((!chapter.classLevel || chapter.classLevel === prefs.class) &&
-     (!chapter.medium     || chapter.medium === "Both" || chapter.medium === prefs.medium));
+     (!chapter.medium     || chapter.medium === "Both" || chapter.medium === prefs.medium) &&
+     (!chapterBoard       || chapterBoard === "Both"  || !prefs.board || chapterBoard === prefs.board));
 
   // Only mark visited / track when chapter belongs to the student's track.
   // This prevents cross-class chapters poisoning the AI knowledge profile.
@@ -1065,6 +1125,8 @@ export default function ChapterDetailPage() {
   if (chapter && isStudent && prefs && !chapterMatchesPrefs) {
     const wrongClass  = chapter.classLevel && chapter.classLevel !== prefs.class;
     const wrongMedium = chapter.medium && chapter.medium !== "Both" && chapter.medium !== prefs.medium;
+    const wrongBoard  = chapterBoard && chapterBoard !== "Both" && prefs.board && chapterBoard !== prefs.board;
+    void wrongBoard;
     return (
       <div className="max-w-2xl mx-auto px-4 sm:px-6 py-16 blob-bg">
         <div className="liquid-card rounded-3xl p-8 text-center">
@@ -1101,7 +1163,7 @@ export default function ChapterDetailPage() {
     );
   }
 
-  const subjectTheme = getSubjectTheme(chapter?.subjectName);
+  const subjectTheme = getSubjectTheme(chapter?.subjectName, 0, subject?.color);
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 pb-28 md:pb-8 blob-bg">

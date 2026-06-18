@@ -108,7 +108,7 @@ export const auth = onRequest({ region: "asia-south1", invoker: "public" }, asyn
       };
 
       const token = signToken(authUser);
-      res.json({ user: authUser, token, classLevel: profile!.classLevel ?? null, medium: profile!.medium ?? null });
+      res.json({ user: authUser, token, classLevel: profile!.classLevel ?? null, medium: profile!.medium ?? null, board: profile!.board ?? null });
       return;
     }
 
@@ -184,7 +184,7 @@ export const auth = onRequest({ region: "asia-south1", invoker: "public" }, asyn
       };
 
       const token = signToken(authUser);
-      res.json({ user: authUser, token, classLevel: profile!.classLevel ?? null, medium: profile!.medium ?? null });
+      res.json({ user: authUser, token, classLevel: profile!.classLevel ?? null, medium: profile!.medium ?? null, board: profile!.board ?? null });
       return;
     }
 

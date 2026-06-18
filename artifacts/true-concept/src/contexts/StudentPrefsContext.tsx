@@ -2,10 +2,14 @@ import { createContext, useContext, useState, useCallback } from "react";
 
 export type StudentClass = "Class IX" | "Class X";
 export type StudentMedium = "Assamese" | "English";
+export type StudentBoard = "SEBA" | "CBSE";
 
 export interface StudentPrefs {
   class: StudentClass;
   medium: StudentMedium;
+  /** Education board. Optional for backward-compat with prefs saved before
+   *  board existed — code falls back to "SEBA" when absent. */
+  board?: StudentBoard;
 }
 
 interface StudentPrefsContextType {

@@ -62,7 +62,9 @@ export function useNotifications() {
     if (!prefs) return true;
     const classOk  = !n.classLevel || n.classLevel === prefs.class;
     const mediumOk = !n.medium     || n.medium     === "Both" || n.medium === prefs.medium;
-    return classOk && mediumOk;
+    const board    = (n as { board?: string }).board;
+    const boardOk  = !board || board === "Both" || !prefs.board || board === prefs.board;
+    return classOk && mediumOk && boardOk;
   }).slice(0, 30);
 
   const unreadCount = notifications.filter(isUnread).length;

@@ -18,6 +18,7 @@ export const dashboard = onRequest({ region: "asia-south1", invoker: "public" },
       const user = requireAuth(req);
       const classLevel = (req.query.classLevel as string | undefined)?.trim() || null;
       const medium     = (req.query.medium as string | undefined)?.trim() || null;
+      const board      = (req.query.board as string | undefined)?.trim() || null;
 
       const [statsSnap, chaptersSnap, subjectsSnap, masterySnap] = await Promise.all([
         db.collection("studentProgress").doc(user.id).get(),
@@ -35,6 +36,7 @@ export const dashboard = onRequest({ region: "asia-south1", invoker: "public" },
         const d = c.data();
         if (classLevel && d.classLevel && d.classLevel !== classLevel) return false;
         if (medium && d.medium && d.medium !== "Both" && d.medium !== medium) return false;
+        if (board  && d.board  && d.board  !== "Both" && d.board  !== board)  return false;
         return true;
       });
       const trackChapterIds = new Set(trackChapters.map((c: any) => c.id));

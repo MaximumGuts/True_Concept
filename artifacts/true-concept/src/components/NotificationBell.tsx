@@ -122,7 +122,7 @@ export default function NotificationBell() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -8, scale: 0.96 }}
             transition={{ duration: 0.15 }}
-            className="absolute left-0 top-12 w-80 sm:w-96 max-h-[70vh] overflow-hidden rounded-2xl shadow-2xl z-50"
+            className="absolute right-0 top-12 w-80 sm:w-96 max-h-[70vh] overflow-hidden rounded-2xl shadow-2xl z-50"
             style={{
               // Solid dark slate so content behind the dropdown doesn't bleed through.
               // backdropFilter is kept for a subtle frosted edge on the small gap above the panel.

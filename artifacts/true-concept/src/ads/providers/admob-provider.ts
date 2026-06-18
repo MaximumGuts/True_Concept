@@ -20,6 +20,7 @@ import {
   ADS_ARE_TEST_MODE,
   APP_ID,
   BANNER_AD_UNIT_ID,
+  INTERSTITIAL_AD_UNIT_ID,
   REWARDED_AD_UNIT_IDS,
   TESTING_DEVICES,
   type UnlockFeature,
@@ -39,6 +40,11 @@ const REWARDED_EVENT_FAILED_LOAD   = "rewardedVideoAdFailedToLoad";
 const REWARDED_EVENT_SHOWED        = "rewardedVideoAdShowed";
 const REWARDED_EVENT_DISMISSED     = "rewardedVideoAdDismissed";
 const REWARDED_EVENT_REWARD        = "rewardedVideoAdReward";
+
+const INTERSTITIAL_EVENT_LOADED      = "interstitialAdLoaded";
+const INTERSTITIAL_EVENT_FAILED_LOAD = "interstitialAdFailedToLoad";
+const INTERSTITIAL_EVENT_SHOWED      = "interstitialAdShowed";
+const INTERSTITIAL_EVENT_DISMISSED   = "interstitialAdDismissed";
 
 const BANNER_EVENT_LOADED          = "bannerAdLoaded";
 const BANNER_EVENT_FAILED_LOAD     = "bannerAdFailedToLoad";
@@ -242,6 +248,51 @@ export const adMobProvider: AdProvider = {
       return false;
     } finally {
       // Best-effort cleanup
+      for (const fn of cleanupFns) {
+        try { fn(); } catch { /* noop */ }
+      }
+    }
+  },
+
+  async showInterstitial(): Promise<void> {
+    const plugin = getAdMobPlugin();
+    if (!plugin) {
+      // Web preview path — production web uses the WebInterstitial component
+      // (AdSense), not this provider. No-op so the caller proceeds instantly.
+      console.info("[admob] not on Android, skipping interstitial (dev-stub)");
+      return;
+    }
+    if (!initialized) await this.initialize();
+
+    const cleanupFns: Array<() => void> = [];
+    try {
+      const handles = await Promise.all([
+        subscribe(plugin, INTERSTITIAL_EVENT_LOADED, () =>
+          console.info("[admob] interstitial loaded ✓")),
+        subscribe(plugin, INTERSTITIAL_EVENT_FAILED_LOAD, (e: any) =>
+          console.warn("[admob] interstitial failed:", e?.code, e?.message)),
+        subscribe(plugin, INTERSTITIAL_EVENT_SHOWED, () =>
+          console.info("[admob] interstitial showed")),
+      ]);
+      cleanupFns.push(...handles);
+
+      await plugin.prepareInterstitial({
+        adId: INTERSTITIAL_AD_UNIT_ID,
+        isTesting: ADS_ARE_TEST_MODE,
+      });
+
+      // Resolve on dismissal or a hard show-failure so the result is never blocked.
+      await new Promise<void>((resolve) => {
+        void subscribe(plugin, INTERSTITIAL_EVENT_DISMISSED, () => resolve())
+          .then(cleanup => cleanupFns.push(cleanup));
+        plugin.showInterstitial().catch((err: unknown) => {
+          console.warn("[admob] interstitial show failed:", err);
+          resolve();
+        });
+      });
+    } catch (err) {
+      console.warn("[admob] interstitial unexpected error:", err);
+    } finally {
       for (const fn of cleanupFns) {
         try { fn(); } catch { /* noop */ }
       }

@@ -4389,7 +4389,7 @@ var auth = onRequest({ region: "asia-south1", invoker: "public" }, async (req, r
         name: profile.name
       };
       const token = signToken(authUser);
-      res.json({ user: authUser, token, classLevel: profile.classLevel ?? null, medium: profile.medium ?? null });
+      res.json({ user: authUser, token, classLevel: profile.classLevel ?? null, medium: profile.medium ?? null, board: profile.board ?? null });
       return;
     }
     if (req.method === "POST" && subPath === "/google-login") {
@@ -4449,7 +4449,7 @@ var auth = onRequest({ region: "asia-south1", invoker: "public" }, async (req, r
         name: profile.name
       };
       const token = signToken(authUser);
-      res.json({ user: authUser, token, classLevel: profile.classLevel ?? null, medium: profile.medium ?? null });
+      res.json({ user: authUser, token, classLevel: profile.classLevel ?? null, medium: profile.medium ?? null, board: profile.board ?? null });
       return;
     }
     if (req.method === "PATCH" && subPath === "/credentials") {
@@ -4550,6 +4550,17 @@ var subjects = onRequest2({ region: "asia-south1", invoker: "public" }, async (r
         }
       }
       res.json([...seen.values()]);
+      return;
+    }
+    if (req.method === "GET" && subPath === "/stats") {
+      const [chaptersCount, mcqsCount] = await Promise.all([
+        db.collection("chapters").count().get(),
+        db.collection("mcqs").count().get()
+      ]);
+      res.json({
+        totalChapters: chaptersCount.data().count,
+        totalMcqs: mcqsCount.data().count
+      });
       return;
     }
     if (req.method === "POST" && subPath === "/cleanup-duplicates") {
@@ -4696,7 +4707,7 @@ var chapters = onRequest3({ region: "asia-south1", invoker: "public" }, async (r
     }
     if (req.method === "POST" && (subPath === "/" || subPath === "")) {
       requireAdmin(req);
-      const { subjectId, classLevel, medium, title, chapterNumber, description } = req.body;
+      const { subjectId, classLevel, medium, board, title, chapterNumber, description } = req.body;
       if (!subjectId || !classLevel || !title) {
         res.status(400).json({ error: "Missing required fields" });
         return;
@@ -4706,6 +4717,7 @@ var chapters = onRequest3({ region: "asia-south1", invoker: "public" }, async (r
         subjectId,
         classLevel,
         medium: medium ?? "Both",
+        board: board ?? "Both",
         title,
         chapterNumber: chapterNumber ?? 1,
         description,
@@ -4729,14 +4741,14 @@ var chapters = onRequest3({ region: "asia-south1", invoker: "public" }, async (r
     }
     if (req.method === "PUT" && paramId) {
       requireAdmin(req);
-      const { subjectId, classLevel, medium, title, chapterNumber, description } = req.body;
+      const { subjectId, classLevel, medium, board, title, chapterNumber, description } = req.body;
       const docRef = db.collection("chapters").doc(paramId);
       const docSnap = await docRef.get();
       if (!docSnap.exists) {
         res.status(404).json({ error: "Chapter not found" });
         return;
       }
-      const updates = { subjectId, classLevel, medium: medium ?? "Both", title, chapterNumber, description };
+      const updates = { subjectId, classLevel, medium: medium ?? "Both", board: board ?? "Both", title, chapterNumber, description };
       await docRef.update(updates);
       const enriched = await enrichChapters([{ id: paramId, ...docSnap.data(), ...updates }]);
       res.json(enriched[0]);
@@ -5532,6 +5544,7 @@ var dashboard = onRequest7({ region: "asia-south1", invoker: "public" }, async (
       const user = requireAuth(req);
       const classLevel = req.query.classLevel?.trim() || null;
       const medium = req.query.medium?.trim() || null;
+      const board = req.query.board?.trim() || null;
       const [statsSnap, chaptersSnap, subjectsSnap, masterySnap] = await Promise.all([
         db.collection("studentProgress").doc(user.id).get(),
         db.collection("chapters").get(),
@@ -5543,6 +5556,7 @@ var dashboard = onRequest7({ region: "asia-south1", invoker: "public" }, async (
         const d = c.data();
         if (classLevel && d.classLevel && d.classLevel !== classLevel) return false;
         if (medium && d.medium && d.medium !== "Both" && d.medium !== medium) return false;
+        if (board && d.board && d.board !== "Both" && d.board !== board) return false;
         return true;
       });
       const trackChapterIds = new Set(trackChapters.map((c) => c.id));
@@ -5892,6 +5906,7 @@ async function buildIndex() {
     chapterMetaMap.set(d.id, {
       classLevel: data.classLevel ?? null,
       medium: data.medium ?? "Both",
+      board: data.board ?? "Both",
       subjectId: data.subjectId,
       subjectName: subjectMap.get(data.subjectId) ?? "",
       chapterNumber: data.chapterNumber,
@@ -5917,6 +5932,7 @@ async function buildIndex() {
       chapterNumber: meta.chapterNumber,
       classLevel: meta.classLevel,
       medium: meta.medium,
+      board: meta.board,
       href: `/chapters/${d.id}`,
       searchableText: normalizeText(`${title} ${body} ${meta.subjectName}`)
     });
@@ -5937,6 +5953,7 @@ async function buildIndex() {
       subjectName: meta.subjectName,
       classLevel: meta.classLevel,
       medium: meta.medium,
+      board: meta.board,
       href: `/chapters/${data.chapterId}?tab=notes&open=${d.id}`,
       searchableText: normalizeText(`${title} ${body} ${meta.title}`)
     });
@@ -5957,6 +5974,7 @@ async function buildIndex() {
       subjectName: meta.subjectName,
       classLevel: meta.classLevel,
       medium: meta.medium,
+      board: meta.board,
       href: `/chapters/${data.chapterId}?tab=mcq`,
       searchableText: normalizeText(`${title} ${body} ${meta.title}`),
       extra: { setNumber: data.setNumber ?? 1 }
@@ -5978,6 +5996,7 @@ async function buildIndex() {
       subjectName: meta.subjectName,
       classLevel: meta.classLevel,
       medium: meta.medium,
+      board: meta.board,
       href: `/chapters/${data.chapterId}?tab=qa`,
       searchableText: normalizeText(`${title} ${body} ${meta.title} ${data.explanation ?? ""}`)
     });
@@ -5995,6 +6014,8 @@ async function buildIndex() {
       classLevel: data.classLevel ?? null,
       medium: null,
       // labs are not bound to a single medium
+      board: null,
+      // labs apply to all boards
       href: `/virtual-lab/${slug}`,
       searchableText: normalizeText(`${title} ${body} ${data.subject ?? ""} lab experiment`)
     });
@@ -6013,6 +6034,7 @@ async function buildIndex() {
       subjectName: set ? set.title : "",
       classLevel: data.classLevel ?? null,
       medium: data.medium ?? null,
+      board: data.board ?? null,
       href: `/papers/${data.setId}/${d.id}`,
       searchableText: normalizeText(`${title} ${body} ${set?.title ?? ""} paper`)
     });
@@ -6127,23 +6149,65 @@ var students = onRequest9({ region: "asia-south1", invoker: "public" }, async (r
         return;
       }
       await ref.update(updates);
-      try {
-        await db.collection("aiRecommendations").doc(user.id).delete();
-      } catch {
-      }
-      try {
-        const profileRef = db.collection("studentKnowledgeProfiles").doc(user.id);
-        const profileSnap = await profileRef.get();
-        if (profileSnap.exists) {
-          const profileUpdates = {};
-          if (updates.classLevel !== void 0) profileUpdates.classLevel = updates.classLevel;
-          if (updates.medium !== void 0) profileUpdates.medium = updates.medium;
-          if (Object.keys(profileUpdates).length > 0) {
-            await profileRef.update(profileUpdates);
+      const shouldReset = req.body?.reset === true;
+      if (shouldReset) {
+        const progressRef = db.collection("studentProgress").doc(user.id);
+        const subcols = [
+          "notes",
+          "mcqs",
+          "activity",
+          "sessions",
+          "questionResults",
+          "chapterMastery",
+          "experimentMastery",
+          "dailyChallenges",
+          "mockExamSessions",
+          "bookmarks",
+          "aiNarrations"
+        ];
+        for (const sub of subcols) {
+          try {
+            const subSnap = await progressRef.collection(sub).get();
+            if (subSnap.empty) continue;
+            const docs = subSnap.docs;
+            for (let i = 0; i < docs.length; i += 500) {
+              const batch = db.batch();
+              docs.slice(i, i + 500).forEach((d) => batch.delete(d.ref));
+              await batch.commit();
+            }
+          } catch (subErr) {
+            console.warn(`[students reset] failed deleting ${sub}:`, subErr);
           }
         }
-      } catch (err) {
-        console.warn("[students PATCH] profile sync failed:", err);
+        try {
+          await progressRef.delete();
+        } catch {
+        }
+        try {
+          await db.collection("studentKnowledgeProfiles").doc(user.id).delete();
+        } catch {
+        }
+        try {
+          await db.collection("aiRecommendations").doc(user.id).delete();
+        } catch {
+        }
+      } else {
+        try {
+          await db.collection("aiRecommendations").doc(user.id).delete();
+        } catch {
+        }
+        try {
+          const profileRef = db.collection("studentKnowledgeProfiles").doc(user.id);
+          const profileSnap = await profileRef.get();
+          if (profileSnap.exists) {
+            const profileUpdates = {};
+            if (updates.classLevel !== void 0) profileUpdates.classLevel = updates.classLevel;
+            if (updates.medium !== void 0) profileUpdates.medium = updates.medium;
+            if (Object.keys(profileUpdates).length > 0) await profileRef.update(profileUpdates);
+          }
+        } catch (err) {
+          console.warn("[students PATCH] profile sync failed:", err);
+        }
       }
       res.json({ ok: true, classLevel: updates.classLevel ?? snap2.data()?.classLevel ?? null, medium: updates.medium ?? snap2.data()?.medium ?? null });
       return;
@@ -6284,7 +6348,84 @@ var health = onRequest11({ region: "asia-south1", invoker: "public" }, async (re
 
 // src/triggers/knowledge-profile.ts
 import { onDocumentWritten } from "firebase-functions/v2/firestore";
+import { FieldValue as FieldValue2, Timestamp as Timestamp2 } from "firebase-admin/firestore";
+
+// src/lib/content-index.ts
 import { FieldValue, Timestamp } from "firebase-admin/firestore";
+var DOC_PATH = ["contentIndex", "global"];
+var TTL_MS = 6 * 60 * 60 * 1e3;
+async function buildContentIndex() {
+  const [mcqsSnap, qaSnap, papersSnap, chaptersSnap, subjectsSnap] = await Promise.all([
+    db.collection("mcqs").get(),
+    db.collection("qa").get(),
+    db.collection("papers").get(),
+    db.collection("chapters").get(),
+    db.collection("subjects").get()
+  ]);
+  const mcqCountByChapter = {};
+  for (const d of mcqsSnap.docs) {
+    const cid = d.data().chapterId;
+    if (cid) mcqCountByChapter[cid] = (mcqCountByChapter[cid] ?? 0) + 1;
+  }
+  const qaCountByChapter = {};
+  for (const d of qaSnap.docs) {
+    const cid = d.data().chapterId;
+    if (cid) qaCountByChapter[cid] = (qaCountByChapter[cid] ?? 0) + 1;
+  }
+  const chapters2 = chaptersSnap.docs.map((d) => {
+    const data = d.data();
+    return {
+      id: d.id,
+      title: data.title ?? "",
+      subjectId: data.subjectId ?? "",
+      subjectName: data.subjectName ?? "",
+      classLevel: data.classLevel ?? "",
+      board: data.board ?? "Both",
+      chapterNumber: data.chapterNumber ?? 0
+    };
+  });
+  const subjects2 = subjectsSnap.docs.map((d) => {
+    const data = d.data();
+    return {
+      id: d.id,
+      name: data.name ?? "",
+      classLevel: data.classLevel ?? ""
+    };
+  });
+  return {
+    mcqCountByChapter,
+    qaCountByChapter,
+    chapters: chapters2,
+    subjects: subjects2,
+    paperCount: papersSnap.size,
+    updatedAt: null
+    // set on write
+  };
+}
+async function writeContentIndex(index) {
+  await db.collection(DOC_PATH[0]).doc(DOC_PATH[1]).set({
+    ...index,
+    updatedAt: FieldValue.serverTimestamp()
+  });
+}
+async function rebuildAndStoreContentIndex() {
+  const index = await buildContentIndex();
+  await writeContentIndex(index);
+}
+async function getContentIndex() {
+  const ref = db.collection(DOC_PATH[0]).doc(DOC_PATH[1]);
+  const snap = await ref.get();
+  if (snap.exists) {
+    const data = snap.data();
+    const ageMs = data.updatedAt ? Date.now() - data.updatedAt.toMillis() : Infinity;
+    if (ageMs < TTL_MS) return data;
+  }
+  const fresh = await buildContentIndex();
+  await writeContentIndex(fresh);
+  return { ...fresh, updatedAt: Timestamp.now() };
+}
+
+// src/triggers/knowledge-profile.ts
 var rebuildKnowledgeProfile = onDocumentWritten(
   {
     document: "studentProgress/{uid}/chapterMastery/{chapterId}",
@@ -6301,11 +6442,6 @@ var rebuildKnowledgeProfile = onDocumentWritten(
       return Date.now() - lastBuild.toMillis() < 30 * 1e3;
     })();
     if (isCoolingDown) {
-      try {
-        await db.collection("aiRecommendations").doc(uid).delete();
-      } catch (err) {
-        console.warn("[rebuildKnowledgeProfile] cache delete during cooldown failed:", uid, err);
-      }
       return;
     }
     await computeAndPersistProfile(uid);
@@ -6318,18 +6454,67 @@ var RETRY_ACCURACY_THRESHOLD = 50;
 var PROFILE_VERSION = 1;
 async function computeAndPersistProfile(uid) {
   try {
-    const [masterySnap, questionSnap, sessionSnap, statsSnap, studentSnap] = await Promise.all([
+    const [
+      masterySnap,
+      questionSnap,
+      sessionSnap,
+      statsSnap,
+      studentSnap,
+      labSnap,
+      challengeSnap,
+      mockSnap,
+      contentIndex
+    ] = await Promise.all([
       db.collection("studentProgress").doc(uid).collection("chapterMastery").get(),
       db.collection("studentProgress").doc(uid).collection("questionResults").get(),
       db.collection("studentProgress").doc(uid).collection("sessions").orderBy("startedAt", "desc").limit(30).get(),
       db.collection("studentProgress").doc(uid).get(),
-      db.collection("students").doc(uid).get()
+      db.collection("students").doc(uid).get(),
+      db.collection("studentProgress").doc(uid).collection("experimentMastery").get(),
+      db.collection("studentProgress").doc(uid).collection("dailyChallenges").orderBy("dateKey", "desc").limit(7).get(),
+      db.collection("studentProgress").doc(uid).collection("mockExamSessions").orderBy("completedAt", "desc").limit(5).get(),
+      // Single-doc read of the shared content index (curriculum-wide counts).
+      // Replaces reading the whole mcqs/qa/papers/chapters/subjects collections
+      // per student — cost is now O(1) per rebuild instead of O(total content).
+      getContentIndex()
     ]);
     const masteries = masterySnap.docs.map((d) => d.data());
     const questions = questionSnap.docs.map((d) => d.data());
     const sessions = sessionSnap.docs.map((d) => d.data());
-    const stats = statsSnap.exists ? statsSnap.data() : null;
     const student = studentSnap.exists ? studentSnap.data() : null;
+    const challenges = challengeSnap.docs.map((d) => d.data());
+    const completedChallenges = challenges.filter((c) => c.status === "completed");
+    const dailyChallengeStreak = (() => {
+      const today = (/* @__PURE__ */ new Date()).toISOString().slice(0, 10);
+      const datesCompleted = new Set(completedChallenges.map((c) => c.dateKey));
+      let streak = 0;
+      const d = /* @__PURE__ */ new Date();
+      while (true) {
+        const key = d.toISOString().slice(0, 10);
+        if (!datesCompleted.has(key)) break;
+        streak++;
+        d.setDate(d.getDate() - 1);
+        if (streak > 7) break;
+      }
+      void today;
+      return streak;
+    })();
+    const lastChallengeScore = completedChallenges[0]?.score ?? null;
+    const avgChallengeScore = completedChallenges.length > 0 ? Math.round(completedChallenges.reduce((s, c) => s + (c.score ?? 0), 0) / completedChallenges.length) : null;
+    const mockExams = mockSnap.docs.map((d) => d.data());
+    const lastMockScore = mockExams[0]?.score ?? null;
+    const mockExamCount = mockExams.length;
+    const completedLabCount = labSnap.docs.filter((d) => {
+      const data = d.data();
+      return data.completed === true || (data.completionPct ?? 0) >= 80;
+    }).length;
+    const totalLabCount = labSnap.docs.length;
+    const studentClass = student?.classLevel ?? null;
+    const studentBoard = student?.board ?? null;
+    const inTrack = (c) => (!studentClass || c.classLevel === studentClass || c.classLevel === "Both") && (!studentBoard || c.board === studentBoard || c.board === "Both" || !c.board);
+    const totalChaptersForClass = contentIndex.chapters.filter(inTrack).length;
+    const effectiveTotalChapters = Math.max(masteries.length, totalChaptersForClass || 1);
+    const stats = statsSnap.exists ? statsSnap.data() : null;
     const masteryMap = {};
     const weakTopicMap = {};
     const strongTopicMap = {};
@@ -6471,9 +6656,64 @@ async function computeAndPersistProfile(uid) {
       totalAttempts: q.totalAttempts ?? 0,
       consecutiveWrong: q.consecutiveWrong ?? 0
     }));
-    const avgMastery = masteries.length > 0 ? masteries.reduce((a, m) => a + (m.masteryScore ?? 0), 0) / masteries.length : 0;
+    const studiedChapterIds = new Set(masteries.map((m) => m.chapterId));
+    const classChapters = contentIndex.chapters.filter(inTrack);
+    const mcqCountByChapter = contentIndex.mcqCountByChapter;
+    const qaCountByChapter = contentIndex.qaCountByChapter;
+    const unexploredChapters = classChapters.filter((c) => !studiedChapterIds.has(c.id)).slice(0, 8).map((c) => ({
+      chapterId: c.id,
+      chapterTitle: c.title,
+      subjectId: c.subjectId,
+      subjectName: c.subjectName
+    }));
+    const chaptersWithUnpracticedMcqs = masteries.filter((m) => (mcqCountByChapter[m.chapterId] ?? 0) > 0 && (m.mcqAttemptCount ?? 0) === 0).slice(0, 6).map((m) => ({
+      chapterId: m.chapterId,
+      chapterTitle: m.chapterTitle ?? "",
+      subjectName: m.subjectName ?? "",
+      mcqAvailable: mcqCountByChapter[m.chapterId] ?? 0
+    }));
+    const chaptersWithQaToReview = masteries.filter((m) => (qaCountByChapter[m.chapterId] ?? 0) > 0).slice(0, 6).map((m) => ({
+      chapterId: m.chapterId,
+      chapterTitle: m.chapterTitle ?? "",
+      subjectName: m.subjectName ?? "",
+      qaAvailable: qaCountByChapter[m.chapterId] ?? 0
+    }));
+    const availablePapersCount = contentIndex.paperCount;
+    const subjectChapterIds = {};
+    for (const c of classChapters) {
+      const sid = c.subjectId || "unknown";
+      if (!subjectChapterIds[sid]) subjectChapterIds[sid] = { name: c.subjectName, ids: [] };
+      subjectChapterIds[sid].ids.push(c.id);
+    }
+    const allClassSubjects = contentIndex.subjects.filter((s) => !studentClass || s.classLevel === studentClass || s.classLevel === "Both" || !s.classLevel);
+    const emptySubjects = Object.entries(subjectChapterIds).filter(([, v]) => v.ids.every((id) => !studiedChapterIds.has(id))).map(([sid, v]) => ({ subjectId: sid, subjectName: v.name, chapterCount: v.ids.length }));
+    const uniqueMcqsAttempted = questions.length;
+    const totalMcqsForClass = classChapters.reduce(
+      (sum, c) => sum + (mcqCountByChapter[c.id] ?? 0),
+      0
+    );
+    const chapterCoveragePct = totalChaptersForClass > 0 ? Math.round(studiedChapterIds.size / totalChaptersForClass * 100) : 0;
+    const mcqCoveragePct = totalMcqsForClass > 0 ? Math.round(Math.min(uniqueMcqsAttempted, totalMcqsForClass) / totalMcqsForClass * 100) : 0;
+    const subjectsStarted = Object.values(subjectChapterIds).filter((v) => v.ids.some((id) => studiedChapterIds.has(id))).length;
+    const contentCoverage = {
+      chapterCoveragePct,
+      mcqCoveragePct,
+      subjectsStarted,
+      totalSubjects: allClassSubjects.length || Object.keys(subjectChapterIds).length,
+      chaptersStudied: studiedChapterIds.size,
+      totalChapters: totalChaptersForClass,
+      mcqsAttempted: uniqueMcqsAttempted,
+      totalMcqs: totalMcqsForClass,
+      availablePapersCount
+    };
+    const studiedMasterySum = masteries.reduce((a, m) => a + (m.masteryScore ?? 0), 0);
+    const chapterCoverageScore = Math.min(100, studiedMasterySum / effectiveTotalChapters);
+    const examPerfParts = [];
+    if (lastMockScore != null) examPerfParts.push(lastMockScore);
+    if (avgChallengeScore != null) examPerfParts.push(avgChallengeScore);
+    const examPerfScore = examPerfParts.length > 0 ? examPerfParts.reduce((a, b) => a + b, 0) / examPerfParts.length : chapterCoverageScore;
     const examReadinessScore = Math.min(100, Math.round(
-      avgMastery + Math.min((stats?.currentStreak ?? 0) * 2, 10) + consistencyScore * 0.1
+      chapterCoverageScore * 0.6 + mcqCoveragePct * 0.15 + examPerfScore * 0.15 + consistencyScore * 0.1
     ));
     const confidenceScore = Math.min(100, Math.round(
       avgMcqAcc * 0.4 + Math.min((stats?.currentStreak ?? 0) * 3, 30) + Math.min(activeDays * 2, 30)
@@ -6492,21 +6732,37 @@ async function computeAndPersistProfile(uid) {
       examReadinessScore,
       confidenceScore,
       suggestedRetryQuestions: retryQuestions,
+      // Daily challenge + mock exam for AI prompt context
+      dailyChallengeStreak,
+      lastChallengeScore,
+      avgChallengeScore,
+      lastMockScore,
+      mockExamCount,
+      // Lab engagement
+      completedLabCount,
+      totalLabCount,
+      // ── Content gap map — makes the AI aware of ALL available content ────────
+      contentCoverage,
+      unexploredChapters,
+      chaptersWithUnpracticedMcqs,
+      chaptersWithQaToReview,
+      emptySubjects,
+      availablePapersCount,
+      // lastActiveAt — this trigger only fires when the student writes a
+      // chapterMastery doc (a real study action), so "now" is an accurate
+      // last-active timestamp. Drives activity tiering in ai-mentor.ts to
+      // throttle Gemini for infrequent/returning users. See lib/activity-tier.ts.
+      lastActiveAt: FieldValue2.serverTimestamp(),
       version: PROFILE_VERSION,
-      updatedAt: FieldValue.serverTimestamp()
+      updatedAt: FieldValue2.serverTimestamp()
     });
-    try {
-      await db.collection("aiRecommendations").doc(uid).delete();
-    } catch (cacheErr) {
-      console.warn("[rebuildKnowledgeProfile] failed to bust aiRecommendations cache for uid:", uid, cacheErr);
-    }
   } catch (err) {
     console.error("[rebuildKnowledgeProfile] failed for uid:", uid, err);
   }
 }
 function tsToMs(ts) {
   if (!ts) return 0;
-  if (ts instanceof Timestamp) return ts.toMillis();
+  if (ts instanceof Timestamp2) return ts.toMillis();
   const raw = ts;
   return (raw.seconds ?? 0) * 1e3;
 }
@@ -6529,10 +6785,10 @@ function computeOverallTrend(masteries) {
 // src/triggers/broadcast-recommendation.ts
 import { onDocumentCreated } from "firebase-functions/v2/firestore";
 import { defineSecret } from "firebase-functions/params";
-import { FieldValue as FieldValue2 } from "firebase-admin/firestore";
+import { FieldValue as FieldValue3 } from "firebase-admin/firestore";
 
 // src/lib/gemini.ts
-var GEMINI_MODEL = "gemini-2.5-flash";
+var GEMINI_MODEL = "gemini-2.5-flash-lite";
 var GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
 async function callGemini(prompt) {
   const apiKey = process.env.GEMINI_API_KEY;
@@ -6660,7 +6916,7 @@ ${jsonShape}`;
         // Papers deep-link into the paper reader (chapterId here is the setId);
         // everything else routes back into the chapter tabs view.
         actionLink: type === "new_paper" ? `/papers/${chapterId}/${notif.refId ?? ""}` : `/chapters/${chapterId}?tab=${tab}`,
-        createdAt: FieldValue2.serverTimestamp()
+        createdAt: FieldValue3.serverTimestamp()
       };
       await db.collection("broadcastMessages").doc(notifId).set(broadcast);
     } catch (err) {
@@ -6669,13 +6925,62 @@ ${jsonShape}`;
   }
 );
 
+// src/triggers/content-index.ts
+import { onDocumentWritten as onDocumentWritten2 } from "firebase-functions/v2/firestore";
+var DEBOUNCE_MS = 60 * 1e3;
+async function maybeRebuild() {
+  try {
+    const ref = db.collection("contentIndex").doc("global");
+    const snap = await ref.get();
+    if (snap.exists) {
+      const updatedAt = snap.data()?.updatedAt;
+      if (updatedAt && Date.now() - updatedAt.toMillis() < DEBOUNCE_MS) {
+        return;
+      }
+    }
+    await rebuildAndStoreContentIndex();
+  } catch (err) {
+    console.error("[content-index] rebuild failed:", err);
+  }
+}
+var onMcqWriteRebuildIndex = onDocumentWritten2(
+  { document: "mcqs/{mcqId}", region: "asia-south1" },
+  async () => {
+    await maybeRebuild();
+  }
+);
+var onQaWriteRebuildIndex = onDocumentWritten2(
+  { document: "qa/{qaId}", region: "asia-south1" },
+  async () => {
+    await maybeRebuild();
+  }
+);
+var onPaperWriteRebuildIndex = onDocumentWritten2(
+  { document: "papers/{paperId}", region: "asia-south1" },
+  async () => {
+    await maybeRebuild();
+  }
+);
+var onChapterWriteRebuildIndex = onDocumentWritten2(
+  { document: "chapters/{chapterId}", region: "asia-south1" },
+  async () => {
+    await maybeRebuild();
+  }
+);
+var onSubjectWriteRebuildIndex = onDocumentWritten2(
+  { document: "subjects/{subjectId}", region: "asia-south1" },
+  async () => {
+    await maybeRebuild();
+  }
+);
+
 // src/routes/ai-mentor.ts
 import { onRequest as onRequest12 } from "firebase-functions/v2/https";
 import { defineSecret as defineSecret2 } from "firebase-functions/params";
-import { FieldValue as FieldValue4, Timestamp as Timestamp3 } from "firebase-admin/firestore";
+import { FieldValue as FieldValue5, Timestamp as Timestamp5 } from "firebase-admin/firestore";
 
 // src/lib/next-recommendation.ts
-import { FieldValue as FieldValue3, Timestamp as Timestamp2 } from "firebase-admin/firestore";
+import { FieldValue as FieldValue4, Timestamp as Timestamp3 } from "firebase-admin/firestore";
 
 // src/lib/lab-chapter-registry.ts
 var SUBJECT_NAME_BIOLOGY = { en: "Biology", as: "\u099C\u09C0\u09F1\u09AC\u09BF\u099C\u09CD\u099E\u09BE\u09A8" };
@@ -7010,7 +7315,7 @@ async function narrateRecommendation(rec, uid, db2) {
     const cached = await cacheRef.get();
     if (cached.exists) {
       const c = cached.data();
-      const ageMs = Date.now() - (c.narratedAt instanceof Timestamp2 ? c.narratedAt.toMillis() : 0);
+      const ageMs = Date.now() - (c.narratedAt instanceof Timestamp3 ? c.narratedAt.toMillis() : 0);
       if (ageMs < NARRATION_TTL_MS && c.en && c.as) {
         return { ...rec, reason: { en: c.en, as: c.as } };
       }
@@ -7052,7 +7357,7 @@ Return ONLY this JSON (no markdown fences, no commentary):
     void cacheRef.set({
       en: parsed.en,
       as: parsed.as,
-      narratedAt: FieldValue3.serverTimestamp(),
+      narratedAt: FieldValue4.serverTimestamp(),
       recKind: rec.kind,
       targetId
     });
@@ -7063,9 +7368,117 @@ Return ONLY this JSON (no markdown fences, no commentary):
   }
 }
 
+// src/lib/activity-tier.ts
+import { Timestamp as Timestamp4 } from "firebase-admin/firestore";
+var DAY = 864e5;
+var DORMANT_AFTER_DAYS = 14;
+var ACTIVE_WITHIN_DAYS = 3;
+var ACTIVE_MIN_ACTIVE_DAYS = 3;
+var TIER_CACHE_TTL_MS = {
+  active: 48 * 60 * 60 * 1e3,
+  // 48h — fresh, as before
+  casual: 7 * DAY,
+  // weekly refresh
+  dormant: 1 * DAY
+  // cheap static card; re-check daily
+};
+function toMs(ts) {
+  if (!ts) return 0;
+  if (ts instanceof Timestamp4) return ts.toMillis();
+  const raw = ts;
+  const s = raw.seconds ?? raw._seconds;
+  return s ? s * 1e3 : 0;
+}
+function getActivityTier(profile) {
+  if (!profile) return "dormant";
+  const lastMs = toMs(profile.lastActiveAt) || toMs(profile.updatedAt);
+  if (!lastMs) return "dormant";
+  const daysSinceActive = (Date.now() - lastMs) / DAY;
+  if (daysSinceActive > DORMANT_AFTER_DAYS) return "dormant";
+  const activeDays = profile.studyBehavior?.activeDaysLast30 ?? 0;
+  if (daysSinceActive <= ACTIVE_WITHIN_DAYS && activeDays >= ACTIVE_MIN_ACTIVE_DAYS) {
+    return "active";
+  }
+  return "casual";
+}
+
 // src/routes/ai-mentor.ts
 var GEMINI_API_KEY2 = defineSecret2("GEMINI_API_KEY");
-var CACHE_TTL_MS2 = 6 * 60 * 60 * 1e3;
+async function buildDormantMentor(uid, profile, firstName) {
+  const isAs = (profile.medium ?? "English") === "Assamese";
+  const score = profile.examReadinessScore ?? 0;
+  const streak = profile.studyBehavior?.currentStreak ?? 0;
+  const pick2 = (en, as) => isAs ? as : en;
+  let nextRec = null;
+  try {
+    nextRec = await computeNextRecommendation(uid, db);
+  } catch {
+  }
+  const hasNext = !!nextRec && nextRec.kind !== "all_caught_up";
+  const nextReason = hasNext ? isAs ? nextRec.reason.as : nextRec.reason.en : null;
+  const weak = Object.values(profile.weakTopicMap ?? {});
+  const revisionNeeded = profile.revisionProfile?.chaptersNeedingRevision ?? [];
+  const recs = [];
+  if (hasNext) {
+    recs.push({
+      priority: recs.length + 1,
+      type: "study",
+      icon: nextRec.emoji ?? "\u{1F4D8}",
+      title: pick2("Pick up where you left off", "\u09AF'\u09A4 \u098F\u09F0\u09BF\u099B\u09BF\u09B2\u09BE \u09A4\u09BE\u09F0 \u09AA\u09F0\u09BE \u0986\u09F0\u09AE\u09CD\u09AD \u0995\u09F0\u0995"),
+      message: nextReason,
+      actionLabel: pick2("Resume", "\u0986\u0995\u09CC \u0986\u09F0\u09AE\u09CD\u09AD"),
+      chapterId: nextRec.target.chapterId ?? null
+    });
+  }
+  if (weak[0]) {
+    recs.push({
+      priority: recs.length + 1,
+      type: "revision",
+      icon: "\u{1F504}",
+      title: pick2("Strengthen a weak chapter", "\u098F\u099F\u09BE \u09A6\u09C1\u09F0\u09CD\u09AC\u09B2 \u0985\u09A7\u09CD\u09AF\u09BE\u09AF\u09BC \u09B6\u0995\u09CD\u09A4\u09BF\u09B6\u09BE\u09B2\u09C0 \u0995\u09F0\u0995"),
+      message: pick2(
+        `Revisit ${weak[0].chapterTitle} \u2014 a quick review will rebuild your confidence.`,
+        `${weak[0].chapterTitle} \u09AA\u09C1\u09A8\u09F0 \u099A\u09BE\u0993\u0995 \u2014 \u09B8\u09CB\u09A8\u0995\u09BE\u09B2\u09C7 \u098F\u09AC\u09BE\u09F0 \u099A\u09BE\u09B2\u09C7 \u0986\u09A4\u09CD\u09AE\u09AC\u09BF\u09B6\u09CD\u09AC\u09BE\u09B8 \u0998\u09C2\u09F0\u09BF \u0986\u09B9\u09BF\u09AC\u0964`
+      ),
+      actionLabel: pick2("Review", "\u09AA\u09C1\u09A8\u09F0\u09C0\u0995\u09CD\u09B7\u09A3"),
+      chapterId: weak[0].chapterId ?? null
+    });
+  }
+  recs.push({
+    priority: recs.length + 1,
+    type: "practice",
+    icon: "\u{1F525}",
+    title: pick2("Take today's Daily Challenge", "\u0986\u099C\u09BF\u09F0 \u09A6\u09C8\u09A8\u09BF\u0995 \u09AA\u09CD\u09F0\u09A4\u09CD\u09AF\u09BE\u09B9\u09CD\u09AC\u09BE\u09A8 \u09B2\u0993\u0995"),
+    message: pick2(
+      "10 quick questions to restart your streak.",
+      "\u0986\u09AA\u09CB\u09A8\u09BE\u09F0 \u09B7\u09CD\u099F\u09CD\u09F0\u09BF\u0995 \u09AA\u09C1\u09A8\u09F0 \u0986\u09F0\u09AE\u09CD\u09AD \u0995\u09F0\u09BF\u09AC\u09B2\u09C8 \u09E7\u09E6\u099F\u09BE \u09B8\u09CB\u09A8\u0995\u09BE\u09B2\u09C0\u09AF\u09BC\u09BE \u09AA\u09CD\u09F0\u09B6\u09CD\u09A8\u0964"
+    ),
+    actionLabel: pick2("Start", "\u0986\u09F0\u09AE\u09CD\u09AD"),
+    chapterId: null
+  });
+  return {
+    greeting: pick2(`Welcome back, ${firstName}! \u{1F44B}`, `\u0986\u0995\u09CC \u09B8\u09CD\u09AC\u09BE\u0997\u09A4\u09AE, ${firstName}! \u{1F44B}`),
+    examReadinessMessage: pick2(
+      `Your exam readiness is ${score}/100. A few focused sessions this week will lift it fast.`,
+      `\u0986\u09AA\u09CB\u09A8\u09BE\u09F0 \u09AA\u09F0\u09C0\u0995\u09CD\u09B7\u09BE\u09F0 \u09AA\u09CD\u09F0\u09B8\u09CD\u09A4\u09C1\u09A4\u09BF ${score}/\u09E7\u09E6\u09E6\u0964 \u098F\u0987 \u09B8\u09AA\u09CD\u09A4\u09BE\u09B9\u09A4 \u0995\u09C7\u0987\u099F\u09BE\u09AE\u09BE\u09A8 \u09AE\u09A8\u09CB\u09AF\u09CB\u0997\u09C0 \u0985\u09A7\u09CD\u09AF\u09AF\u09BC\u09A8\u09C7 \u0987\u09AF\u09BC\u09BE\u0995 \u09B8\u09CB\u09A8\u0995\u09BE\u09B2\u09C7 \u09AC\u09A2\u09BC\u09BE\u09AC\u0964`
+    ),
+    topRecommendations: recs.slice(0, 3),
+    weakTopicAlert: weak[0] ? pick2(`${weak[0].chapterTitle} needs attention.`, `${weak[0].chapterTitle} \u09F0 \u09AA\u09CD\u09F0\u09A4\u09BF \u09AE\u09A8\u09CB\u09AF\u09CB\u0997 \u09A6\u09BF\u09AF\u09BC\u09BE \u09A6\u09F0\u0995\u09BE\u09F0\u0964`) : null,
+    revisionAlert: revisionNeeded.length > 0 ? pick2(`${revisionNeeded.length} chapter(s) are due for revision.`, `${revisionNeeded.length} \u099F\u09BE \u0985\u09A7\u09CD\u09AF\u09BE\u09AF\u09BC \u09AA\u09C1\u09A8\u09F0\u09C0\u0995\u09CD\u09B7\u09A3\u09F0 \u09AC\u09BE\u09AC\u09C7 \u09AC\u09BE\u0995\u09C0 \u0986\u099B\u09C7\u0964`) : null,
+    motivationalMessage: streak > 0 ? pick2("Small steps every day beat last-minute cramming. Let's go!", "\u09AA\u09CD\u09F0\u09A4\u09BF\u09A6\u09BF\u09A8\u09C7 \u09B8\u09F0\u09C1 \u09AA\u09A6\u0995\u09CD\u09B7\u09C7\u09AA\u09C7 \u09B6\u09C7\u09B7 \u09AE\u09C1\u09B9\u09C2\u09F0\u09CD\u09A4\u09F0 \u09AA\u09A2\u09BC\u09BE\u09A4\u0995\u09C8 \u09AD\u09BE\u09B2\u0964 \u0986\u09B9\u0995!") : pick2("Every topper started with a single chapter. Today is a great day to restart.", "\u09AA\u09CD\u09F0\u09A4\u09BF\u099C\u09A8 \u099F\u09AA\u09BE\u09F0\u09C7 \u098F\u099F\u09BE \u0985\u09A7\u09CD\u09AF\u09BE\u09AF\u09BC\u09F0 \u09AA\u09F0\u09BE\u0987 \u0986\u09F0\u09AE\u09CD\u09AD \u0995\u09F0\u09BF\u099B\u09BF\u09B2\u0964 \u0986\u099C\u09BF \u09AA\u09C1\u09A8\u09F0 \u0986\u09F0\u09AE\u09CD\u09AD \u0995\u09F0\u09BE\u09F0 \u0989\u09A4\u09CD\u09A4\u09AE \u09A6\u09BF\u09A8\u0964"),
+    nextBestAction: {
+      message: nextReason ?? pick2(
+        "Open any chapter and read one note to get back in rhythm.",
+        "\u09AF\u09BF\u0995\u09CB\u09A8\u09CB \u0985\u09A7\u09CD\u09AF\u09BE\u09AF\u09BC \u0996\u09C1\u09B2\u09BF \u098F\u099F\u09BE \u099F\u09CB\u0995\u09BE \u09AA\u09A2\u09BC\u09BF \u099B\u09A8\u09CD\u09A6\u09B2\u09C8 \u0998\u09C2\u09F0\u09BF \u0986\u09B9\u0995\u0964"
+      ),
+      chapterId: nextRec?.target.chapterId ?? null,
+      tab: "notes"
+    },
+    examReadinessScore: score,
+    tier: "dormant",
+    generatedAt: Timestamp5.now()
+  };
+}
 var aiMentor = onRequest12(
   { region: "asia-south1", invoker: "public", timeoutSeconds: 30, secrets: [GEMINI_API_KEY2] },
   async (req, res) => {
@@ -7075,25 +7488,33 @@ var aiMentor = onRequest12(
       if (req.method === "GET" && subPath === "/mentor") {
         const user = requireAuth(req);
         const uid = user.id;
-        const cacheRef = db.collection("aiRecommendations").doc(uid);
-        const cacheSnap = await cacheRef.get();
-        if (cacheSnap.exists) {
-          const cached = cacheSnap.data();
-          const generatedMs = cached.generatedAt.toMillis();
-          if (Date.now() - generatedMs < CACHE_TTL_MS2) {
-            res.json(cached);
-            return;
-          }
-        }
         const profileSnap = await db.collection("studentKnowledgeProfiles").doc(uid).get();
         if (!profileSnap.exists) {
           res.status(202).json({ pending: true, message: "Profile not ready yet. Study a bit first!" });
           return;
         }
         const profile = profileSnap.data();
+        const tier = getActivityTier(profile);
+        const cacheRef = db.collection("aiRecommendations").doc(uid);
+        const cacheSnap = await cacheRef.get();
+        if (cacheSnap.exists) {
+          const cached = cacheSnap.data();
+          const generatedMs = cached.generatedAt.toMillis();
+          const cachedTier = cached.tier ?? "active";
+          if (cachedTier === tier && Date.now() - generatedMs < TIER_CACHE_TTL_MS[tier]) {
+            res.json(cached);
+            return;
+          }
+        }
         const studentSnap = await db.collection("students").doc(uid).get();
         const studentName = studentSnap.exists ? studentSnap.data().name ?? "Student" : "Student";
         const firstName = studentName.split(" ")[0];
+        if (tier === "dormant") {
+          const staticResult = await buildDormantMentor(uid, profile, firstName);
+          await cacheRef.set({ ...staticResult, generatedAt: FieldValue5.serverTimestamp() });
+          res.json(staticResult);
+          return;
+        }
         const weak = Object.values(profile.weakTopicMap ?? {});
         const strong = Object.values(profile.strongTopicMap ?? {});
         const subjectMastery = Object.values(profile.subjectMastery ?? {});
@@ -7118,6 +7539,12 @@ var aiMentor = onRequest12(
         const strongFormatted = strong.slice(0, 3).map((t) => `- ${t.chapterTitle}: mastery ${t.masteryScore}/100`).join("\n");
         const subjectFormatted = subjectMastery.map((s) => `- ${s.subjectName}: ${s.masteryScore}/100 (${s.trend})`).join("\n");
         const retryFormatted = retry.slice(0, 5).map((q) => `- ${q.chapterTitle}: accuracy ${q.accuracy}%, wrong ${q.consecutiveWrong} times in a row`).join("\n");
+        const p = profile;
+        const cov = p.contentCoverage ?? {};
+        const unexploredFormatted = (p.unexploredChapters ?? []).slice(0, 6).map((c) => `- ${c.chapterTitle} (${c.subjectName})`).join("\n") || "None \u2014 student has started every chapter";
+        const unpracticedMcqFormatted = (p.chaptersWithUnpracticedMcqs ?? []).slice(0, 5).map((c) => `- ${c.chapterTitle} (${c.subjectName}): ${c.mcqAvailable} MCQs available, never attempted`).join("\n") || "None";
+        const qaToReviewFormatted = (p.chaptersWithQaToReview ?? []).slice(0, 5).map((c) => `- ${c.chapterTitle} (${c.subjectName}): ${c.qaAvailable} Q&A available`).join("\n") || "None";
+        const emptySubjectsFormatted = (p.emptySubjects ?? []).map((s) => `- ${s.subjectName} (${s.chapterCount} chapters, never opened)`).join("\n") || "None \u2014 student has touched every subject";
         const revisionFormatted = (await Promise.all(
           revisionNeeded.slice(0, 5).map(async (cid) => {
             const m = weak.find((t) => t.chapterId === cid) || strong.find((t) => t.chapterId === cid);
@@ -7140,9 +7567,14 @@ var aiMentor = onRequest12(
 
 Student: ${firstName}
 Class: ${profile.classLevel || "9"}, Medium: ${profile.medium || "English"}
-Exam Readiness: ${profile.examReadinessScore ?? 0}/100
+Exam Readiness: ${profile.examReadinessScore ?? 0}/100 (based on coverage of ALL chapters \u2014 honest score)
 Confidence: ${profile.confidenceScore ?? 0}/100
 Study Streak: ${profile.studyBehavior?.currentStreak ?? 0} days (longest: ${profile.studyBehavior?.longestStreak ?? 0})
+Daily Challenge Streak: ${profile.dailyChallengeStreak ?? 0} days
+Last Daily Challenge Score: ${profile.lastChallengeScore != null ? `${profile.lastChallengeScore}%` : "Not attempted yet"}
+Avg Daily Challenge Score (last 7 days): ${profile.avgChallengeScore != null ? `${profile.avgChallengeScore}%` : "N/A"}
+Last Mock Exam Score: ${profile.lastMockScore != null ? `${profile.lastMockScore}%` : "No mock exam taken yet"}
+Mock Exams Taken: ${profile.mockExamCount ?? 0}
 Preferred study time: ${profile.studyBehavior?.preferredStudyHour ?? 20}:00
 Active days this month: ${profile.studyBehavior?.activeDaysLast30 ?? 0}/30
 Consistency: ${profile.studyBehavior?.consistencyScore ?? 0}/100
@@ -7164,13 +7596,33 @@ ${revisionFormatted}
 MCQ questions to retry (wrong multiple times):
 ${retryFormatted || "None yet"}
 
+\u2550\u2550\u2550 CONTENT AVAILABLE THAT THE STUDENT HASN'T DONE YET \u2550\u2550\u2550
+Curriculum coverage: ${cov.chaptersStudied ?? 0}/${cov.totalChapters ?? 0} chapters studied (${cov.chapterCoveragePct ?? 0}%), ${cov.mcqsAttempted ?? 0}/${cov.totalMcqs ?? 0} MCQs attempted (${cov.mcqCoveragePct ?? 0}%), ${cov.subjectsStarted ?? 0}/${cov.totalSubjects ?? 0} subjects started.
+
+New / unexplored chapters (student has NEVER opened these \u2014 great for "explore something new"):
+${unexploredFormatted}
+
+Chapters studied but MCQs never attempted (student read notes but skipped the quiz):
+${unpracticedMcqFormatted}
+
+Chapters with Q&A available to review:
+${qaToReviewFormatted}
+
+Subjects completely untouched:
+${emptySubjectsFormatted}
+
+Full-length question papers available: ${p.availablePapersCount ?? 0} ${(p.availablePapersCount ?? 0) > 0 ? "(student can attempt a full mock paper)" : ""}
+
 Recent activity (last 10 things this student did, newest first):
 ${recentActivityFormatted}
 
 IMPORTANT GUIDANCE for picking recommendations:
 - If the student JUST did the activity you were about to recommend (within the last hour), acknowledge their effort and shift to the NEXT-priority task instead. Do not repeat the same recommendation back.
-- Each of the 3 topRecommendations MUST target a DIFFERENT chapter or a different activity type (revision / retry / study). No duplicates.
-- The "retry" card is only worth showing if there are unresolved weak questions the student hasn't attempted in the last hour. Otherwise replace it with a different priority (e.g. a quick lab experiment, a Q&A review).
+- Each of the 3 topRecommendations MUST target a DIFFERENT chapter or a different activity type (revision / retry / study / new chapter / practice MCQs / review Q&A / attempt paper). No duplicates.
+- USE the "CONTENT AVAILABLE" section above to recommend genuinely NEW things: an unexplored chapter, MCQs the student skipped, Q&A to review, an untouched subject, or a full-length paper. This is how you surface freshly-added content.
+- If a whole subject is untouched, gently encourage starting it (balance across subjects matters for board exams).
+- If the student has skipped MCQs in chapters they've read, nudge them to test themselves \u2014 reading without testing is weak revision.
+- The "retry" card is only worth showing if there are unresolved weak questions the student hasn't attempted in the last hour. Otherwise replace it with a "practice new MCQs" / "explore new chapter" / "attempt a paper" recommendation.
 - **NEVER use raw chapter IDs** (anything that looks like an internal slug \u2014 for example "phys-ix-c01", "chem-x-04", numeric IDs). The chapter NAMES are the human-readable titles such as "Force and Laws of Motion", "Light \u2014 Reflection and Refraction", "\u09AE\u09C7\u099F\u09CD\u09F0\u09BF\u0995\u099B \u0986\u09F0\u09C1 \u0987\u09AF\u09BC\u09BE\u09F0 \u0997\u09C1\u09A3" etc. If a chapter's title is not provided in the data above, simply omit that chapter from your recommendation and pick a different one.
 
 Return ONLY this JSON (no markdown):
@@ -7220,9 +7672,10 @@ Return ONLY this JSON (no markdown):
         const result = {
           ...aiData,
           examReadinessScore: profile.examReadinessScore ?? 0,
-          generatedAt: Timestamp3.now()
+          tier,
+          generatedAt: Timestamp5.now()
         };
-        await cacheRef.set({ ...result, generatedAt: FieldValue4.serverTimestamp() });
+        await cacheRef.set({ ...result, generatedAt: FieldValue5.serverTimestamp() });
         res.json(result);
         return;
       }
@@ -7235,7 +7688,9 @@ Return ONLY this JSON (no markdown):
       if (req.method === "GET" && subPath === "/next-recommendation") {
         const user = requireAuth(req);
         const rec = await computeNextRecommendation(user.id, db);
-        const narrated = await narrateRecommendation(rec, user.id, db);
+        const profSnap = await db.collection("studentKnowledgeProfiles").doc(user.id).get();
+        const tier = getActivityTier(profSnap.exists ? profSnap.data() : null);
+        const narrated = tier === "active" ? await narrateRecommendation(rec, user.id, db) : rec;
         res.json(narrated);
         return;
       }
@@ -7261,6 +7716,49 @@ Return ONLY this JSON (no markdown):
     }
   }
 );
+
+// src/triggers/leaderboard.ts
+import { onDocumentWritten as onDocumentWritten3 } from "firebase-functions/v2/firestore";
+import { FieldValue as FieldValue6 } from "firebase-admin/firestore";
+function getCurrentWeekKey() {
+  const now = /* @__PURE__ */ new Date();
+  const jan1 = new Date(now.getFullYear(), 0, 1);
+  const week = Math.ceil(((now.getTime() - jan1.getTime()) / 864e5 + jan1.getDay() + 1) / 7);
+  return `${now.getFullYear()}-W${String(week).padStart(2, "0")}`;
+}
+var updateLeaderboardOnXPWrite = onDocumentWritten3(
+  { document: "studentXP/{uid}", region: "asia-south1" },
+  async (event) => {
+    const uid = event.params.uid;
+    if (!event.data?.after?.exists) return;
+    const xpData = event.data.after.data();
+    const weekKey = getCurrentWeekKey();
+    let name = "Student";
+    let classLevel = "";
+    try {
+      const studentSnap = await db.collection("students").doc(uid).get();
+      if (studentSnap.exists) {
+        const studentData = studentSnap.data();
+        name = studentData.name ?? "Student";
+        classLevel = studentData.classLevel ?? "";
+      }
+    } catch {
+    }
+    const entry = {
+      uid,
+      name,
+      classLevel,
+      // stored so clients can filter per-class
+      level: xpData.level ?? 1,
+      levelTitle: "Level",
+      totalXP: xpData.totalXP ?? 0,
+      weeklyXP: xpData.weeklyXP ?? 0,
+      badgeCount: (xpData.earnedBadgeIds ?? []).length,
+      updatedAt: FieldValue6.serverTimestamp()
+    };
+    await db.collection("weeklyLeaderboard").doc(weekKey).collection("entries").doc(uid).set(entry, { merge: true });
+  }
+);
 export {
   aiMentor,
   auth,
@@ -7270,11 +7768,17 @@ export {
   dashboard,
   experiments,
   health,
+  onChapterWriteRebuildIndex,
+  onMcqWriteRebuildIndex,
+  onPaperWriteRebuildIndex,
+  onQaWriteRebuildIndex,
+  onSubjectWriteRebuildIndex,
   progress,
   rebuildKnowledgeProfile,
   search,
   storage,
   students,
-  subjects
+  subjects,
+  updateLeaderboardOnXPWrite
 };
 //# sourceMappingURL=index.js.map

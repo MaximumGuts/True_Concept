@@ -20,8 +20,8 @@
  * Reference: androidAddMob/AdMob-Verification-Guide.md
  */
 
-/** The four protected features that each get their own rewarded ad slot. */
-export type UnlockFeature = "notes" | "lab" | "mcq" | "qna";
+/** Protected features that each get their own rewarded ad slot. */
+export type UnlockFeature = "notes" | "lab" | "mcq" | "qna" | "mock_exam";
 
 const USE_REAL_ADS = (import.meta.env.VITE_USE_REAL_ADS as string | undefined) === "true";
 const USE_TEST_ADS = !USE_REAL_ADS;
@@ -30,6 +30,7 @@ const USE_TEST_ADS = !USE_REAL_ADS;
 const TEST_APP_ID                = "ca-app-pub-3940256099942544~3347511713";
 const TEST_BANNER_ID             = "ca-app-pub-3940256099942544/6300978111";
 const TEST_REWARDED_ID           = "ca-app-pub-3940256099942544/5224354917";
+const TEST_INTERSTITIAL_ID       = "ca-app-pub-3940256099942544/1033173712";
 
 /* ── TRUE CONCEPT production IDs (Android) ────────────────────────────── */
 const PROD_APP_ID                = "ca-app-pub-7343144848032125~7156806995";
@@ -38,6 +39,9 @@ const PROD_REWARDED_NOTES_ID     = "ca-app-pub-7343144848032125/7478343417";
 const PROD_REWARDED_LAB_ID       = "ca-app-pub-7343144848032125/7619841424";
 const PROD_REWARDED_MCQ_ID       = "ca-app-pub-7343144848032125/7833566638";
 const PROD_REWARDED_QNA_ID       = "ca-app-pub-7343144848032125/3268012966";
+// No dedicated production interstitial unit yet — falls back to the TEST unit
+// until a real one is created in AdMob and VITE_USE_REAL_ADS is enabled.
+const PROD_INTERSTITIAL_ID       = TEST_INTERSTITIAL_ID;
 
 /**
  * App ID — used only for log/diagnostic purposes from JS.
@@ -49,19 +53,24 @@ export const APP_ID = USE_TEST_ADS ? TEST_APP_ID : PROD_APP_ID;
 /** Banner ad-unit (one slot — bottom adaptive banner). */
 export const BANNER_AD_UNIT_ID = USE_TEST_ADS ? TEST_BANNER_ID : PROD_BANNER_ID;
 
+/** Interstitial ad-unit (full-screen — shown before the Daily MCQ result). */
+export const INTERSTITIAL_AD_UNIT_ID = USE_TEST_ADS ? TEST_INTERSTITIAL_ID : PROD_INTERSTITIAL_ID;
+
 /** Per-feature rewarded ad-unit map. */
 export const REWARDED_AD_UNIT_IDS: Record<UnlockFeature, string> = USE_TEST_ADS
   ? {
-      notes: TEST_REWARDED_ID,
-      lab:   TEST_REWARDED_ID,
-      mcq:   TEST_REWARDED_ID,
-      qna:   TEST_REWARDED_ID,
+      notes:     TEST_REWARDED_ID,
+      lab:       TEST_REWARDED_ID,
+      mcq:       TEST_REWARDED_ID,
+      qna:       TEST_REWARDED_ID,
+      mock_exam: TEST_REWARDED_ID,
     }
   : {
-      notes: PROD_REWARDED_NOTES_ID,
-      lab:   PROD_REWARDED_LAB_ID,
-      mcq:   PROD_REWARDED_MCQ_ID,
-      qna:   PROD_REWARDED_QNA_ID,
+      notes:     PROD_REWARDED_NOTES_ID,
+      lab:       PROD_REWARDED_LAB_ID,
+      mcq:       PROD_REWARDED_MCQ_ID,
+      qna:       PROD_REWARDED_QNA_ID,
+      mock_exam: PROD_REWARDED_MCQ_ID, // reuse MCQ unit until a dedicated unit is created
     };
 
 /** True when this build is using TEST ad units (debug / non-release). Used by
@@ -70,10 +79,11 @@ export const ADS_ARE_TEST_MODE = USE_TEST_ADS;
 
 /** Human-readable labels for the UnlockGate modal. */
 export const FEATURE_LABELS: Record<UnlockFeature, { en: string; as: string }> = {
-  notes: { en: "Notes",  as: "টোকা" },
-  lab:   { en: "Lab",    as: "পৰীক্ষাগাৰ" },
-  mcq:   { en: "MCQ",    as: "MCQ" },
-  qna:   { en: "Q&A",    as: "প্ৰশ্নোত্তৰ" },
+  notes:     { en: "Notes",     as: "টোকা" },
+  lab:       { en: "Lab",       as: "পৰীক্ষাগাৰ" },
+  mcq:       { en: "MCQ",       as: "MCQ" },
+  qna:       { en: "Q&A",       as: "প্ৰশ্নোত্তৰ" },
+  mock_exam: { en: "Mock Exam", as: "মক পৰীক্ষা" },
 };
 
 /**

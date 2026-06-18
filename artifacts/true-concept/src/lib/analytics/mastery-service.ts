@@ -14,9 +14,10 @@ import type { ChapterMastery, MasteryStatus, TrendDirection } from "./types";
 
 // Notes engagement fallback: each note contributes 25 pts when total is unknown (4 notes = 100%)
 const NOTE_ENGAGEMENT_PER_NOTE = 25;
-// Weighted composite: notes are 40%, MCQ score is 60%
-const NOTES_WEIGHT = 0.4;
-const MCQ_WEIGHT   = 0.6;
+// Weighted composite: notes 30%, MCQ 60%, lab 10%
+const NOTES_WEIGHT = 0.30;
+const MCQ_WEIGHT   = 0.60;
+const LAB_WEIGHT   = 0.10;
 // Mastery status thresholds
 const MASTERED_THRESHOLD  = 75;
 const PRACTICED_THRESHOLD = 50;
@@ -28,10 +29,10 @@ const MAX_SCORE_HISTORY = 5;
 
 // ── Internal helpers ──────────────────────────────────────────────────────────
 
-function computeMasteryScore(notesEngagement: number, mcqBest: number): number {
-  if (mcqBest === 0 && notesEngagement === 0) return 0;
-  if (mcqBest === 0) return Math.round(notesEngagement * NOTES_WEIGHT * 1.5); // notes-only progress
-  return Math.round(notesEngagement * NOTES_WEIGHT + mcqBest * MCQ_WEIGHT);
+function computeMasteryScore(notesEngagement: number, mcqBest: number, labScore = 0): number {
+  if (mcqBest === 0 && notesEngagement === 0 && labScore === 0) return 0;
+  if (mcqBest === 0 && labScore === 0) return Math.round(notesEngagement * NOTES_WEIGHT * 1.5); // notes-only
+  return Math.round(notesEngagement * NOTES_WEIGHT + mcqBest * MCQ_WEIGHT + labScore * LAB_WEIGHT);
 }
 
 function computeStatus(score: number, notesCompleted: number, mcqAttempts: number): MasteryStatus {
@@ -84,7 +85,7 @@ export async function onNoteCompleted(args: {
       : Math.min(100, newNotesCompleted * NOTE_ENGAGEMENT_PER_NOTE);
 
     if (!cur) {
-      const mastery = computeMasteryScore(newEngagement, 0);
+      const mastery = computeMasteryScore(newEngagement, 0, 0);
       const initial: Omit<ChapterMastery, "updatedAt"> = {
         chapterId:            args.chapterId,
         subjectId:            args.subjectId,
@@ -116,7 +117,7 @@ export async function onNoteCompleted(args: {
     }
 
     // cur is ChapterMastery (not null) past this point
-    const newMastery = computeMasteryScore(newEngagement, cur.mcqBestScore ?? 0);
+    const newMastery = computeMasteryScore(newEngagement, cur.mcqBestScore ?? 0, (cur as any).labCompletionScore ?? 0);
     const newStatus  = computeStatus(newMastery, newNotesCompleted, cur.mcqAttemptCount ?? 0);
 
     // Revision detection
@@ -217,7 +218,7 @@ export async function onMcqAttempted(args: {
     const delta       = args.score - firstScore;
 
     const newEngagement = cur.notesEngagementScore ?? 0;
-    const newMastery    = computeMasteryScore(newEngagement, newBest);
+    const newMastery    = computeMasteryScore(newEngagement, newBest, (cur as any).labCompletionScore ?? 0);
     const newAttempts   = (cur.mcqAttemptCount ?? 0) + 1;
     const newStatus     = computeStatus(newMastery, cur.notesCompleted ?? 0, newAttempts);
 

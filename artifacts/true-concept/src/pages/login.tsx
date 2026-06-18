@@ -10,7 +10,7 @@ import {
 } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { useAuth } from "@/contexts/AuthContext";
-import { useStudentPrefs, type StudentClass, type StudentMedium } from "@/contexts/StudentPrefsContext";
+import { useStudentPrefs, type StudentClass, type StudentMedium, type StudentBoard } from "@/contexts/StudentPrefsContext";
 import { recordSignup } from "@/ads/grace-period";
 
 // ── types ─────────────────────────────────────────────────────────────────────
@@ -795,11 +795,15 @@ export default function LoginPage() {
   const queryClient = useQueryClient();
   const [step, setStep] = useState<Step>({ tag: "choose" });
 
-  const handleDone = (user: any, token: string, classLevel?: string | null, medium?: string | null) => {
+  const handleDone = (user: any, token: string, classLevel?: string | null, medium?: string | null, board?: string | null) => {
     queryClient.clear();
     login(token, user);
     if (user.role === "student" && classLevel && medium) {
-      setPrefs({ class: classLevel as StudentClass, medium: medium as StudentMedium });
+      setPrefs({
+        class:  classLevel as StudentClass,
+        medium: medium as StudentMedium,
+        board:  (board as StudentBoard | null) ?? "SEBA",
+      });
     }
     // Record sign-up timestamp for the 24-hour rewarded-ads grace period.
     // recordSignup() is idempotent — only writes the key once, so calling it on
@@ -876,7 +880,7 @@ export default function LoginPage() {
                     return;
                   }
                   if (!ok) throw new Error(data.message ?? data.error ?? "Login failed");
-                  handleDone(data.user, data.token, data.classLevel, data.medium);
+                  handleDone(data.user, data.token, data.classLevel, data.medium, data.board);
                 })
                 .catch((err) => alert(err?.message ?? "Something went wrong"));
             }}
@@ -896,7 +900,7 @@ export default function LoginPage() {
             profile={step.profile}
             onBack={() => setStep({ tag: "register-form" })}
             onPhone={() => setStep({ tag: "register-phone", profile: step.profile })}
-            onGoogleSuccess={(_idToken, user, token) => handleDone(user, token, step.profile.classLevel, step.profile.medium)}
+            onGoogleSuccess={(_idToken, user, token) => handleDone(user, token, step.profile.classLevel, step.profile.medium, step.profile.board)}
           />
         )}
 
@@ -928,7 +932,7 @@ export default function LoginPage() {
                 .then((r) => r.json().then((d) => ({ ok: r.ok, data: d })))
                 .then(({ ok, data }) => {
                   if (!ok) throw new Error(data.message ?? data.error ?? "Registration failed");
-                  handleDone(data.user, data.token, data.classLevel, data.medium);
+                  handleDone(data.user, data.token, data.classLevel, data.medium, data.board);
                 })
                 .catch((err) => alert(err?.message ?? "Something went wrong"));
             }}

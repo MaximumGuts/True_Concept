@@ -40,10 +40,11 @@ interface Props {
 }
 
 const ACTION_BY_FEATURE: Record<UnlockFeature, () => Promise<boolean>> = {
-  notes: unlockNotes,
-  lab:   unlockLab,
-  mcq:   unlockMCQ,
-  qna:   unlockQnA,
+  notes:     unlockNotes,
+  lab:       unlockLab,
+  mcq:       unlockMCQ,
+  qna:       unlockQnA,
+  mock_exam: unlockMCQ, // mock exam uses MCQ unlock action (same rewarded ad)
 };
 
 /** True only when running inside the Capacitor APK (Android). Web uses the

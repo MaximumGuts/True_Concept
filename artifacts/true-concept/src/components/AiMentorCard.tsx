@@ -3,6 +3,7 @@ import { Link } from "wouter";
 import { motion, AnimatePresence, useMotionValue, useTransform, animate } from "framer-motion";
 import { Sparkles, ChevronDown, ChevronUp, RefreshCw, ArrowRight, Brain } from "lucide-react";
 import { useAiRecommendations, type AiRecommendation } from "@/hooks/useAiRecommendations";
+import { useTheme } from "@/contexts/ThemeContext";
 import type { Timestamp } from "firebase/firestore";
 
 // ── "Updated X min ago" helper ───────────────────────────────────────────────
@@ -77,11 +78,23 @@ function ReadinessRing({ score }: { score: number }) {
 // ── Recommendation card with hover lift + shimmer chip ──────────────────────
 
 function RecoCard({ reco, index }: { reco: AiRecommendation; index: number }) {
-  const priorityColors = [
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
+
+  // Dark palette — original colours (light text on dark tinted backgrounds)
+  const priorityColorsDark = [
     { border: "rgba(47,255,124,0.45)", bg: "rgba(47,255,124,0.10)", badge: "linear-gradient(135deg,#66ff9c,#2fff7c)", iconBg: "rgba(47,255,124,0.18)", glow: "rgba(47,255,124,0.55)", ctaBg: "rgba(47,255,124,0.18)", title: "#4ade80", msg: "rgba(34,197,94,0.95)", cta: "#4ade80" },
     { border: "rgba(245,158,11,0.45)", bg: "rgba(245,158,11,0.10)", badge: "linear-gradient(135deg,#fbbf24,#f59e0b)", iconBg: "rgba(245,158,11,0.18)", glow: "rgba(245,158,11,0.55)", ctaBg: "rgba(245,158,11,0.18)", title: "#fef3c7", msg: "rgba(253,230,138,0.85)", cta: "#fef3c7" },
     { border: "rgba(16,185,129,0.45)", bg: "rgba(16,185,129,0.10)", badge: "linear-gradient(135deg,#34d399,#10b981)", iconBg: "rgba(16,185,129,0.18)", glow: "rgba(16,185,129,0.55)", ctaBg: "rgba(16,185,129,0.18)", title: "#d1fae5", msg: "rgba(167,243,208,0.85)", cta: "#d1fae5" },
   ];
+  // Light palette — dark text on the same tinted backgrounds for readability
+  const priorityColorsLight = [
+    { border: "rgba(22,163,74,0.40)", bg: "rgba(22,163,74,0.08)", badge: "linear-gradient(135deg,#16a34a,#15803d)", iconBg: "rgba(22,163,74,0.15)", glow: "rgba(22,163,74,0.40)", ctaBg: "rgba(22,163,74,0.15)", title: "#14532d", msg: "rgba(20,83,45,0.85)", cta: "#14532d" },
+    { border: "rgba(217,119,6,0.40)",  bg: "rgba(217,119,6,0.08)",  badge: "linear-gradient(135deg,#d97706,#b45309)", iconBg: "rgba(217,119,6,0.15)",  glow: "rgba(217,119,6,0.40)",  ctaBg: "rgba(217,119,6,0.15)",  title: "#78350f", msg: "rgba(120,53,15,0.85)",  cta: "#78350f" },
+    { border: "rgba(13,148,136,0.40)", bg: "rgba(13,148,136,0.08)", badge: "linear-gradient(135deg,#0d9488,#0f766e)", iconBg: "rgba(13,148,136,0.15)", glow: "rgba(13,148,136,0.40)", ctaBg: "rgba(13,148,136,0.15)", title: "#134e4a", msg: "rgba(19,78,74,0.85)",   cta: "#134e4a" },
+  ];
+
+  const priorityColors = isDark ? priorityColorsDark : priorityColorsLight;
   const c = priorityColors[index] ?? priorityColors[2];
 
   const card = (

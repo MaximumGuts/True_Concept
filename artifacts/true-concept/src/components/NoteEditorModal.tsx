@@ -1,11 +1,6 @@
 import { useState, useEffect, useCallback, useRef, useLayoutEffect } from "react";
 import { createPortal } from "react-dom";
 import ReactMarkdown from "react-markdown";
-import remarkMath from "remark-math";
-import rehypeKatex from "rehype-katex";
-import rehypeRaw from "rehype-raw";
-import remarkGfm from "remark-gfm";
-import remarkBreaks from "remark-breaks";
 import {
   X, Eye, Edit3, Youtube, Bold, Italic, Strikethrough, Code, Code2,
   Heading1, Heading2, Heading3, List, ListOrdered, ListChecks,
@@ -15,6 +10,14 @@ import {
 } from "lucide-react";
 import "katex/dist/katex.min.css";
 import ImageUploadButton from "./ImageUploadButton";
+import { preserveSpaces } from "@/lib/preserve-spaces";
+import { markdownComponents } from "@/lib/markdown-components";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
+import rehypeRaw from "rehype-raw";
+import remarkGfm from "remark-gfm";
+import remarkBreaks from "remark-breaks";
+
 
 interface NoteEditorModalProps {
   isOpen: boolean;
@@ -786,8 +789,9 @@ export default function NoteEditorModal({
                 <ReactMarkdown
                   remarkPlugins={[remarkMath, remarkGfm, remarkBreaks]}
                   rehypePlugins={[rehypeRaw, rehypeKatex]}
+                  components={markdownComponents}
                 >
-                  {content}
+                  {preserveSpaces(content)}
                 </ReactMarkdown>
               ) : (
                 <p className="text-gray-300 dark:text-gray-600 italic text-center mt-20 text-base">Live preview will appear here as you type…</p>

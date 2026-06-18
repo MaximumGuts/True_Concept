@@ -45,28 +45,52 @@ export const students = onRequest({ region: "asia-south1", invoker: "public" }, 
         return;
       }
       await ref.update(updates);
-      // Bust the AI mentor cache so the next /api/ai/mentor call regenerates
-      // using the new class/medium instead of the 6-hour-stale recommendation.
-      try { await db.collection("aiRecommendations").doc(user.id).delete(); } catch { /* ignore */ }
 
-      // Also patch the student's knowledge-profile doc so the regenerated
-      // AI response actually reads the NEW medium/class. Without this the
-      // profile keeps the stale values until the next chapterMastery write
-      // triggers a rebuild — meaning an Assamese student who changed medium
-      // would still get English AI cards for hours.
-      try {
-        const profileRef = db.collection("studentKnowledgeProfiles").doc(user.id);
-        const profileSnap = await profileRef.get();
-        if (profileSnap.exists) {
-          const profileUpdates: Record<string, unknown> = {};
-          if (updates.classLevel !== undefined) profileUpdates.classLevel = updates.classLevel;
-          if (updates.medium !== undefined) profileUpdates.medium = updates.medium;
-          if (Object.keys(profileUpdates).length > 0) {
-            await profileRef.update(profileUpdates);
+      // When `reset: true` (class or medium change) — erase all progress data
+      // so the student starts fresh in their new class/medium. Keeps XP/badges.
+      const shouldReset = req.body?.reset === true;
+      if (shouldReset) {
+        const progressRef = db.collection("studentProgress").doc(user.id);
+        const subcols = [
+          "notes", "mcqs", "activity", "sessions", "questionResults",
+          "chapterMastery", "experimentMastery", "dailyChallenges",
+          "mockExamSessions", "bookmarks", "aiNarrations",
+        ];
+        // Delete every doc in every subcollection (batch in chunks of 500)
+        for (const sub of subcols) {
+          try {
+            const subSnap = await progressRef.collection(sub).get();
+            if (subSnap.empty) continue;
+            const docs = subSnap.docs;
+            for (let i = 0; i < docs.length; i += 500) {
+              const batch = db.batch();
+              docs.slice(i, i + 500).forEach((d) => batch.delete(d.ref));
+              await batch.commit();
+            }
+          } catch (subErr) {
+            console.warn(`[students reset] failed deleting ${sub}:`, subErr);
           }
         }
-      } catch (err) {
-        console.warn("[students PATCH] profile sync failed:", err);
+        // Delete root progress doc and the knowledge profile
+        try { await progressRef.delete(); } catch { /* ignore */ }
+        try { await db.collection("studentKnowledgeProfiles").doc(user.id).delete(); } catch { /* ignore */ }
+        // Bust AI mentor cache
+        try { await db.collection("aiRecommendations").doc(user.id).delete(); } catch { /* ignore */ }
+      } else {
+        // Non-reset patch: just bust AI cache + patch profile medium/class
+        try { await db.collection("aiRecommendations").doc(user.id).delete(); } catch { /* ignore */ }
+        try {
+          const profileRef = db.collection("studentKnowledgeProfiles").doc(user.id);
+          const profileSnap = await profileRef.get();
+          if (profileSnap.exists) {
+            const profileUpdates: Record<string, unknown> = {};
+            if (updates.classLevel !== undefined) profileUpdates.classLevel = updates.classLevel;
+            if (updates.medium !== undefined) profileUpdates.medium = updates.medium;
+            if (Object.keys(profileUpdates).length > 0) await profileRef.update(profileUpdates);
+          }
+        } catch (err) {
+          console.warn("[students PATCH] profile sync failed:", err);
+        }
       }
 
       res.json({ ok: true, classLevel: updates.classLevel ?? snap.data()?.classLevel ?? null, medium: updates.medium ?? snap.data()?.medium ?? null });

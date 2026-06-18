@@ -68,7 +68,7 @@ export default function SubjectsPage() {
               subtle glow band signals "this is something else, not a subject". */}
           {isStudent && <FullLengthPapersCard />}
           {filtered.map((subject, idx) => {
-            const theme = getSubjectTheme(subject.name, idx);
+            const theme = getSubjectTheme(subject.name, idx, subject.color);
             return (
               <MotionItem key={subject.id}>
                 <Link href={`/subjects/${subject.id}`}>

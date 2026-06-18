@@ -20,49 +20,18 @@ import rehypeRaw from "rehype-raw";
 import remarkGfm from "remark-gfm";
 import remarkBreaks from "remark-breaks";
 import "katex/dist/katex.min.css";
+import { markdownComponents } from "@/lib/markdown-components";
 import { ArrowLeft, X, Play } from "lucide-react";
 import { useGetPaper, useGetPaperSet } from "@/lib/papers-api";
+import YouTubeThumbnail from "@/components/YouTubeThumbnail";
 
-/** Single embeddable video card — manages its own expand-to-play state. */
+/** Single video card — opens YouTube app/site so ads play correctly. */
 function PaperVideoEmbed({ youtubeId, index, total }: { youtubeId: string; index: number; total: number }) {
-  const [playing, setPlaying] = useState(false);
-  if (playing) {
-    return (
-      <div className="relative w-full rounded-2xl overflow-hidden shadow-md bg-black" style={{ aspectRatio: "16 / 9" }}>
-        <iframe
-          className="w-full h-full"
-          src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&rel=0`}
-          title={`Paper Video ${index}`}
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
-          allowFullScreen
-        />
-      </div>
-    );
-  }
   return (
-    <button
-      onClick={() => setPlaying(true)}
-      className="relative w-full rounded-2xl overflow-hidden shadow-md bg-black group"
-      style={{ aspectRatio: "16 / 9" }}
-    >
-      <img
-        src={`https://img.youtube.com/vi/${youtubeId}/maxresdefault.jpg`}
-        onError={(e) => { (e.target as HTMLImageElement).src = `https://img.youtube.com/vi/${youtubeId}/hqdefault.jpg`; }}
-        alt={`Video ${index} thumbnail`}
-        className="absolute inset-0 w-full h-full object-cover transition-transform group-hover:scale-105"
-      />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
-      <div className="absolute inset-0 flex items-center justify-center">
-        <div className="w-14 h-14 rounded-full bg-red-600 flex items-center justify-center shadow-2xl">
-          <Play className="w-6 h-6 text-white fill-current ml-1" />
-        </div>
-      </div>
-      <div className="absolute bottom-3 left-4 right-4">
-        <p className="text-white text-sm font-bold drop-shadow">
-          {total > 1 ? `Video ${index} of ${total} — Tap to play` : "Tap to play video"}
-        </p>
-      </div>
-    </button>
+    <YouTubeThumbnail
+      youtubeId={youtubeId}
+      label={total > 1 ? `Video ${index} of ${total}` : "Video"}
+    />
   );
 }
 
@@ -161,6 +130,7 @@ export default function PaperReaderPage() {
                   <ReactMarkdown
                     remarkPlugins={[remarkMath, remarkGfm, remarkBreaks]}
                     rehypePlugins={[rehypeRaw, rehypeKatex]}
+                    components={markdownComponents}
                   >
                     {paper.content || "_(This paper has no content yet — your teacher will fill it in soon.)_"}
                   </ReactMarkdown>

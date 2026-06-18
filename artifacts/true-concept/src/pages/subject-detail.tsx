@@ -39,10 +39,13 @@ export default function SubjectDetailPage() {
 
   const filteredChapters = chapters?.filter((ch) => {
     if (!isStudent || !prefs) return true;
-    return ch.medium === prefs.medium || ch.medium === "Both";
+    const mediumOk = ch.medium === prefs.medium || ch.medium === "Both";
+    const board = (ch as any).board as string | undefined;
+    const boardOk = !board || board === "Both" || !prefs.board || board === prefs.board;
+    return mediumOk && boardOk;
   });
 
-  const subjectTheme = getSubjectTheme(subject?.name);
+  const subjectTheme = getSubjectTheme(subject?.name, 0, subject?.color);
 
   if (subjectLoading) {
     return (

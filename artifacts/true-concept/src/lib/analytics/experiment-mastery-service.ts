@@ -6,7 +6,9 @@ import {
   increment,
   Timestamp,
 } from "firebase/firestore";
-import { experimentMasteryDoc } from "./paths";
+import { experimentMasteryDoc, chapterMasteryDoc } from "./paths";
+import { awardXP } from "../gamification/xp-service";
+import { XP_VALUES } from "../gamification/xp-config";
 import type {
   ExperimentMastery,
   ExperimentCompletionSignal,
@@ -119,6 +121,23 @@ export async function onExperimentCompleted(args: {
       updates.firstCompletionSignal = args.signal;
     }
     await updateDoc(ref, updates);
+
+    // Cross-write labCompletionScore onto the linked chapterMastery doc so the
+    // chapter mastery formula (notes 30% + MCQ 60% + lab 10%) can pick it up
+    // without an extra async read. Lab completion = 100 points for this field.
+    if (args.chapterId) {
+      try {
+        const chRef = chapterMasteryDoc(args.uid, args.chapterId);
+        await updateDoc(chRef, { labCompletionScore: 100, updatedAt: serverTimestamp() });
+      } catch { /* non-fatal — chapterMastery doc may not exist yet */ }
+    }
+    // Award XP for completing a lab (fire-and-forget)
+    void awardXP({
+      uid: args.uid, xp: XP_VALUES.LAB_COMPLETED,
+      eventId: `lab-${args.experimentId}`,
+      type: "lab_completed",
+      statDelta: { totalLabsDone: 1 },
+    });
   } catch {
     // Non-fatal
   }
@@ -194,6 +213,15 @@ export async function onLabQuizAttempted(args: {
       updates.firstCompletionSignal = "quiz";
     }
     await updateDoc(ref, updates);
+
+    // Cross-write labCompletionScore — same as onExperimentCompleted.
+    if (args.chapterId) {
+      try {
+        const chRef = chapterMasteryDoc(args.uid, args.chapterId);
+        // Quiz score gives a weighted lab score (best quiz score, capped at 100).
+        await updateDoc(chRef, { labCompletionScore: newBest, updatedAt: serverTimestamp() });
+      } catch { /* non-fatal */ }
+    }
   } catch {
     // Non-fatal
   }

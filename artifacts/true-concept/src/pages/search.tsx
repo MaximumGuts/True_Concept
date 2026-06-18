@@ -113,11 +113,12 @@ export default function SearchPage() {
   );
 
   // Filter by class + medium when student is logged in (admins see everything).
-  const matchesPrefs = (item: { classLevel?: string | null; medium?: string | null }) => {
+  const matchesPrefs = (item: { classLevel?: string | null; medium?: string | null; board?: string | null }) => {
     if (!isStudent || !prefs) return true;
     const classOk  = !item.classLevel || item.classLevel === prefs.class;
     const mediumOk = !item.medium     || item.medium     === "Both" || item.medium === prefs.medium;
-    return classOk && mediumOk;
+    const boardOk  = !item.board      || item.board       === "Both" || !prefs.board || item.board === prefs.board;
+    return classOk && mediumOk && boardOk;
   };
 
   const d: any = data ?? {};

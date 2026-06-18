@@ -86,7 +86,40 @@ const FALLBACKS: SubjectTheme[] = [
   MATH, PHYSICS, CHEMISTRY, BIOLOGY, ENGLISH, SOCIAL, HINDI, ASSAMESE, SCIENCE,
 ];
 
-export function getSubjectTheme(subjectName: string | undefined, fallbackIndex = 0): SubjectTheme {
+// ── Custom-color support ──────────────────────────────────────────────
+// Admins can pick a per-subject color (stored as a hex string). When present
+// it drives the whole theme (gradient, glow, badge, accent); only the emoji
+// stays name-based so "Math" keeps 🔢 etc.
+
+function parseHex(hex: string): [number, number, number] | null {
+  let h = hex.trim().replace(/^#/, "");
+  if (h.length === 3) h = h.split("").map((c) => c + c).join("");
+  if (!/^[0-9a-fA-F]{6}$/.test(h)) return null;
+  return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)];
+}
+
+// factor < 1 darkens toward black, > 1 lightens toward white.
+function shade([r, g, b]: [number, number, number], factor: number): string {
+  const c = (v: number) => Math.max(0, Math.min(255, Math.round(v * factor))).toString(16).padStart(2, "0");
+  return `#${c(r)}${c(g)}${c(b)}`;
+}
+
+function customTheme(color: string, emoji: string): SubjectTheme | null {
+  const rgb = parseHex(color);
+  if (!rgb) return null;
+  const [r, g, b] = rgb;
+  const darker = shade(rgb, 0.78);
+  const grad = `linear-gradient(135deg, ${color}, ${darker})`;
+  return {
+    emoji,
+    grad,
+    glow: `rgba(${r}, ${g}, ${b}, 0.32)`,
+    badge: grad,
+    accent: color,
+  };
+}
+
+function baseTheme(subjectName: string | undefined, fallbackIndex: number): SubjectTheme {
   const n = (subjectName ?? "").toLowerCase();
   if (/physic/.test(n)) return PHYSICS;
   if (/chem/.test(n)) return CHEMISTRY;
@@ -96,6 +129,19 @@ export function getSubjectTheme(subjectName: string | undefined, fallbackIndex =
   if (/assam|অসম/.test(n)) return ASSAMESE;
   if (/hindi|हिंदी|হিন্দী/.test(n)) return HINDI;
   if (/social|histor|geograph|civic|economic|samajik|সামাজিক/.test(n)) return SOCIAL;
-  if (/science|বিজ্ঞান|विज्ञान/.test(n)) return SCIENCE;
+  if (/science|বিজ্ঞান|विज्ञান/.test(n)) return SCIENCE;
   return FALLBACKS[fallbackIndex % FALLBACKS.length];
+}
+
+export function getSubjectTheme(
+  subjectName: string | undefined,
+  fallbackIndex = 0,
+  customColor?: string | null,
+): SubjectTheme {
+  const base = baseTheme(subjectName, fallbackIndex);
+  if (customColor) {
+    const custom = customTheme(customColor, base.emoji);
+    if (custom) return custom;
+  }
+  return base;
 }

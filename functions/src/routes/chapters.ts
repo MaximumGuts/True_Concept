@@ -54,7 +54,7 @@ export const chapters = onRequest({ region: "asia-south1", invoker: "public" }, 
     // POST /api/chapters — create chapter (admin only)
     if (req.method === "POST" && (subPath === "/" || subPath === "")) {
       requireAdmin(req);
-      const { subjectId, classLevel, medium, title, chapterNumber, description } = req.body;
+      const { subjectId, classLevel, medium, board, title, chapterNumber, description } = req.body;
       if (!subjectId || !classLevel || !title) {
         res.status(400).json({ error: "Missing required fields" });
         return;
@@ -62,7 +62,7 @@ export const chapters = onRequest({ region: "asia-south1", invoker: "public" }, 
 
       const newRef = db.collection("chapters").doc();
       const data = {
-        subjectId, classLevel, medium: medium ?? "Both", title,
+        subjectId, classLevel, medium: medium ?? "Both", board: board ?? "Both", title,
         chapterNumber: chapterNumber ?? 1, description, createdAt: new Date()
       };
       await newRef.set(data);
@@ -90,7 +90,7 @@ export const chapters = onRequest({ region: "asia-south1", invoker: "public" }, 
     // PUT /api/chapters/:chapterId — update (admin only)
     if (req.method === "PUT" && paramId) {
       requireAdmin(req);
-      const { subjectId, classLevel, medium, title, chapterNumber, description } = req.body;
+      const { subjectId, classLevel, medium, board, title, chapterNumber, description } = req.body;
 
       const docRef = db.collection("chapters").doc(paramId);
       const docSnap = await docRef.get();
@@ -99,7 +99,7 @@ export const chapters = onRequest({ region: "asia-south1", invoker: "public" }, 
         return;
       }
 
-      const updates = { subjectId, classLevel, medium: medium ?? "Both", title, chapterNumber, description };
+      const updates = { subjectId, classLevel, medium: medium ?? "Both", board: board ?? "Both", title, chapterNumber, description };
       await docRef.update(updates);
 
       const enriched = await enrichChapters([{ id: paramId, ...docSnap.data(), ...updates }]);

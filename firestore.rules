@@ -34,6 +34,29 @@ service cloud.firestore {
       allow read: if isSignedIn();
       allow write: if isAdmin();
     }
+    // Content collections read directly by the client for the Practice Hub
+    // (Daily Challenge + Mock Exam generators query these via the Firestore
+    // SDK, not the Cloud Function). Writes remain admin-only.
+    match /mcqs/{mcqId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+    match /notes/{noteId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+    match /qa/{qaId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+    match /paperSets/{setId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+    match /papers/{paperId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
 
     // ── Students collection (profile data) ────────────────────────────────
     match /students/{uid} {
@@ -109,6 +132,48 @@ service cloud.firestore {
         allow read, write: if isOwner(uid);
         allow read:        if isAdmin();
       }
+      // Virtual-lab sim mastery — written client-side by experiment-mastery-service.
+      match /experimentMastery/{experimentId} {
+        allow read, write: if isOwner(uid);
+        allow read:        if isAdmin();
+      }
+      // Practice Hub — daily challenge (one doc/day) + mock exam sessions.
+      match /dailyChallenges/{dateKey} {
+        allow read, write: if isOwner(uid);
+        allow read:        if isAdmin();
+      }
+      match /mockExamSessions/{sessionId} {
+        allow read, write: if isOwner(uid);
+        allow read:        if isAdmin();
+      }
+      // Bookmarks — student-saved notes / MCQ sets / MCQs / Q&A for later revision.
+      match /bookmarks/{bookmarkId} {
+        allow read, write: if isOwner(uid);
+        allow read:        if isAdmin();
+      }
+    }
+
+    // ── Gamification ─────────────────────────────────────────────────────
+    // Student XP doc + xpEvents subcollection — owner reads/writes.
+    match /studentXP/{uid} {
+      // Students read/write their own. Admin reads all (for admin students page).
+      // Admin writes via Admin SDK (triggers) so no client write rule needed.
+      allow read:  if isOwner(uid) || isSignedIn(); // admin client reads collection
+      allow write: if isOwner(uid);
+    }
+    match /studentXP/{uid}/events/{eventId} {
+      allow read:  if isOwner(uid) || isAdmin();
+      allow write: if isOwner(uid);
+    }
+    // Weekly leaderboard — all signed-in students can read (for rankings).
+    // Writes go through the Cloud Function (Admin SDK bypasses rules).
+    match /weeklyLeaderboard/{weekKey} {
+      allow read: if isSignedIn();
+      allow write: if false;
+    }
+    match /weeklyLeaderboard/{weekKey}/entries/{uid} {
+      allow read:  if isSignedIn();
+      allow write: if false; // only the Cloud Function writes here
     }
 
     // ── Default deny ──────────────────────────────────────────────────────
