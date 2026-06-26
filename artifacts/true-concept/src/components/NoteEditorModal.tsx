@@ -6,7 +6,7 @@ import {
   Heading1, Heading2, Heading3, List, ListOrdered, ListChecks,
   Quote, Minus, Link as LinkIcon, Table as TableIcon,
   Lightbulb, AlertTriangle, Info, Star, BookOpen,
-  Sigma, FunctionSquare, Columns2,
+  Sigma, FunctionSquare, Columns2, Underline, Palette,
 } from "lucide-react";
 import "katex/dist/katex.min.css";
 import ImageUploadButton from "./ImageUploadButton";
@@ -118,6 +118,20 @@ const CALLOUT_TEMPLATES: { label: string; emoji: string; word: string; icon: any
 
 const TABLE_PRESETS: number[][] = [
   [2, 2], [3, 2], [3, 3], [4, 3], [5, 3], [4, 4], [5, 5],
+];
+
+// ── Basic text colors ──────────────────────────────────────────────────────
+const TEXT_COLORS: { name: string; hex: string }[] = [
+  { name: "Red", hex: "#dc2626" },
+  { name: "Orange", hex: "#da6b45" },
+  { name: "Amber", hex: "#d97706" },
+  { name: "Green", hex: "#16a34a" },
+  { name: "Teal", hex: "#0d9488" },
+  { name: "Blue", hex: "#2563eb" },
+  { name: "Purple", hex: "#7c3aed" },
+  { name: "Pink", hex: "#db2777" },
+  { name: "Gray", hex: "#6b7280" },
+  { name: "Black", hex: "#111827" },
 ];
 
 const PLACEHOLDER = `# Chapter Title
@@ -419,6 +433,8 @@ export default function NoteEditorModal({
   const insertBold = () => wrapSelection("**", "**", "bold text");
   const insertItalic = () => wrapSelection("*", "*", "italic text");
   const insertStrike = () => wrapSelection("~~", "~~", "strikethrough");
+  const insertUnderline = () => wrapSelection("<u>", "</u>", "underlined text");
+  const insertColor = (hex: string) => wrapSelection(`<span style="color:${hex}">`, "</span>", "colored text");
   const insertInlineCode = () => wrapSelection("`", "`", "code");
   const insertCodeBlock = () => insertAtCursor("\n```\ncode here\n```\n", 5);
   const insertQuote = () => insertLinePrefix("> ");
@@ -590,7 +606,31 @@ export default function NoteEditorModal({
             <TBtn title="Bold (Ctrl+B)" onClick={insertBold}><Bold className="w-4 h-4" /></TBtn>
             <TBtn title="Italic (Ctrl+I)" onClick={insertItalic}><Italic className="w-4 h-4" /></TBtn>
             <TBtn title="Strikethrough" onClick={insertStrike}><Strikethrough className="w-4 h-4" /></TBtn>
+            <TBtn title="Underline" onClick={insertUnderline}><Underline className="w-4 h-4" /></TBtn>
             <TBtn title="Inline code (Ctrl+E)" onClick={insertInlineCode}><Code className="w-4 h-4" /></TBtn>
+
+            {/* Text color picker */}
+            <Dropdown
+              trigger={<><Palette className="w-4 h-4" /><span className="text-[10px] ml-0.5">▾</span></>}
+            >
+              {(close) => (
+                <div>
+                  <p className="text-xs font-black text-gray-500 dark:text-gray-400 px-2 py-1 mb-1">Text color</p>
+                  <div className="grid grid-cols-5 gap-1.5 px-1 pb-1">
+                    {TEXT_COLORS.map((c) => (
+                      <button
+                        key={c.hex}
+                        type="button"
+                        title={c.name}
+                        onClick={() => { insertColor(c.hex); close(); }}
+                        className="w-9 h-9 rounded-lg border border-black/10 dark:border-white/10 hover:scale-110 transition-transform"
+                        style={{ background: c.hex }}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+            </Dropdown>
             <Sep />
             {/* Lists */}
             <TBtn title="Bulleted list" onClick={insertBullet}><List className="w-4 h-4" /></TBtn>

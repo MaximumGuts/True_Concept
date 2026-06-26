@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { createPortal } from "react-dom";
-import { useRoute, Link } from "wouter";
+import { useRoute, Link, useSearch } from "wouter";
 import ReactMarkdown from "react-markdown";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
@@ -20,11 +20,10 @@ import {
 } from "@workspace/api-client-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useStudentPrefs } from "@/contexts/StudentPrefsContext";
-import { ArrowLeft, ChevronDown, ChevronUp, X, Play, BookOpen, CheckCircle2, AlertTriangle } from "lucide-react";
+import { ArrowLeft, X, Play, BookOpen, CheckCircle2, AlertTriangle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FadeIn } from "@/components/MotionList";
 import { getSubjectTheme } from "@/lib/subject-theme";
-import { getAutoIcon } from "@/lib/auto-icon";
 import { useNoteProgress, useChapterNotesProgress } from "@/hooks/useNoteProgress";
 import { useRecordMcqAttempt } from "@/hooks/useMcqProgress";
 import NoteStatusBadge from "@/components/progress/NoteStatusBadge";
@@ -48,37 +47,7 @@ interface ChapterCtx {
 }
 
 /** Header card showing a unique auto-icon for an MCQ/Q&A set */
-function SetHeader({ chapterId, kind, count }: { chapterId: string; kind: "mcq" | "qa"; count: number }) {
-  const auto = getAutoIcon(chapterId, kind);
-  const labels = {
-    mcq: { title: "MCQ Quiz Set", sub: `${count} questions to test your understanding` },
-    qa: { title: "Q&A Practice Set", sub: `${count} long-form answers for deep learning` },
-  };
-  const { title, sub } = labels[kind];
-  return (
-    <div className="mb-4 flex items-center gap-3 p-4 rounded-2xl liquid-card">
-      <div className="relative w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-md text-2xl"
-        style={{ background: auto.grad }}>
-        <div className="absolute inset-0 rounded-2xl blur-sm opacity-50" style={{ background: auto.glow }} />
-        <span className="relative drop-shadow-sm">{auto.emoji}</span>
-      </div>
-      <div className="flex-1 min-w-0">
-        <p className="font-black text-foreground text-sm sm:text-base leading-tight">{title}</p>
-        <p className="text-xs text-muted-foreground font-medium mt-0.5">{sub}</p>
-      </div>
-    </div>
-  );
-}
-
 type Tab = "notes" | "mcq" | "qa";
-
-function YouTubeEmbed({ youtubeId }: { youtubeId: string }) {
-  return (
-    <div className="mt-6">
-      <YouTubeThumbnail youtubeId={youtubeId} label="Lecture Video" />
-    </div>
-  );
-}
 
 type NoteData = {
   id: string;
@@ -890,6 +859,217 @@ function McqTab({ chapter }: { chapter: ChapterCtx }) {
   );
 }
 
+/* ── Q&A: student view mirrors Notes — a card list + full-screen reader,
+   so opening a Q&A feels exactly like opening a note (no accordion / set
+   header). ───────────────────────────────────────────────────────────── */
+
+type QaItem = {
+  id: string;
+  question: string;
+  answer: string;
+  title?: string | null;
+  content?: string | null;
+  explanation?: string | null;
+  isImportant?: boolean | null;
+  youtubeId?: string | null;
+  youtubeIds?: string[] | null;
+};
+
+// Q&A docs now follow a note-style shape (`title` + markdown `content`), but the
+// old schema with `question`/`answer` still exists in Firestore for chapters
+// that haven't been re-saved. Prefer the new fields, fall back to the legacy.
+const qaHeading = (item: QaItem): string => (item.title && item.title.trim()) ? item.title : item.question;
+const qaBody    = (item: QaItem): string => (item.content && item.content.length > 0) ? item.content : item.answer;
+function qaYoutubeIds(item: QaItem): string[] {
+  if (item.youtubeIds && item.youtubeIds.length > 0) return item.youtubeIds;
+  return item.youtubeId ? [item.youtubeId] : [];
+}
+
+/* Q&A preview card — mirrors NoteCard; opens the immersive reader */
+function QaCard({ item, index, chapter, onOpen }: {
+  item: QaItem; index: number; chapter: ChapterCtx; onOpen: () => void;
+}) {
+  const heading = qaHeading(item);
+  const body    = qaBody(item);
+  const preview = (body || "")
+    .replace(/[#*_`>~\-\[\]()!|]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 140);
+  const videoCount = qaYoutubeIds(item).length;
+
+  return (
+    <div className="relative">
+      <motion.button
+        onClick={onOpen}
+        whileHover={{ y: -3, scale: 1.005 }}
+        whileTap={{ scale: 0.99 }}
+        transition={{ type: "spring", stiffness: 320, damping: 22 }}
+        data-testid={`qa-card-${item.id}`}
+        className="w-full text-left bg-card hover:bg-muted/30 rounded-2xl border border-border p-5 transition-colors relative overflow-hidden group"
+      >
+        <div className="absolute -top-12 -right-12 w-40 h-40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity blur-3xl pointer-events-none"
+          style={{ background: "radial-gradient(circle, rgba(16,185,129,0.20), transparent 70%)" }} />
+
+        <div className="flex items-start gap-4 relative">
+          <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-white text-lg font-black shrink-0 shadow-lg"
+            style={{ background: "linear-gradient(135deg, #10b981, #14b8a6)" }}>
+            {index}
+          </div>
+          <div className="flex-1 min-w-0 pr-9">
+            {item.isImportant && (
+              <span className="inline-block text-[10px] font-black text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 px-2 py-0.5 rounded-full mb-1.5">⭐ Important</span>
+            )}
+            <h2 className="text-base sm:text-lg font-black text-foreground leading-snug assamese-text mb-1.5">
+              {heading}
+            </h2>
+            <p className="text-xs sm:text-sm text-muted-foreground font-medium line-clamp-2 assamese-text leading-relaxed">
+              {preview}…
+            </p>
+            <div className="flex items-center gap-2 mt-3 flex-wrap">
+              <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full liquid-inner text-emerald-700 dark:text-emerald-300">
+                <BookOpen className="w-3 h-3" /> Read
+              </span>
+              {videoCount > 0 && (
+                <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full liquid-inner text-red-700 dark:text-red-300">
+                  <Play className="w-3 h-3 fill-current" />
+                  {videoCount > 1 ? `${videoCount} Videos` : "Video"}
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+      </motion.button>
+      {/* Bookmark toggle — sibling (not nested) so it isn't a button-in-button */}
+      <div className="absolute top-3 right-3 z-10">
+        <BookmarkButton
+          size={18}
+          data={{
+            type: "qna",
+            refId: item.id,
+            chapterId: chapter.id,
+            subjectId: chapter.subjectId,
+            chapterTitle: chapter.title,
+            subjectName: chapter.subjectName ?? null,
+            title: heading,
+            question: heading,
+            answer: body,
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
+/* Full-screen immersive Q&A reader — mirrors NoteReaderModal */
+function QaReaderModal({ item, chapter, onClose }: {
+  item: QaItem; chapter: ChapterCtx; onClose: () => void;
+}) {
+  const heading  = qaHeading(item);
+  const body     = qaBody(item);
+  const videoIds = qaYoutubeIds(item);
+
+  // Lock body scroll while open
+  useEffect(() => {
+    const original = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = original; };
+  }, []);
+
+  // Close on Escape
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  return createPortal(
+    <motion.div
+      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      transition={{ duration: 0.2 }}
+      className="fixed inset-0 z-[9999] bg-background"
+      data-testid="qa-reader"
+    >
+      <motion.div
+        initial={{ y: 40, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 40, opacity: 0 }}
+        transition={{ type: "spring", stiffness: 280, damping: 30 }}
+        className="flex flex-col h-full"
+      >
+        {/* Top bar — sticky, themed */}
+        <div className="sticky top-0 z-10 backdrop-blur-xl bg-card/85 border-b border-border shadow-sm"
+          style={{ paddingTop: "max(env(safe-area-inset-top, 0px), var(--cap-status-bar, 0px))" }}>
+          <div className="flex items-center gap-3 px-4 sm:px-6 py-3">
+            <button onClick={onClose} data-testid="button-close-qa"
+              className="w-10 h-10 rounded-xl flex items-center justify-center liquid-inner hover:bg-muted transition-colors shrink-0" aria-label="Close Q&A">
+              <ArrowLeft className="w-5 h-5 text-foreground" />
+            </button>
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white text-base shrink-0 shadow-md"
+              style={{ background: "linear-gradient(135deg, #10b981, #14b8a6)" }}>❓</div>
+            <h1 className="flex-1 font-black text-base sm:text-lg text-foreground truncate assamese-text">{heading}</h1>
+            <button onClick={onClose}
+              className="w-10 h-10 rounded-xl flex items-center justify-center liquid-inner hover:bg-muted transition-colors shrink-0 hidden sm:flex" aria-label="Close">
+              <X className="w-5 h-5 text-foreground" />
+            </button>
+          </div>
+        </div>
+
+        {/* Scrollable reading area — extra bottom padding reserves room for the
+            native AdMob banner on Android. */}
+        <div className="flex-1 overflow-y-auto overscroll-contain"
+          style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 80px)" }}>
+          <UnlockGate feature="qna" onDismiss={onClose}>
+          <div className="max-w-3xl mx-auto px-5 sm:px-8 py-8 sm:py-10">
+            <div className="note-reading-prose">
+              <ReactMarkdown
+                remarkPlugins={[remarkMath, remarkGfm, remarkBreaks]}
+                rehypePlugins={[rehypeRaw, rehypeKatex]}
+                components={markdownComponents}
+              >
+                {preserveSpaces(body)}
+              </ReactMarkdown>
+            </div>
+
+            {/* Extra explanation */}
+            {item.explanation && (
+              <div className="mt-6 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-xl p-4">
+                <p className="text-xs font-black text-blue-600 dark:text-blue-400 uppercase tracking-wide mb-1">💡 Extra Explanation</p>
+                <p className="text-sm text-blue-800 dark:text-blue-300 font-medium leading-relaxed">{item.explanation}</p>
+              </div>
+            )}
+
+            {/* YouTube section pinned at the bottom — supports multiple videos */}
+            {videoIds.length > 0 && (
+              <div className="mt-12 pt-8 border-t border-border">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-red-500/15 dark:bg-red-500/20">
+                    <Play className="w-4 h-4 text-red-600 dark:text-red-400 fill-current" />
+                  </div>
+                  <h3 className="font-black text-base text-foreground">
+                    {videoIds.length === 1 ? "Related Video Lecture" : `${videoIds.length} Video Lectures`}
+                  </h3>
+                </div>
+                <div className="space-y-4">
+                  {videoIds.map((vid, idx) => (
+                    <NoteVideoEmbed
+                      key={`${vid}-${idx}`}
+                      youtubeId={vid}
+                      index={idx + 1}
+                      total={videoIds.length}
+                      chapter={chapter}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+          </UnlockGate>
+        </div>
+      </motion.div>
+    </motion.div>,
+    document.body,
+  );
+}
+
 function QaTab({ chapter }: { chapter: ChapterCtx }) {
   const chapterId = chapter.id;
   const { user } = useAuth();
@@ -897,166 +1077,87 @@ function QaTab({ chapter }: { chapter: ChapterCtx }) {
     { chapterId },
     { query: { enabled: !!chapterId, queryKey: getGetQaQueryKey({ chapterId }) } }
   );
-  const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  // Honor a `?qa=<id>` deep link (used by the Bookmarks page) — auto-open it.
+  const [openQaId, setOpenQaId] = useState<string | null>(
+    () => new URLSearchParams(window.location.search).get("qa"),
+  );
 
-  if (isLoading) return <div className="animate-pulse space-y-3">{[1,2,3].map(i => <div key={i} className="h-16 liquid-card rounded-2xl" />)}</div>;
-  if (!qa?.length) return (
-    <div className="liquid-panel rounded-3xl text-center py-16">
-      <div className="text-5xl mb-3">📭</div><p className="font-black text-lg text-gray-900 dark:text-gray-100">No Q&amp;A yet</p>
+  // Browser-history integration: pushState on open, popstate (Android back) closes.
+  useEffect(() => {
+    if (!openQaId) return;
+    window.history.pushState({ qaOpen: true }, "");
+    const onPop = () => setOpenQaId(null);
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, [openQaId]);
+
+  const closeQa = () => {
+    if (window.history.state?.qaOpen) window.history.back();
+    else setOpenQaId(null);
+  };
+
+  // Opening a Q&A counts as a view (mirrors the old expand-to-view tracking).
+  const openQa = (item: QaItem) => {
+    setOpenQaId(item.id);
+    if (user?.role === "student") {
+      tracker.track({
+        type: "qa_viewed", uid: user.id, qaId: item.id, chapterId,
+        subjectId: chapter.subjectId, chapterTitle: chapter.title, subjectName: chapter.subjectName,
+      });
+      const today = new Date().toISOString().slice(0, 10);
+      void awardXP({
+        uid: user.id, xp: XP_VALUES.QA_SECTION_VIEWED,
+        eventId: `qa-${item.id}-${today}`, type: "qa_viewed",
+      });
+      // Emit video_played for each attached video so the AI mentor's ladder
+      // knows the QnA-video rung was reached.
+      for (const vid of qaYoutubeIds(item)) {
+        tracker.track({
+          type: "video_played", uid: user.id, youtubeId: vid, chapterId,
+          subjectId: chapter.subjectId, chapterTitle: chapter.title, subjectName: chapter.subjectName,
+        });
+      }
+    }
+  };
+
+  if (isLoading) return (
+    <div className="space-y-3 animate-pulse">
+      {[1, 2].map((i) => (
+        <div key={i} className="bg-card rounded-2xl border border-border p-5">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/30 rounded-2xl" />
+            <div className="flex-1 space-y-2">
+              <div className="h-4 bg-muted rounded-lg w-3/5" />
+              <div className="h-3 bg-muted/60 rounded w-full" />
+            </div>
+          </div>
+        </div>
+      ))}
     </div>
   );
 
-  const toggle = (id: string) => {
-    setExpanded((prev) => {
-      const n = new Set(prev);
-      if (n.has(id)) {
-        n.delete(id);
-      } else {
-        n.add(id);
-        // Track first-time expand as a Q&A view event
-        if (user?.role === "student") {
-          tracker.track({
-            type:        "qa_viewed",
-            uid:         user.id,
-            qaId:        id,
-            chapterId,
-            subjectId:   chapter.subjectId,
-            chapterTitle: chapter.title,
-            subjectName: chapter.subjectName,
-          });
-          // Award XP for viewing Q&A
-          const today = new Date().toISOString().slice(0, 10);
-          void awardXP({
-            uid: user.id, xp: XP_VALUES.QA_SECTION_VIEWED,
-            eventId: `qa-${id}-${today}`, type: "qa_viewed",
-          });
-          // Also emit video_played for each video attached to this Q&A so the
-          // AI mentor's recommendation ladder knows the QnA-video rung was reached.
-          const item = qa.find(q => q.id === id) as unknown as { youtubeIds?: string[] | null; youtubeId?: string | null } | undefined;
-          if (item) {
-            const vids: string[] = (item.youtubeIds && item.youtubeIds.length > 0)
-              ? item.youtubeIds
-              : (item.youtubeId ? [item.youtubeId] : []);
-            for (const vid of vids) {
-              tracker.track({
-                type:        "video_played",
-                uid:         user.id,
-                youtubeId:   vid,
-                chapterId,
-                subjectId:   chapter.subjectId,
-                chapterTitle: chapter.title,
-                subjectName: chapter.subjectName,
-              });
-            }
-          }
-        }
-      }
-      return n;
-    });
-  };
+  if (!qa?.length) return (
+    <div className="bg-card rounded-3xl border border-border text-center py-20">
+      <div className="text-5xl mb-4">📭</div>
+      <p className="font-black text-lg text-foreground">No Q&amp;A yet — check back soon!</p>
+      <p className="text-muted-foreground text-sm mt-1 font-medium">Your teacher will add Q&amp;A for this chapter.</p>
+    </div>
+  );
+
+  const items = qa as unknown as QaItem[];
+  const openItem = openQaId ? items.find((q) => q.id === openQaId) ?? null : null;
 
   return (
     <>
-      <SetHeader chapterId={chapterId} kind="qa" count={qa.length} />
-    <div className="space-y-3" data-testid="qa-list">
-      {qa.map((item, i) => {
-        // Q&A docs now follow a note-style shape (`title` + markdown `content`)
-        // but the old schema with `question`/`answer` still exists in Firestore
-        // for chapters that haven't been re-saved. Prefer the new fields and
-        // fall back to the legacy ones so both render identically.
-        const itemAny = item as { title?: string | null; content?: string | null };
-        const heading = (itemAny.title && itemAny.title.trim()) ? itemAny.title : item.question;
-        const body    = (itemAny.content && itemAny.content.length > 0) ? itemAny.content : item.answer;
-        return (
-        <div key={item.id} className="relative bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden" data-testid={`qa-${item.id}`}>
-          <div className="absolute top-2.5 right-2.5 z-10">
-            <BookmarkButton
-              size={17}
-              data={{
-                type: "qna",
-                refId: item.id,
-                chapterId,
-                subjectId: chapter.subjectId,
-                chapterTitle: chapter.title,
-                subjectName: chapter.subjectName ?? null,
-                title: heading,
-                question: heading,
-                answer: body,
-              }}
-            />
-          </div>
-          <button
-            onClick={() => toggle(item.id)}
-            className="w-full text-left p-4 sm:p-5 pr-12 flex items-start justify-between gap-3 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
-          >
-            <div className="flex items-start gap-3 flex-1">
-              <div className="w-8 h-8 rounded-xl flex items-center justify-center text-white font-black text-xs shrink-0 mt-0.5 shadow-md"
-                style={{ background: "linear-gradient(135deg, #da6b45, #b85535)" }}>{i + 1}</div>
-              <div className="flex-1">
-                {item.isImportant && (
-                  <span className="inline-block text-xs font-black text-amber-700 dark:text-amber-300 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full mb-1.5">⭐ Important</span>
-                )}
-                <div className="font-black text-gray-900 dark:text-gray-100 text-sm leading-relaxed note-reading-prose">
-                  <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]} rehypePlugins={[rehypeRaw]}>{heading}</ReactMarkdown>
-                </div>
-              </div>
-            </div>
-            <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-gray-100 dark:bg-gray-800 shrink-0">
-              {expanded.has(item.id) ? <ChevronUp className="w-4 h-4 text-gray-500 dark:text-gray-400" /> : <ChevronDown className="w-4 h-4 text-gray-500 dark:text-gray-400" />}
-            </div>
-          </button>
+      <div className="space-y-3" data-testid="qa-list">
+        {items.map((item, i) => (
+          <QaCard key={item.id} item={item} index={i + 1} chapter={chapter} onOpen={() => openQa(item)} />
+        ))}
+      </div>
 
-          {expanded.has(item.id) && (
-            // Gated reveal: question titles are always browsable; tapping to
-            // see the answer triggers the Q&A unlock modal. Dismissing the
-            // modal collapses this question so the gate doesn't re-appear on
-            // the next render. After unlock all expanded answers reveal.
-            <UnlockGate feature="qna" onDismiss={() => toggle(item.id)}>
-            <div className="border-t border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-900">
-              {/* Answer / markdown body */}
-              <div className="px-5 pt-5 pb-4 note-reading-prose">
-                <ReactMarkdown
-                  remarkPlugins={[remarkMath, remarkGfm, remarkBreaks]}
-                  rehypePlugins={[rehypeRaw, rehypeKatex]}
-                  components={markdownComponents}
-                >
-                  {preserveSpaces(body)}
-                </ReactMarkdown>
-              </div>
-
-              {/* Explanation */}
-              {item.explanation && (
-                <div className="mx-5 mb-4 bg-blue-50 border border-blue-100 rounded-xl p-4">
-                  <p className="text-xs font-black text-blue-600 dark:text-blue-400 uppercase tracking-wide mb-1">💡 Extra Explanation</p>
-                  <p className="text-sm text-blue-800 dark:text-blue-300 font-medium leading-relaxed">{item.explanation}</p>
-                </div>
-              )}
-
-              {/* Embedded YouTube video(s) for Q&A — supports multiple */}
-              {(() => {
-                const qaAny = item as { youtubeIds?: string[] | null; youtubeId?: string | null };
-                const ids: string[] = (qaAny.youtubeIds && qaAny.youtubeIds.length > 0)
-                  ? qaAny.youtubeIds
-                  : (qaAny.youtubeId ? [qaAny.youtubeId] : []);
-                if (ids.length === 0) return null;
-                return (
-                  <div className="px-5 pb-5 space-y-3">
-                    <p className="text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2">
-                      🎬 {ids.length === 1 ? "Video Explanation" : `${ids.length} Video Explanations`}
-                    </p>
-                    {ids.map((vid, idx) => (
-                      <YouTubeEmbed key={`${vid}-${idx}`} youtubeId={vid} />
-                    ))}
-                  </div>
-                );
-              })()}
-            </div>
-            </UnlockGate>
-          )}
-        </div>
-        );
-      })}
-    </div>
+      <AnimatePresence>
+        {openItem && <QaReaderModal item={openItem} chapter={chapter} onClose={closeQa} />}
+      </AnimatePresence>
     </>
   );
 }
@@ -1074,6 +1175,15 @@ export default function ChapterDetailPage() {
     const tab = new URLSearchParams(window.location.search).get("tab");
     return (tab === "mcq" || tab === "qa") ? tab : "notes";
   });
+  // Re-sync the tab when the URL's ?tab= query changes (e.g. a NextStepCard
+  // link to ?tab=notes after an MCQ result) — wouter doesn't remount this
+  // component for same-route navigations, so the lazy useState above only
+  // runs once and would otherwise ignore later query-string changes.
+  const search = useSearch();
+  useEffect(() => {
+    const tab = new URLSearchParams(search).get("tab");
+    if (tab === "mcq" || tab === "qa" || tab === "notes") setActiveTab(tab);
+  }, [search]);
   const { user } = useAuth();
   const { prefs } = useStudentPrefs();
   const markVisited = useMarkChapterVisited();
