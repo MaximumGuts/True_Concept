@@ -57,3 +57,8 @@ Thumbs.db
 # Replit
 .cache/
 .local/
+
+# Local emulator sandbox — a 3 MB slice of production, regenerated on demand.
+# Not committed: it goes stale fast and there is no reason to version it.
+scripts/emulator-snapshot.json
+emulator-data/

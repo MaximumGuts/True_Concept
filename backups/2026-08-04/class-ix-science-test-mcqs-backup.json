@@ -1,0 +1,674 @@
+[
+  {
+    "id": "3gYU2x8t7KXfMx85hSmr",
+    "data": {
+      "createdAt": {
+        "_seconds": 1780210774,
+        "_nanoseconds": 618000000
+      },
+      "explanation": "Plants absorb CO₂ and release O₂ during photosynthesis. The formula: 6CO₂ + 6H₂O → C₆H₁₂O₆ + 6O₂.",
+      "subjectName": "",
+      "correctIndex": 2,
+      "classLevel": "Class IX",
+      "options": [
+        "Oxygen",
+        "Nitrogen",
+        "Carbon dioxide",
+        "Hydrogen"
+      ],
+      "isImportant": false,
+      "medium": "Assamese",
+      "question": "Which gas do plants absorb during photosynthesis?",
+      "order": 3,
+      "setNumber": 1,
+      "subjectId": "phys-ix",
+      "chapterId": "PACkIxL7qo5dAeloEwHu"
+    }
+  },
+  {
+    "id": "Bp9EkZ5F1xrhUWH0sKPN",
+    "data": {
+      "medium": "Both",
+      "createdAt": {
+        "_seconds": 1780210773,
+        "_nanoseconds": 495000000
+      },
+      "setNumber": 1,
+      "classLevel": "Class IX",
+      "question": "Newton's First Law of Motion is also called the law of:",
+      "explanation": "Newton's First Law is the Law of Inertia — an object remains at rest or in uniform motion unless acted upon by an external force.",
+      "isImportant": false,
+      "correctIndex": 1,
+      "order": 3,
+      "subjectName": "",
+      "chapterId": "6QQ8W2Mh1JvxoivapYXN",
+      "subjectId": "phys-ix",
+      "options": [
+        "Gravitation",
+        "Inertia",
+        "Conservation of momentum",
+        "Action-Reaction"
+      ]
+    }
+  },
+  {
+    "id": "ComuMYLPSoKnGvzwSdkE",
+    "data": {
+      "order": 4,
+      "question": "The formula F = ma represents:",
+      "isImportant": false,
+      "medium": "Both",
+      "classLevel": "Class IX",
+      "options": [
+        "Newton's First Law",
+        "Newton's Second Law",
+        "Newton's Third Law",
+        "Law of Gravitation"
+      ],
+      "correctIndex": 1,
+      "explanation": "F = ma (Force = mass × acceleration) is Newton's Second Law of Motion.",
+      "subjectName": "",
+      "createdAt": {
+        "_seconds": 1780210773,
+        "_nanoseconds": 606000000
+      },
+      "chapterId": "6QQ8W2Mh1JvxoivapYXN",
+      "setNumber": 1,
+      "subjectId": "phys-ix"
+    }
+  },
+  {
+    "id": "DDuTVGb8wzTfjGNjRyEg",
+    "data": {
+      "classLevel": "Class IX",
+      "correctIndex": 0,
+      "medium": "Both",
+      "question": "An atom of Carbon-12 has how many neutrons?",
+      "chapterId": "bio-ix-c01",
+      "isImportant": false,
+      "createdAt": {
+        "_seconds": 1780210775,
+        "_nanoseconds": 296000000
+      },
+      "setNumber": 1,
+      "subjectName": "",
+      "order": 5,
+      "options": [
+        "6",
+        "12",
+        "8",
+        "4"
+      ],
+      "explanation": "Carbon has atomic number 6 (6 protons). Carbon-12 has mass number 12. Neutrons = 12 − 6 = 6.",
+      "subjectId": "bio-ix"
+    }
+  },
+  {
+    "id": "EFYqmIbg7PtNuGRyQ9jg",
+    "data": {
+      "subjectId": "phys-ix",
+      "order": 3,
+      "isImportant": false,
+      "medium": "Both",
+      "options": [
+        "The same object",
+        "Different objects",
+        "Only in space",
+        "Stationary objects only"
+      ],
+      "subjectName": "",
+      "setNumber": 2,
+      "createdAt": {
+        "_seconds": 1780210774,
+        "_nanoseconds": 103000000
+      },
+      "correctIndex": 1,
+      "classLevel": "Class IX",
+      "question": "Action and Reaction forces act on:",
+      "chapterId": "6QQ8W2Mh1JvxoivapYXN",
+      "explanation": "Newton's Third Law: action and reaction forces are equal and opposite but act on DIFFERENT objects."
+    }
+  },
+  {
+    "id": "FU09PBDTcBtSqXwfIN3M",
+    "data": {
+      "medium": "Both",
+      "setNumber": 2,
+      "order": 2,
+      "question": "The momentum of an object depends on:",
+      "isImportant": false,
+      "classLevel": "Class IX",
+      "chapterId": "6QQ8W2Mh1JvxoivapYXN",
+      "createdAt": {
+        "_seconds": 1780210773,
+        "_nanoseconds": 953000000
+      },
+      "correctIndex": 2,
+      "subjectName": "",
+      "explanation": "Momentum (p) = mass × velocity. Both mass and velocity determine an object's momentum.",
+      "options": [
+        "Mass only",
+        "Velocity only",
+        "Both mass and velocity",
+        "Neither mass nor velocity"
+      ],
+      "subjectId": "phys-ix"
+    }
+  },
+  {
+    "id": "G7toSSTDcP2mRFwtJA3E",
+    "data": {
+      "setNumber": 2,
+      "explanation": "Inertia depends on mass. A truck has the greatest mass among these options, so it has the most inertia.",
+      "medium": "Both",
+      "correctIndex": 2,
+      "classLevel": "Class IX",
+      "subjectId": "phys-ix",
+      "createdAt": {
+        "_seconds": 1780210773,
+        "_nanoseconds": 848000000
+      },
+      "question": "Which of the following has the most inertia?",
+      "chapterId": "6QQ8W2Mh1JvxoivapYXN",
+      "order": 1,
+      "options": [
+        "A cricket ball",
+        "A football",
+        "A truck",
+        "A bicycle"
+      ],
+      "isImportant": false,
+      "subjectName": ""
+    }
+  },
+  {
+    "id": "Jvjzzev76Vjbm5WlAAEo",
+    "data": {
+      "createdAt": {
+        "_seconds": 1780210773,
+        "_nanoseconds": 192000000
+      },
+      "classLevel": "Class IX",
+      "chapterId": "6QQ8W2Mh1JvxoivapYXN",
+      "setNumber": 1,
+      "order": 1,
+      "correctIndex": 0,
+      "subjectId": "phys-ix",
+      "options": [
+        "Newton",
+        "Joule",
+        "Watt",
+        "Pascal"
+      ],
+      "question": "What is the SI unit of force?",
+      "isImportant": false,
+      "subjectName": "",
+      "explanation": "Force is measured in Newtons (N) in the SI system, named after Sir Isaac Newton.",
+      "medium": "Both"
+    }
+  },
+  {
+    "id": "Kn0hLlGQKyyoxLJP0fW6",
+    "data": {
+      "medium": "Both",
+      "subjectId": "phys-ix",
+      "options": [
+        "Only gravity downwards",
+        "Gravity upwards",
+        "No force",
+        "Friction only"
+      ],
+      "createdAt": {
+        "_seconds": 1780210773,
+        "_nanoseconds": 731000000
+      },
+      "correctIndex": 0,
+      "order": 5,
+      "question": "When a ball is thrown upwards, which force acts on it?",
+      "setNumber": 1,
+      "explanation": "Gravity always acts downward toward Earth's centre. When a ball moves up, gravity decelerates it; when it falls, gravity accelerates it.",
+      "chapterId": "6QQ8W2Mh1JvxoivapYXN",
+      "classLevel": "Class IX",
+      "isImportant": false,
+      "subjectName": ""
+    }
+  },
+  {
+    "id": "OWeLjwbJxYuHdP9YqeN1",
+    "data": {
+      "question": "Which planet is closest to the Sun?",
+      "medium": "Assamese",
+      "correctIndex": 2,
+      "classLevel": "Class IX",
+      "createdAt": {
+        "_seconds": 1780210774,
+        "_nanoseconds": 414000000
+      },
+      "setNumber": 1,
+      "subjectName": "",
+      "chapterId": "PACkIxL7qo5dAeloEwHu",
+      "isImportant": false,
+      "options": [
+        "Venus",
+        "Earth",
+        "Mercury",
+        "Mars"
+      ],
+      "subjectId": "phys-ix",
+      "explanation": "Mercury is the closest planet to the Sun, though Venus is the hottest due to its thick atmosphere.",
+      "order": 1
+    }
+  },
+  {
+    "id": "OlwZFIVkMBlkTiLvHGtK",
+    "data": {
+      "subjectName": "",
+      "isImportant": false,
+      "subjectId": "bio-ix",
+      "order": 2,
+      "medium": "Both",
+      "options": [
+        "Condensation",
+        "Evaporation",
+        "Sublimation",
+        "Melting"
+      ],
+      "classLevel": "Class IX",
+      "question": "The process by which water changes from liquid to vapour is:",
+      "chapterId": "bio-ix-c01",
+      "explanation": "Evaporation is the change from liquid to vapour (gas) state below boiling point. Condensation is the reverse.",
+      "setNumber": 1,
+      "createdAt": {
+        "_seconds": 1780210775,
+        "_nanoseconds": 22000000
+      },
+      "correctIndex": 1
+    }
+  },
+  {
+    "id": "PiWSwm2nnZJ2b0ykCM6a",
+    "data": {
+      "chapterId": "PACkIxL7qo5dAeloEwHu",
+      "explanation": "Sound travels at approximately 343 m/s in air at 25°C. Light travels at 3 × 10⁸ m/s — far faster.",
+      "classLevel": "Class IX",
+      "isImportant": false,
+      "subjectName": "",
+      "options": [
+        "300 m/s",
+        "343 m/s",
+        "500 m/s",
+        "3 × 10⁸ m/s"
+      ],
+      "subjectId": "phys-ix",
+      "medium": "Assamese",
+      "correctIndex": 1,
+      "createdAt": {
+        "_seconds": 1780210774,
+        "_nanoseconds": 709000000
+      },
+      "question": "The speed of sound in air at 25°C is approximately:",
+      "order": 4,
+      "setNumber": 1
+    }
+  },
+  {
+    "id": "U19TBqGVQYuo5Glxswdt",
+    "data": {
+      "subjectId": "bio-ix",
+      "correctIndex": 2,
+      "explanation": "Lavoisier's Law: mass is neither created nor destroyed in a chemical reaction. Reactant mass = Product mass.",
+      "medium": "Both",
+      "options": [
+        "Mass is created in reactions",
+        "Mass is destroyed in reactions",
+        "Total mass of reactants equals total mass of products",
+        "Mass depends on temperature"
+      ],
+      "question": "The law of conservation of mass states that:",
+      "isImportant": false,
+      "subjectName": "",
+      "order": 4,
+      "classLevel": "Class IX",
+      "chapterId": "bio-ix-c01",
+      "setNumber": 1,
+      "createdAt": {
+        "_seconds": 1780210775,
+        "_nanoseconds": 205000000
+      }
+    }
+  },
+  {
+    "id": "XJW4fTDfQA2BY7Q0CtQg",
+    "data": {
+      "correctIndex": 2,
+      "chapterId": "bio-ix-c01",
+      "question": "Which of the following is a physical change?",
+      "classLevel": "Class IX",
+      "createdAt": {
+        "_seconds": 1780210775,
+        "_nanoseconds": 122000000
+      },
+      "subjectName": "",
+      "medium": "Both",
+      "order": 3,
+      "isImportant": false,
+      "subjectId": "bio-ix",
+      "options": [
+        "Burning of paper",
+        "Rusting of iron",
+        "Melting of ice",
+        "Digestion of food"
+      ],
+      "explanation": "Melting of ice is a physical change — only the state changes (solid → liquid); the chemical composition (H₂O) remains the same.",
+      "setNumber": 1
+    }
+  },
+  {
+    "id": "XTowbVqBRZi041pZHdiH",
+    "data": {
+      "order": 5,
+      "classLevel": "Class IX",
+      "chapterId": "6QQ8W2Mh1JvxoivapYXN",
+      "setNumber": 2,
+      "createdAt": {
+        "_seconds": 1780210774,
+        "_nanoseconds": 319000000
+      },
+      "medium": "Both",
+      "explanation": "F = ma = 10 kg × 2 m/s² = 20 N.",
+      "isImportant": false,
+      "subjectName": "",
+      "options": [
+        "5 N",
+        "12 N",
+        "20 N",
+        "8 N"
+      ],
+      "question": "If a 10 kg object accelerates at 2 m/s², the force applied is:",
+      "subjectId": "phys-ix",
+      "correctIndex": 2
+    }
+  },
+  {
+    "id": "kRSsiUrAvUJwf3oQFLHH",
+    "data": {
+      "isImportant": false,
+      "explanation": "The cell is the basic structural and functional unit of all living organisms, as stated by Cell Theory.",
+      "correctIndex": 2,
+      "createdAt": {
+        "_seconds": 1780210774,
+        "_nanoseconds": 519000000
+      },
+      "setNumber": 1,
+      "medium": "Assamese",
+      "classLevel": "Class IX",
+      "question": "The basic unit of life is:",
+      "subjectName": "",
+      "chapterId": "PACkIxL7qo5dAeloEwHu",
+      "subjectId": "phys-ix",
+      "options": [
+        "Tissue",
+        "Organ",
+        "Cell",
+        "Organism"
+      ],
+      "order": 2
+    }
+  },
+  {
+    "id": "mcq-phys-ix-c01-01",
+    "data": {
+      "chapterId": "phys-ix-c01",
+      "question": "An object travels 16 m in the first 2 s, and 28 m in next 4 s. What is its average speed?",
+      "options": [
+        "6 m/s",
+        "7.3 m/s",
+        "5.5 m/s",
+        "10 m/s"
+      ],
+      "correctIndex": 1,
+      "explanation": "Total distance = 44 m, total time = 6 s. Average speed = 44/6 ≈ 7.3 m/s.",
+      "createdAt": {
+        "_seconds": 1777443488,
+        "_nanoseconds": 530000000
+      }
+    }
+  },
+  {
+    "id": "mcq-phys-ix-c01-02",
+    "data": {
+      "chapterId": "phys-ix-c01",
+      "question": "Which of the following is a vector quantity?",
+      "options": [
+        "Speed",
+        "Distance",
+        "Displacement",
+        "Time"
+      ],
+      "correctIndex": 2,
+      "explanation": "Displacement has both magnitude and direction — it is a vector quantity.",
+      "createdAt": {
+        "_seconds": 1777443488,
+        "_nanoseconds": 530000000
+      }
+    }
+  },
+  {
+    "id": "mcq-phys-ix-c01-03",
+    "data": {
+      "chapterId": "phys-ix-c01",
+      "question": "The area under a velocity-time graph represents:",
+      "options": [
+        "Acceleration",
+        "Displacement",
+        "Speed",
+        "Force"
+      ],
+      "correctIndex": 1,
+      "explanation": "Area under v-t graph = displacement covered in that time interval.",
+      "createdAt": {
+        "_seconds": 1777443488,
+        "_nanoseconds": 530000000
+      }
+    }
+  },
+  {
+    "id": "mcq-phys-ix-c01-04",
+    "data": {
+      "chapterId": "phys-ix-c01",
+      "question": "A car starts from rest and attains a velocity of 20 m/s in 4 s. Its acceleration is:",
+      "options": [
+        "2.5 m/s²",
+        "5 m/s²",
+        "80 m/s²",
+        "0.2 m/s²"
+      ],
+      "correctIndex": 1,
+      "explanation": "a = (v − u)/t = (20 − 0)/4 = 5 m/s².",
+      "createdAt": {
+        "_seconds": 1777443488,
+        "_nanoseconds": 530000000
+      }
+    }
+  },
+  {
+    "id": "mcq-phys-ix-c01-05",
+    "data": {
+      "chapterId": "phys-ix-c01",
+      "question": "For a body moving in a circle at constant speed:",
+      "options": [
+        "Velocity is constant",
+        "Acceleration is zero",
+        "Velocity changes",
+        "Speed changes"
+      ],
+      "correctIndex": 2,
+      "explanation": "Direction of velocity continuously changes in circular motion, so velocity changes even though speed is constant.",
+      "createdAt": {
+        "_seconds": 1777443488,
+        "_nanoseconds": 530000000
+      }
+    }
+  },
+  {
+    "id": "mcq-phys-ix-c02-01",
+    "data": {
+      "chapterId": "phys-ix-c02",
+      "question": "Which law explains why passengers jerk forward when a moving bus suddenly stops?",
+      "options": [
+        "Newton's 1st law",
+        "Newton's 2nd law",
+        "Newton's 3rd law",
+        "Law of Gravitation"
+      ],
+      "correctIndex": 0,
+      "explanation": "Passengers continue in their state of motion (inertia) when the bus stops — 1st law (law of inertia).",
+      "createdAt": {
+        "_seconds": 1777443488,
+        "_nanoseconds": 530000000
+      }
+    }
+  },
+  {
+    "id": "mcq-phys-ix-c02-02",
+    "data": {
+      "chapterId": "phys-ix-c02",
+      "question": "The SI unit of momentum is:",
+      "options": [
+        "kg·m/s",
+        "N/m",
+        "J/s",
+        "N·s²"
+      ],
+      "correctIndex": 0,
+      "explanation": "Momentum = mass × velocity = kg × m/s = kg·m/s.",
+      "createdAt": {
+        "_seconds": 1777443488,
+        "_nanoseconds": 530000000
+      }
+    }
+  },
+  {
+    "id": "mcq-phys-ix-c02-03",
+    "data": {
+      "chapterId": "phys-ix-c02",
+      "question": "A force of 10 N acts on a body of mass 2 kg. Its acceleration is:",
+      "options": [
+        "20 m/s²",
+        "0.2 m/s²",
+        "5 m/s²",
+        "12 m/s²"
+      ],
+      "correctIndex": 2,
+      "explanation": "a = F/m = 10/2 = 5 m/s² (Newton's 2nd law).",
+      "createdAt": {
+        "_seconds": 1777443488,
+        "_nanoseconds": 530000000
+      }
+    }
+  },
+  {
+    "id": "o02ICz0G8DjchS5aXO5Z",
+    "data": {
+      "question": "A rocket moves forward by pushing gas backward. This is based on:",
+      "chapterId": "6QQ8W2Mh1JvxoivapYXN",
+      "correctIndex": 2,
+      "medium": "Both",
+      "subjectName": "",
+      "classLevel": "Class IX",
+      "createdAt": {
+        "_seconds": 1780210774,
+        "_nanoseconds": 213000000
+      },
+      "isImportant": false,
+      "subjectId": "phys-ix",
+      "order": 4,
+      "setNumber": 2,
+      "explanation": "The rocket pushes gas backward (action); gas pushes the rocket forward (reaction). This is Newton's Third Law.",
+      "options": [
+        "First Law",
+        "Second Law",
+        "Third Law",
+        "Law of Gravitation"
+      ]
+    }
+  },
+  {
+    "id": "o5hqL46X8Q689wDEEjSb",
+    "data": {
+      "subjectName": "",
+      "createdAt": {
+        "_seconds": 1780210773,
+        "_nanoseconds": 365000000
+      },
+      "setNumber": 1,
+      "isImportant": false,
+      "chapterId": "6QQ8W2Mh1JvxoivapYXN",
+      "explanation": "Speed is a scalar quantity — it has only magnitude, no direction. Velocity, force, and acceleration are vector quantities.",
+      "subjectId": "phys-ix",
+      "options": [
+        "Force",
+        "Velocity",
+        "Speed",
+        "Acceleration"
+      ],
+      "order": 2,
+      "medium": "Both",
+      "question": "Which of the following is a scalar quantity?",
+      "classLevel": "Class IX",
+      "correctIndex": 2
+    }
+  },
+  {
+    "id": "tIoql4ZNvr2xUjBIEpTn",
+    "data": {
+      "medium": "Both",
+      "setNumber": 1,
+      "classLevel": "Class IX",
+      "chapterId": "bio-ix-c01",
+      "isImportant": false,
+      "order": 1,
+      "question": "Which of the following is a mixture?",
+      "createdAt": {
+        "_seconds": 1780210774,
+        "_nanoseconds": 939000000
+      },
+      "options": [
+        "Water (H₂O)",
+        "Salt (NaCl)",
+        "Air",
+        "Carbon dioxide (CO₂)"
+      ],
+      "subjectId": "bio-ix",
+      "correctIndex": 2,
+      "subjectName": "",
+      "explanation": "Air is a mixture of gases — mainly nitrogen (78%) and oxygen (21%). Water, salt, and CO₂ are pure compounds."
+    }
+  },
+  {
+    "id": "uP9QkjyUzoqFzj2R3oKW",
+    "data": {
+      "subjectName": "",
+      "createdAt": {
+        "_seconds": 1780210774,
+        "_nanoseconds": 845000000
+      },
+      "question": "Atoms of the same element with different mass numbers are called:",
+      "chapterId": "PACkIxL7qo5dAeloEwHu",
+      "order": 5,
+      "options": [
+        "Isobars",
+        "Isotopes",
+        "Ions",
+        "Molecules"
+      ],
+      "isImportant": false,
+      "classLevel": "Class IX",
+      "subjectId": "phys-ix",
+      "setNumber": 1,
+      "explanation": "Isotopes have the same atomic number (same element) but different mass numbers due to different numbers of neutrons. E.g., Carbon-12 and Carbon-14.",
+      "medium": "Assamese",
+      "correctIndex": 1
+    }
+  }
+]

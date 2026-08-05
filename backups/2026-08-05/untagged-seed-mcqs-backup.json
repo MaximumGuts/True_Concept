@@ -1,0 +1,154 @@
+[
+  {
+    "id": "mcq-bio-x-c01-01",
+    "data": {
+      "chapterId": "bio-x-c01",
+      "question": "Which organelle is called the 'powerhouse of the cell'?",
+      "options": [
+        "Nucleus",
+        "Ribosome",
+        "Mitochondria",
+        "Chloroplast"
+      ],
+      "correctIndex": 2,
+      "explanation": "Mitochondria produce ATP via cellular respiration, providing energy for all cellular activities.",
+      "createdAt": {
+        "_seconds": 1777443488,
+        "_nanoseconds": 530000000
+      }
+    }
+  },
+  {
+    "id": "mcq-bio-x-c01-02",
+    "data": {
+      "chapterId": "bio-x-c01",
+      "question": "The enzyme that breaks down starch in saliva is:",
+      "options": [
+        "Pepsin",
+        "Trypsin",
+        "Salivary amylase",
+        "Lipase"
+      ],
+      "correctIndex": 2,
+      "explanation": "Salivary amylase (ptyalin) converts starch into maltose in the mouth.",
+      "createdAt": {
+        "_seconds": 1777443488,
+        "_nanoseconds": 530000000
+      }
+    }
+  },
+  {
+    "id": "mcq-chem-x-c01-01",
+    "data": {
+      "chapterId": "chem-x-c01",
+      "question": "Which type of reaction is represented by: A + BC → AC + B?",
+      "options": [
+        "Combination",
+        "Decomposition",
+        "Displacement",
+        "Double displacement"
+      ],
+      "correctIndex": 2,
+      "explanation": "Element A displaces B from compound BC — this is a displacement (single replacement) reaction.",
+      "createdAt": {
+        "_seconds": 1777443488,
+        "_nanoseconds": 530000000
+      }
+    }
+  },
+  {
+    "id": "mcq-chem-x-c01-02",
+    "data": {
+      "chapterId": "chem-x-c01",
+      "question": "Rancidity of food is caused by:",
+      "options": [
+        "Reduction of fats",
+        "Oxidation of fats",
+        "Hydrolysis of proteins",
+        "Addition of preservatives"
+      ],
+      "correctIndex": 1,
+      "explanation": "Oxidation of unsaturated fats produces aldehydes and ketones with unpleasant smell/taste — rancidity.",
+      "createdAt": {
+        "_seconds": 1777443488,
+        "_nanoseconds": 530000000
+      }
+    }
+  },
+  {
+    "id": "mcq-math-x-c01-01",
+    "data": {
+      "chapterId": "math-x-c01",
+      "question": "HCF(306, 657) = ?",
+      "options": [
+        "9",
+        "18",
+        "27",
+        "3"
+      ],
+      "correctIndex": 0,
+      "explanation": "657 = 306 × 2 + 45; 306 = 45 × 6 + 36; 45 = 36 × 1 + 9; 36 = 9 × 4 + 0. HCF = 9.",
+      "createdAt": {
+        "_seconds": 1777443488,
+        "_nanoseconds": 530000000
+      }
+    }
+  },
+  {
+    "id": "mcq-math-x-c01-02",
+    "data": {
+      "chapterId": "math-x-c01",
+      "question": "If LCM(26, 91) = 182 and HCF = 13, what is 26 × 91?",
+      "options": [
+        "182",
+        "2366",
+        "2366",
+        "1820"
+      ],
+      "correctIndex": 1,
+      "explanation": "Product of numbers = HCF × LCM = 13 × 182 = 2366.",
+      "createdAt": {
+        "_seconds": 1777443488,
+        "_nanoseconds": 530000000
+      }
+    }
+  },
+  {
+    "id": "mcq-math-x-c04-01",
+    "data": {
+      "chapterId": "math-x-c04",
+      "question": "The discriminant of 2x² − 5x + 3 = 0 is:",
+      "options": [
+        "1",
+        "−1",
+        "25",
+        "49"
+      ],
+      "correctIndex": 0,
+      "explanation": "D = b² − 4ac = 25 − 4(2)(3) = 25 − 24 = 1.",
+      "createdAt": {
+        "_seconds": 1777443488,
+        "_nanoseconds": 530000000
+      }
+    }
+  },
+  {
+    "id": "mcq-math-x-c04-02",
+    "data": {
+      "chapterId": "math-x-c04",
+      "question": "Roots of x² − 5x + 6 = 0 are:",
+      "options": [
+        "2 and 3",
+        "−2 and −3",
+        "1 and 6",
+        "−1 and −6"
+      ],
+      "correctIndex": 0,
+      "explanation": "(x − 2)(x − 3) = 0 ⟹ x = 2 or x = 3.",
+      "createdAt": {
+        "_seconds": 1777443488,
+        "_nanoseconds": 530000000
+      }
+    }
+  }
+]

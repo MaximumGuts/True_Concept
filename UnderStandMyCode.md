@@ -23,6 +23,8 @@
 14. [Code Style Guide](#14-code-style-guide)
 15. [Environment Variables Reference](#15-environment-variables-reference)
 16. [Common Gotchas & Hard-Won Fixes](#16-common-gotchas--hard-won-fixes)
+17. [Ads, Gating & the Admin Kill Switch](#17-ads-gating--the-admin-kill-switch)
+18. [Content Operations & Backups](#18-content-operations--backups)
 
 ---
 
@@ -31,6 +33,7 @@
 **TRUE CONCEPT** is an NCERT-aligned Science learning platform for Class IX and X students in Assam. It is a full-stack web app that also ships as an Android APK via Capacitor.
 
 Core features:
+
 - Subject → Chapter → Notes / MCQ / Q&A reading flow
 - Interactive Virtual Science Lab (60+ physics & chemistry simulations)
 - Phone OTP login for students (Firebase Auth), password login for admins
@@ -116,27 +119,28 @@ Cross-package imports use the `@workspace/` prefix defined in each `package.json
 
 ## 3. Tech Stack
 
-| Layer | Technology |
-|---|---|
-| Frontend framework | React 19 + TypeScript |
-| Build tool | Vite 7 |
-| Styling | Tailwind CSS v4 (new `@import "tailwindcss"` syntax) |
-| Routing | Wouter (lightweight, no React Router) |
-| Server state | TanStack React Query v5 |
-| Animations | Framer Motion |
-| API client | Orval-generated hooks (`@workspace/api-client-react`) |
-| Backend | Firebase Functions v2 (serverless, `onRequest`) |
-| Auth | Firebase Phone Auth (students) + custom JWT (server-signed) |
-| Database | Firestore (Firebase) |
-| File storage | Google Cloud Storage |
-| Mobile | Capacitor v6 (Android APK) |
-| PWA | vite-plugin-pwa + Workbox |
+| Layer              | Technology                                                  |
+| ------------------ | ----------------------------------------------------------- |
+| Frontend framework | React 19 + TypeScript                                       |
+| Build tool         | Vite 7                                                      |
+| Styling            | Tailwind CSS v4 (new `@import "tailwindcss"` syntax)        |
+| Routing            | Wouter (lightweight, no React Router)                       |
+| Server state       | TanStack React Query v5                                     |
+| Animations         | Framer Motion                                               |
+| API client         | Orval-generated hooks (`@workspace/api-client-react`)       |
+| Backend            | Firebase Functions v2 (serverless, `onRequest`)             |
+| Auth               | Firebase Phone Auth (students) + custom JWT (server-signed) |
+| Database           | Firestore (Firebase)                                        |
+| File storage       | Google Cloud Storage                                        |
+| Mobile             | Capacitor v6 (Android APK)                                  |
+| PWA                | vite-plugin-pwa + Workbox                                   |
 
 ---
 
 ## 4. How to Run Locally
 
 ### Prerequisites
+
 - Node.js ≥ 20
 - pnpm ≥ 9 (`npm install -g pnpm`)
 - Firebase CLI (`npm install -g firebase-tools`)
@@ -151,27 +155,68 @@ pnpm run build
 
 This compiles TypeScript from `functions/src/` into `functions/lib/`.
 
-### Start Firebase Emulators (backend)
+### ⚠️ localhost is NOT a sandbox by default
+
+**`pnpm dev` talks to the real production Firestore.** There is one Firebase
+project (`true-concept-353c9`) — no staging. A seed, an edit or a delete run
+from a local dev server hits live student data exactly as hard as production
+does. The app prints a **red console banner** when you are in this mode.
+
+To get an actual sandbox, set `VITE_USE_EMULATORS=1` (see below). The banner
+turns orange and says nothing touches production.
+
+### Start Firebase Emulators (backend + sandbox database)
 
 ```powershell
 # From the project root
-firebase emulators:start --only functions
-# Functions emulator runs on http://localhost:5001
-# Emulator UI at http://localhost:4000
+firebase emulators:start
+# Functions  http://localhost:5001
+# Firestore  localhost:8090
+# Auth       localhost:9099
+# UI         http://localhost:4000
 ```
 
 The emulator loads environment variables from `functions/.env` automatically.
+
+An empty emulator is not much use, so `scripts/src/emulator-data.ts` copies a
+slice of production into it. It runs in two phases, because the Admin SDK routes
+**all** traffic to the emulator once `FIRESTORE_EMULATOR_HOST` is set — the
+export has to finish before that variable exists:
+
+```powershell
+cd scripts
+$env:TRUE_CONCEPT_SERVICE_KEY = (Get-Content "$env:TEMP/tc_key_b64.txt")
+npx tsx src/emulator-data.ts export          # pulls ~430 docs to disk
+
+# then, with the emulator running:
+$env:FIRESTORE_EMULATOR_HOST = "localhost:8090"
+npx tsx src/emulator-data.ts import
+```
+
+Both directions are guarded: `export` refuses to run while
+`FIRESTORE_EMULATOR_HOST` is set (it would snapshot an empty emulator) and
+`import` refuses to run while it is unset (it would write test data into
+production). Structural collections (subjects, chapters, experiments,
+appSettings) are copied whole; bulk content is capped per collection; and
+**real user data is never copied** — students, teachers, progress, XP,
+knowledge profiles and notifications are all skipped.
 
 ### Start the frontend
 
 ```powershell
 cd artifacts/true-concept
-pnpm dev
+pnpm dev                       # LIVE PRODUCTION DATA — red banner
+# or, against the emulator:
+$env:VITE_USE_EMULATORS = "1"; pnpm dev    # sandboxed — orange banner
 # Runs on http://localhost:5173
 # /api requests are proxied to localhost:5001 by Vite
 ```
 
 Open `http://localhost:5173` in the browser.
+
+When emulating, the Firestore offline cache switches to memory-only. The
+IndexedDB cache would otherwise hold production documents across the switch and
+quietly mix real data into the sandbox.
 
 ### Deploy functions to production
 
@@ -207,8 +252,13 @@ if (apiBase) {
 
     if (typeof input === "string") return originalFetch(rewrite(input), init);
     if (input instanceof URL && input.pathname.startsWith("/api/"))
-      return originalFetch(`${apiBase}${input.pathname}${input.search}${input.hash}`, init);
-    if (input instanceof Request) { /* similar URL rewrite logic */ }
+      return originalFetch(
+        `${apiBase}${input.pathname}${input.search}${input.hash}`,
+        init,
+      );
+    if (input instanceof Request) {
+      /* similar URL rewrite logic */
+    }
     return originalFetch(input as RequestInfo, init);
   }) as typeof window.fetch;
 }
@@ -218,20 +268,25 @@ const isCapacitor = typeof (window as any).Capacitor !== "undefined";
 
 // 4. Kill PWA service worker inside Capacitor — it intercepts API calls
 if (isCapacitor && "serviceWorker" in navigator) {
-  navigator.serviceWorker.getRegistrations().then(regs => regs.forEach(r => r.unregister()));
-  caches.keys().then(keys => keys.forEach(k => caches.delete(k)));
+  navigator.serviceWorker
+    .getRegistrations()
+    .then((regs) => regs.forEach((r) => r.unregister()));
+  caches.keys().then((keys) => keys.forEach((k) => caches.delete(k)));
 }
 
 // 5. Register SW only in real browser production builds
 if (!isCapacitor && "serviceWorker" in navigator && import.meta.env.PROD) {
-  window.addEventListener("load", () => navigator.serviceWorker.register("/sw.js").catch(() => {}));
+  window.addEventListener("load", () =>
+    navigator.serviceWorker.register("/sw.js").catch(() => {}),
+  );
 }
 
 // 6. Android hardware back button
 const CapApp = (window as any).Capacitor?.Plugins?.App;
 if (CapApp) {
   CapApp.addListener("backButton", ({ canGoBack }: { canGoBack: boolean }) => {
-    if (canGoBack) window.history.back(); else CapApp.exitApp();
+    if (canGoBack) window.history.back();
+    else CapApp.exitApp();
   });
 }
 
@@ -243,21 +298,28 @@ setAuthTokenGetter(() => localStorage.getItem("trueconcept_token"));
 
 ```typescript
 export default defineConfig({
-  base: basePath,                // "/" in browser, set dynamically
+  base: basePath, // "/" in browser, set dynamically
   plugins: [
     react(),
     tailwindcss(),
     runtimeErrorOverlay(),
     VitePWA({
       registerType: "autoUpdate",
-      injectRegister: false,     // manual registration in main.tsx
-      manifest: { name: "TRUE CONCEPT", short_name: "TrueConcept", theme_color: "#da6b45" },
+      injectRegister: false, // manual registration in main.tsx
+      manifest: {
+        name: "TRUE CONCEPT",
+        short_name: "TrueConcept",
+        theme_color: "#da6b45",
+      },
       workbox: {
         globPatterns: ["**/*.{js,css,html,ico,png,svg,webp,woff2}"],
         navigateFallback: "/index.html",
-        navigateFallbackDenylist: [/^\/api\//],  // never intercept API calls
+        navigateFallbackDenylist: [/^\/api\//], // never intercept API calls
         runtimeCaching: [
-          { urlPattern: /^https:\/\/fonts\.googleapis\.com\//, handler: "CacheFirst" },
+          {
+            urlPattern: /^https:\/\/fonts\.googleapis\.com\//,
+            handler: "CacheFirst",
+          },
           { urlPattern: /^\/api\//, handler: "NetworkFirst" },
         ],
       },
@@ -321,26 +383,27 @@ function AppRoutes() {
 
 ### Page Directory: `src/pages/`
 
-| File | Route | Who sees it |
-|---|---|---|
-| `home.tsx` | `/` | Public (landing page) |
-| `login.tsx` | `/login` | Public |
-| `subjects.tsx` | `/subjects` | Students |
-| `subject-detail.tsx` | `/subjects/:id` | Students |
-| `chapter-detail.tsx` | `/chapters/:id` | Students |
-| `virtual-lab.tsx` | `/virtual-lab` | Students |
-| `experiment-detail.tsx` | `/virtual-lab/:id` | Students |
-| `search.tsx` | `/search` | Students |
-| `admin/index.tsx` | `/admin` | Admin |
-| `admin/subjects.tsx` | `/admin/subjects` | Admin |
-| `admin/chapters.tsx` | `/admin/chapters` | Admin |
-| `admin/chapter-content.tsx` | `/admin/chapters/:id/content` | Admin |
-| `admin/experiments.tsx` | `/admin/experiments` | Admin |
-| `admin/students.tsx` | `/admin/students` | Admin |
+| File                        | Route                         | Who sees it           |
+| --------------------------- | ----------------------------- | --------------------- |
+| `home.tsx`                  | `/`                           | Public (landing page) |
+| `login.tsx`                 | `/login`                      | Public                |
+| `subjects.tsx`              | `/subjects`                   | Students              |
+| `subject-detail.tsx`        | `/subjects/:id`               | Students              |
+| `chapter-detail.tsx`        | `/chapters/:id`               | Students              |
+| `virtual-lab.tsx`           | `/virtual-lab`                | Students              |
+| `experiment-detail.tsx`     | `/virtual-lab/:id`            | Students              |
+| `search.tsx`                | `/search`                     | Students              |
+| `admin/index.tsx`           | `/admin`                      | Admin                 |
+| `admin/subjects.tsx`        | `/admin/subjects`             | Admin                 |
+| `admin/chapters.tsx`        | `/admin/chapters`             | Admin                 |
+| `admin/chapter-content.tsx` | `/admin/chapters/:id/content` | Admin                 |
+| `admin/experiments.tsx`     | `/admin/experiments`          | Admin                 |
+| `admin/students.tsx`        | `/admin/students`             | Admin                 |
 
 ### Layout: `src/components/Layout.tsx`
 
 The layout provides:
+
 - **Sticky glass header** with logo + desktop nav + logout
 - **Mobile hamburger menu** (top-right, slides down)
 - **Floating bottom pill nav** (mobile only, students only) — the pill uses `fixed` positioning, centered with `left-1/2 -translate-x-1/2`
@@ -411,18 +474,18 @@ Each export becomes a separate Firebase Function. They cold-start independently.
 
 ### Route Functions: `functions/src/routes/`
 
-| File | Firebase Function | API Paths | Auth |
-|---|---|---|---|
-| `auth.ts` | `auth` | `/api/auth/login`, `/phone-login`, `/logout`, `/me` | None (login) / requireAuth (me) |
-| `subjects.ts` | `subjects` | `/api/subjects`, `/api/subjects/:id` | None (GET) / requireAdmin (CUD) |
-| `chapters.ts` | `chapters` | `/api/chapters`, `/api/chapters/:id` | None (GET) / requireAdmin (CUD) |
-| `content.ts` | `content` | `/api/notes/*`, `/api/mcqs/*`, `/api/qa/*`, `/api/videos/*` | None (GET) / requireAdmin (CUD) |
-| `experiments.ts` | `experiments` | `/api/experiments`, `/api/experiments/:id` | None (GET) / requireAdmin (CUD) |
-| `progress.ts` | `progress` | `/api/progress`, `/mcq-score`, `/mark-chapter` | requireAuth |
-| `dashboard.ts` | `dashboard` | `/api/dashboard/summary` | requireAuth |
-| `search.ts` | `search` | `/api/search?q=...` | None |
-| `students.ts` | `students` | `/api/students` | requireAdmin |
-| `health.ts` | `health` | `/api/healthz` | None |
+| File             | Firebase Function | API Paths                                                   | Auth                            |
+| ---------------- | ----------------- | ----------------------------------------------------------- | ------------------------------- |
+| `auth.ts`        | `auth`            | `/api/auth/login`, `/phone-login`, `/logout`, `/me`         | None (login) / requireAuth (me) |
+| `subjects.ts`    | `subjects`        | `/api/subjects`, `/api/subjects/:id`                        | None (GET) / requireAdmin (CUD) |
+| `chapters.ts`    | `chapters`        | `/api/chapters`, `/api/chapters/:id`                        | None (GET) / requireAdmin (CUD) |
+| `content.ts`     | `content`         | `/api/notes/*`, `/api/mcqs/*`, `/api/qa/*`, `/api/videos/*` | None (GET) / requireAdmin (CUD) |
+| `experiments.ts` | `experiments`     | `/api/experiments`, `/api/experiments/:id`                  | None (GET) / requireAdmin (CUD) |
+| `progress.ts`    | `progress`        | `/api/progress`, `/mcq-score`, `/mark-chapter`              | requireAuth                     |
+| `dashboard.ts`   | `dashboard`       | `/api/dashboard/summary`                                    | requireAuth                     |
+| `search.ts`      | `search`          | `/api/search?q=...`                                         | None                            |
+| `students.ts`    | `students`        | `/api/students`                                             | requireAdmin                    |
+| `health.ts`      | `health`          | `/api/healthz`                                              | None                            |
 
 ### Function Pattern
 
@@ -435,39 +498,48 @@ import { handleCors } from "../utils/cors.js";
 import { getSubPath, extractParam } from "../utils/router.js";
 import { requireAdmin, type AuthError } from "../middleware/auth.js";
 
-export const subjects = onRequest({ region: "asia-south1" }, async (req, res) => {
-  if (handleCors(req, res)) return;  // Handle OPTIONS preflight
+export const subjects = onRequest(
+  { region: "asia-south1" },
+  async (req, res) => {
+    if (handleCors(req, res)) return; // Handle OPTIONS preflight
 
-  const subPath = getSubPath(req, "/api/subjects");  // e.g. "/" or "/abc123"
+    const subPath = getSubPath(req, "/api/subjects"); // e.g. "/" or "/abc123"
 
-  try {
-    if (req.method === "GET" && (subPath === "/" || subPath === "")) {
-      // List all subjects from Firestore
-      const snap = await db.collection("subjects").get();
-      res.json(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-      return;
+    try {
+      if (req.method === "GET" && (subPath === "/" || subPath === "")) {
+        // List all subjects from Firestore
+        const snap = await db.collection("subjects").get();
+        res.json(snap.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+        return;
+      }
+
+      if (req.method === "POST" && (subPath === "/" || subPath === "")) {
+        requireAdmin(req); // Throws AuthError if not admin
+        // ... create logic
+      }
+
+      const paramId = extractParam(subPath); // Extract ID from path
+      if (req.method === "GET" && paramId) {
+        /* ... get by ID */
+      }
+      if (req.method === "PUT" && paramId) {
+        requireAdmin(req); /* ... update */
+      }
+      if (req.method === "DELETE" && paramId) {
+        requireAdmin(req); /* ... delete */
+      }
+
+      res.status(404).json({ error: "Not found" });
+    } catch (err) {
+      const authErr = err as AuthError;
+      if (authErr.status && authErr.error) {
+        res.status(authErr.status).json({ error: authErr.error });
+        return;
+      }
+      res.status(500).json({ error: "Internal server error" });
     }
-
-    if (req.method === "POST" && (subPath === "/" || subPath === "")) {
-      requireAdmin(req);  // Throws AuthError if not admin
-      // ... create logic
-    }
-
-    const paramId = extractParam(subPath);  // Extract ID from path
-    if (req.method === "GET" && paramId) { /* ... get by ID */ }
-    if (req.method === "PUT" && paramId) { requireAdmin(req); /* ... update */ }
-    if (req.method === "DELETE" && paramId) { requireAdmin(req); /* ... delete */ }
-
-    res.status(404).json({ error: "Not found" });
-  } catch (err) {
-    const authErr = err as AuthError;
-    if (authErr.status && authErr.error) {
-      res.status(authErr.status).json({ error: authErr.error });
-      return;
-    }
-    res.status(500).json({ error: "Internal server error" });
-  }
-});
+  },
+);
 ```
 
 ### Auth Middleware: `functions/src/middleware/auth.ts`
@@ -496,6 +568,7 @@ JWT tokens are signed with `SESSION_SECRET` env var, expire in 7 days.
 ### CORS: `functions/src/utils/cors.ts`
 
 Every function calls `handleCors(req, res)` as its first line. This:
+
 - Sets `Access-Control-Allow-Origin: *`
 - Sets allowed methods and headers
 - Returns `true` for `OPTIONS` preflight requests (already handled, function should return)
@@ -503,6 +576,7 @@ Every function calls `handleCors(req, res)` as its first line. This:
 ### URL Routing: `functions/src/utils/router.ts`
 
 Since there's no Express Router, URL parsing is handled manually:
+
 - `getSubPath(req, "/api/subjects")` → strips the prefix, returns the remaining path (e.g. `"/abc123"`)
 - `extractParam(subPath)` → extracts a single path parameter (e.g. `"abc123"`)
 
@@ -532,8 +606,15 @@ import { getFirestore } from "firebase-admin/firestore";
 import { getAuth } from "firebase-admin/auth";
 
 const credential = process.env.FIREBASE_SERVICE_ACCOUNT_KEY
-  ? cert(JSON.parse(Buffer.from(process.env.FIREBASE_SERVICE_ACCOUNT_KEY, "base64").toString("utf8")))
-  : applicationDefault();  // fallback for CI / GCP environments
+  ? cert(
+      JSON.parse(
+        Buffer.from(
+          process.env.FIREBASE_SERVICE_ACCOUNT_KEY,
+          "base64",
+        ).toString("utf8"),
+      ),
+    )
+  : applicationDefault(); // fallback for CI / GCP environments
 
 initializeApp({ credential });
 
@@ -562,8 +643,12 @@ export function setAuthTokenGetter(fn: () => string | null) {
 }
 
 // This is the fetch function Orval-generated hooks call for every request
-export async function customFetch<T>(url: string, options: RequestInit): Promise<T> {
-  const fullUrl = _baseUrl && url.startsWith("/api/") ? `${_baseUrl}${url}` : url;
+export async function customFetch<T>(
+  url: string,
+  options: RequestInit,
+): Promise<T> {
+  const fullUrl =
+    _baseUrl && url.startsWith("/api/") ? `${_baseUrl}${url}` : url;
   const token = _getToken?.();
 
   const headers: Record<string, string> = {
@@ -580,6 +665,7 @@ export async function customFetch<T>(url: string, options: RequestInit): Promise
 ```
 
 **Usage in frontend components:**
+
 ```typescript
 // Auto-generated hook from Orval — just import and use
 import { useGetSubjects, useGetChapters } from "@workspace/api-client-react";
@@ -634,7 +720,9 @@ Admin chooses "Admin" on login screen
 
 ```typescript
 // AuthContext.tsx — token is initialized from localStorage on every page load
-const [token, setToken] = useState(() => localStorage.getItem("trueconcept_token"));
+const [token, setToken] = useState(() =>
+  localStorage.getItem("trueconcept_token"),
+);
 
 // The token is immediately used to fetch /api/auth/me (via Orval-generated useGetMe hook)
 // If token is valid → user state is populated
@@ -653,12 +741,12 @@ setUser(null);
 
 ### Brand Colors
 
-| Variable | Value | Use |
-|---|---|---|
-| `--brand-500` | `#da6b45` | Primary coral — buttons, active states, logo |
-| `--brand-deep` | `#b85535` | Darker coral — gradient end, shadows |
-| `--honey-400` | `#fbbf24` | Amber/honey — admin theme, secondary accents |
-| `--page-gradient` | `#f0eeff` (light) / `#0c0920` (dark) | Solid page background |
+| Variable          | Value                                | Use                                          |
+| ----------------- | ------------------------------------ | -------------------------------------------- |
+| `--brand-500`     | `#da6b45`                            | Primary coral — buttons, active states, logo |
+| `--brand-deep`    | `#b85535`                            | Darker coral — gradient end, shadows         |
+| `--honey-400`     | `#fbbf24`                            | Amber/honey — admin theme, secondary accents |
+| `--page-gradient` | `#f0eeff` (light) / `#0c0920` (dark) | Solid page background                        |
 
 The brand gradient used everywhere: `linear-gradient(135deg, #da6b45, #b85535)`
 
@@ -669,25 +757,25 @@ Themes are defined entirely in `src/index.css` using CSS custom properties and T
 ```css
 /* Light theme (default) */
 :root {
-  --background: 250 60% 97%;       /* soft lavender */
-  --foreground: 245 30% 14%;       /* near-black with blue tint */
+  --background: 250 60% 97%; /* soft lavender */
+  --foreground: 245 30% 14%; /* near-black with blue tint */
   --page-gradient: #f0eeff;
-  --glass-card-bg: rgba(250,248,255,0.42);
-  --glass-panel-bg: rgba(240,236,255,0.55);
-  --bottom-nav-bg: rgba(255,251,247,0.96);
-  --hint-bg: rgba(255,251,232,0.98);
+  --glass-card-bg: rgba(250, 248, 255, 0.42);
+  --glass-panel-bg: rgba(240, 236, 255, 0.55);
+  --bottom-nav-bg: rgba(255, 251, 247, 0.96);
+  --hint-bg: rgba(255, 251, 232, 0.98);
   --hint-text: #92400e;
 }
 
 /* Dark theme — toggled by adding .dark class to <html> */
 .dark {
-  --background: 243 45% 7%;        /* deep indigo */
-  --foreground: 245 15% 92%;       /* near-white */
+  --background: 243 45% 7%; /* deep indigo */
+  --foreground: 245 15% 92%; /* near-white */
   --page-gradient: #0c0920;
-  --glass-card-bg: rgba(22,18,52,0.58);
-  --glass-panel-bg: rgba(16,12,42,0.70);
-  --bottom-nav-bg: rgba(20,16,50,0.96);
-  --hint-bg: rgba(40,30,18,0.97);
+  --glass-card-bg: rgba(22, 18, 52, 0.58);
+  --glass-panel-bg: rgba(16, 12, 42, 0.7);
+  --bottom-nav-bg: rgba(20, 16, 50, 0.96);
+  --hint-bg: rgba(40, 30, 18, 0.97);
   --hint-text: #fde68a;
 }
 ```
@@ -708,7 +796,7 @@ These are custom CSS classes defined in `index.css` and used throughout the UI:
 .liquid-card {
   background: var(--glass-card-bg);
   backdrop-filter: blur(24px) saturate(180%);
-  border: 1px solid rgba(255,255,255,0.25);
+  border: 1px solid rgba(255, 255, 255, 0.25);
 }
 
 .liquid-panel {
@@ -717,11 +805,11 @@ These are custom CSS classes defined in `index.css` and used throughout the UI:
 }
 
 .liquid-inner {
-  background: rgba(255,255,255,0.35);   /* light */
+  background: rgba(255, 255, 255, 0.35); /* light */
   backdrop-filter: blur(8px);
 }
 .dark .liquid-inner {
-  background: rgba(255,255,255,0.06);
+  background: rgba(255, 255, 255, 0.06);
 }
 ```
 
@@ -730,6 +818,7 @@ These are custom CSS classes defined in `index.css` and used throughout the UI:
 ### Typography
 
 Fonts loaded from Google Fonts:
+
 - **Inter** (300–900 weight) — body text
 - **Nunito** (400–900 weight) — headings, brand labels
 
@@ -737,13 +826,13 @@ Fonts loaded from Google Fonts:
 
 ### Radius & Spacing Convention
 
-| Element | Radius |
-|---|---|
-| Cards | `rounded-3xl` (24px) |
+| Element           | Radius               |
+| ----------------- | -------------------- |
+| Cards             | `rounded-3xl` (24px) |
 | Buttons (primary) | `rounded-2xl` (16px) |
-| Pills / tags | `rounded-full` |
-| Inner sections | `rounded-xl` (12px) |
-| Input fields | `rounded-2xl` |
+| Pills / tags      | `rounded-full`       |
+| Inner sections    | `rounded-xl` (12px)  |
+| Input fields      | `rounded-2xl`        |
 
 ### Animations
 
@@ -781,14 +870,29 @@ Each simulation is a standalone React component. They are registered in a centra
 ### Sim Registry: `src/components/lab/sim-registry.ts`
 
 ```typescript
-export const simRegistry: Record<string, LazyExoticComponent<() => JSX.Element>> = {
+export const simRegistry: Record<
+  string,
+  LazyExoticComponent<() => JSX.Element>
+> = {
   // Motion
-  "distance-time": lazy(() => import("./sims/motion").then(m => ({ default: m.DistanceTimeSim }))),
-  "pendulum":      lazy(() => import("./sims/motion").then(m => ({ default: m.PendulumSim }))),
+  "distance-time": lazy(() =>
+    import("./sims/motion").then((m) => ({ default: m.DistanceTimeSim })),
+  ),
+  pendulum: lazy(() =>
+    import("./sims/motion").then((m) => ({ default: m.PendulumSim })),
+  ),
 
   // NCERT Chemistry — Ch1: Chemical Reactions
-  "chem-mg-combustion":    lazy(() => import("./sims/chemistry-ncert").then(m => ({ default: m.MgCombustionSim }))),
-  "chem-water-electrolysis": lazy(() => import("./sims/chemistry-ncert").then(m => ({ default: m.WaterElectrolysisSim }))),
+  "chem-mg-combustion": lazy(() =>
+    import("./sims/chemistry-ncert").then((m) => ({
+      default: m.MgCombustionSim,
+    })),
+  ),
+  "chem-water-electrolysis": lazy(() =>
+    import("./sims/chemistry-ncert").then((m) => ({
+      default: m.WaterElectrolysisSim,
+    })),
+  ),
 
   // ... 60+ total entries
 };
@@ -910,6 +1014,25 @@ experiments/{experimentId}
   observations: string
   result: string
   order: number
+
+appSettings/ads          (single doc — the remote ad kill switch, see §17)
+  adsEnabled: boolean       master; off = no ads on any platform
+  mobileAdsEnabled: boolean rewarded + interstitial + banner in the APK
+  webAdsEnabled: boolean    the 31-second browser interstitial
+  updatedAt: Timestamp
+  updatedBy: string         admin username
+
+# Content collections written by scripts/ rather than the admin panel (see §18).
+# All are read by any signed-in student and written only by isAdmin().
+notes/{id}   qa/{id}   mcqs/{id}   caseMcqs/{id}   paperQuestions/{id}
+  chapterId: string
+  language: "English" | "Assamese"   ← REQUIRED. A doc with no language renders
+                                       in BOTH mediums, which is a bug, not a
+                                       feature. Chapters with medium:"Both" hold
+                                       both languages and split on this field.
+  order: number
+  # mcqs additionally: setNumber (15 per set — only the FINAL set may be short),
+  #                    options[4], correctIndex
 ```
 
 ### Access Patterns
@@ -956,7 +1079,7 @@ experiments/{experimentId}
 
 // Step 1: Build frontend with API URL baked in
 execSync(`pnpm --filter @workspace/true-concept build`, {
-  env: { ...process.env, VITE_API_BASE_URL: process.env.API_URL }
+  env: { ...process.env, VITE_API_BASE_URL: process.env.API_URL },
 });
 
 // Step 2: Sync web assets into Android project
@@ -968,6 +1091,7 @@ execSync("gradlew.bat assembleDebug", { cwd: androidDir });
 ```
 
 **Full build command:**
+
 ```powershell
 $env:API_URL = "http://192.168.1.X:3000"
 node mobile/build.mjs
@@ -976,6 +1100,7 @@ node mobile/build.mjs
 ### Android Edge-to-Edge Setup
 
 **`MainActivity.java`**:
+
 ```java
 @Override public void onCreate(Bundle savedInstanceState) {
   super.onCreate(savedInstanceState);
@@ -985,6 +1110,7 @@ node mobile/build.mjs
 ```
 
 **`res/values/styles.xml`** (AppTheme.NoActionBar):
+
 ```xml
 <!-- Coral status bar at top — matches app header color -->
 <item name="android:statusBarColor">@color/colorPrimaryDark</item>  <!-- #B85535 -->
@@ -996,16 +1122,19 @@ node mobile/build.mjs
 ```
 
 **In Layout.tsx**, the header pads itself to avoid the status bar:
+
 ```tsx
 <header style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}>
 ```
 
 And the bottom nav accounts for the gesture bar:
+
 ```tsx
 <nav style={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + 12px)" }}>
 ```
 
 **`network_security_config.xml`** allows plain HTTP for dev:
+
 ```xml
 <base-config cleartextTrafficPermitted="true">
   <trust-anchors><certificates src="system"/></trust-anchors>
@@ -1110,6 +1239,7 @@ This section documents the conventions already established in the codebase. Foll
 ### React Components
 
 **Structure within a component file:**
+
 1. Type/interface definitions at the top
 2. Helper functions that are pure (no hooks)
 3. Sub-components (small, used only within this file)
@@ -1177,15 +1307,15 @@ useEffect(() => { fetch("/api/subjects").then(...) }, []); // use useGetSubjects
 
 ### Naming Conventions
 
-| Pattern | Convention |
-|---|---|
-| Components | PascalCase |
-| Hooks | `use` prefix + camelCase |
-| Utility functions | camelCase |
-| CSS custom properties | `--kebab-case` |
+| Pattern                    | Convention                                       |
+| -------------------------- | ------------------------------------------------ |
+| Components                 | PascalCase                                       |
+| Hooks                      | `use` prefix + camelCase                         |
+| Utility functions          | camelCase                                        |
+| CSS custom properties      | `--kebab-case`                                   |
 | Firestore collection names | `camelCase` plural (e.g. `students`, `subjects`) |
-| Sim type keys | `kebab-case` (e.g. `"chem-mg-combustion"`) |
-| Environment variables | `SCREAMING_SNAKE_CASE` |
+| Sim type keys              | `kebab-case` (e.g. `"chem-mg-combustion"`)       |
+| Environment variables      | `SCREAMING_SNAKE_CASE`                           |
 
 ### Comments
 
@@ -1231,6 +1361,13 @@ VITE_FIREBASE_APP_ID=1:123...
 # For local dev with phone on same WiFi: use your PC's LAN IP pointing to the emulator
 # Leave blank for browser development (Vite proxy handles /api → localhost:5001)
 VITE_API_BASE_URL=
+
+# Point Firestore/Auth at the local emulators instead of PRODUCTION.
+# OFF by default — without this, `pnpm dev` reads and WRITES real student data.
+# See §4. The app prints a red banner when live, orange when sandboxed.
+VITE_USE_EMULATORS=
+# Override only if the emulator is not on this machine (e.g. testing from a phone)
+VITE_EMULATOR_HOST=
 ```
 
 ---
@@ -1244,6 +1381,7 @@ These are real issues that were debugged and fixed during development. Do not un
 **Symptom:** Login on the APK returns HTML instead of JSON.
 
 **Root causes (all must be fixed together):**
+
 1. PWA service worker intercepts API calls → **fixed by unregistering SW inside Capacitor** in `main.tsx`
 2. Android blocks HTTP cleartext → **fixed by `network_security_config.xml`** with `cleartextTrafficPermitted="true"`
 3. Mixed content (HTTPS app making HTTP requests) → **fixed by `androidScheme: "http"`** in `capacitor.config.json`
@@ -1280,6 +1418,7 @@ These are real issues that were debugged and fixed during development. Do not un
 **Cause:** Unlike Express middleware (which calls `res.status(401).json(...)` directly), the Firebase Functions auth helpers **throw an `AuthError` object**. The calling function must catch it.
 
 **Pattern:** Every route function wraps its logic in `try/catch` and checks for `AuthError` in the catch block:
+
 ```typescript
 catch (err) {
   const authErr = err as AuthError;
@@ -1323,4 +1462,139 @@ Capacitor's TypeScript config uses CommonJS exports (`exports.default = ...`), w
 
 ---
 
-*End of documentation. If you find something missing or outdated, update this file in the same commit as the code change.*
+---
+
+## 17. Ads, Gating & the Admin Kill Switch
+
+### The five surfaces that can show an ad
+
+There is no single "ad component". Five separate paths can put an ad in front of
+a student, and anything that claims to turn ads off must cover all five:
+
+| Surface | Entry point | Used by |
+| --- | --- | --- |
+| Rewarded gate | `<UnlockGate feature="…">` | Notes, MCQ, Q&A, Lab, Mock Exam |
+| Rewarded (direct) | `showRewardedFor()` | Study Plan card's own flow |
+| Interstitial | `showInterstitialGated()` | Bytes, Daily Challenge, Study Plan |
+| Web interstitial | `<WebInterstitial>` | browser only (AdSense has no rewarded format) |
+| Adaptive banner | `adManager.showAdaptiveBanner()` | `Layout.tsx`, most student pages |
+
+The banner is the easy one to miss — it is called straight from `Layout.tsx`
+rather than through a manager, so it needs the switch applied at the call site.
+
+### `appSettings/ads` — the remote kill switch
+
+`src/ads/ad-settings.ts` holds a master switch plus per-platform overrides in a
+single Firestore document, edited from **`/admin/ads`**:
+
+```ts
+{ adsEnabled: boolean, mobileAdsEnabled: boolean, webAdsEnabled: boolean }
+```
+
+Every client keeps a live `onSnapshot` subscription (mounted once by
+`<AdSettingsSync />` at app root), so **flipping a switch reaches phones already
+installed — no rebuild, no Play release, no app restart.** That matters because
+an APK code change takes days to reach users through review, while remote config
+is instant.
+
+Rules of the design, all deliberate:
+
+- **Off opens the gate; it does not hide the modal.** With ads disabled there is
+  no ad to watch, so a gate that still demanded one could never be completed.
+  The master switch even overrides `alwaysFresh`, which normally forces a new ad
+  on every attempt.
+- **`showInterstitialGated()` returns `not-shown`, not `blocked`.** Every caller
+  already treats `not-shown` as "carry on", so no call site needed changing —
+  and `blocked` would wrongly tell the student they are running an ad blocker.
+- **Defaults mirror the previous hardcoded behaviour** (`mobile on`, `web off`),
+  so deploying the feature changed nothing until someone flipped a switch.
+- **Failure mode is "keep last known".** The value is cached in localStorage; if
+  Firestore is unreachable the cached value is used, and if there has never been
+  one the defaults apply. A settings outage cannot silently disable monetisation.
+
+`WebInterstitial`'s old `const WEB_AD_GATE_ENABLED = false` is gone — it now
+reads the same document, so the web gate is admin-controlled too.
+
+### Lab gating — the routing trap
+
+Physics experiments reach their simulation through the catch-all
+`/virtual-lab/:experimentId` route → `ExperimentDetailPage`, which wraps the sim
+in `<UnlockGate feature="lab">`.
+
+**Every chemistry and biology sim has its own route declared earlier in the
+`<Switch>`**, so wouter matches the specific route first and those pages never
+render `ExperimentDetailPage` at all. For a long time that meant 18 labs were
+reachable ad-free while every physics lab was gated — the gate was never
+"removed", it was never there.
+
+The fix is `GatedLabRoute` in `App.tsx`, which composes `UnlockGate` +
+`LabTrackingRoute`. Its props mirror `LabTrackingRoute` exactly so the 18 routes
+needed only a tag rename. Two placement details matter:
+
+- the gate is **outside** `LabTrackingRoute`, so analytics does not log an
+  `experiment_started` for a student staring at a modal they never complete;
+- it is **above the lazy sim element**, so a locked student never downloads a
+  140 KB chunk they cannot use.
+
+**If you add a new sim with its own route, use `GatedLabRoute`, not
+`LabTrackingRoute`.**
+
+---
+
+## 18. Content Operations & Backups
+
+Most day-to-day work on this project is content — notes, MCQs, Q&A, figures —
+seeded by scripts in `scripts/src/` rather than typed into the admin panel.
+Those scripts write **directly to production**. The conventions below exist
+because that is unforgiving.
+
+### The standing pattern for any content script
+
+1. **Dry run by default**, write only on `APPLY=1`.
+2. **Write a JSON backup before touching anything** (see below).
+3. **Deterministic doc IDs** — `.doc(id).set(...)`, never `.add()`, so a re-run
+   is idempotent instead of duplicating.
+4. **Read-back verification** that queries Firestore again afterwards, rather
+   than trusting the values the script just held in memory.
+5. **Guard on preconditions and refuse** rather than guessing. Every script that
+   deletes checks the document still looks like what it expects.
+
+### Backups — `backups/<YYYY-MM-DD>/`
+
+There is no staging project and no point-in-time restore, so these files are the
+only undo. They are committed to the repo; see `backups/README.md` for what each
+one contains and how to restore it:
+
+```bash
+cd scripts
+npx tsx src/restore-from-backup.ts ../backups/2026-08-05/foo-backup.json          # dry run
+APPLY=1 npx tsx src/restore-from-backup.ts ../backups/2026-08-05/foo-backup.json  # write
+```
+
+The restorer handles the shapes the scripts grew organically and **refuses when
+a file is ambiguous** instead of guessing. `notes` and `qa` documents have
+identical field sets (the distinguishing `type` field is missing on older docs),
+so those need `COLLECTION=notes` or `COLLECTION=qa` — an earlier version that
+guessed classified a Motion *note* as a `qa`.
+
+Prefer the `{"collection/docId": {...}}` backup shape in new scripts; it carries
+its own collection and needs no flag to restore.
+
+### Auditing
+
+`scripts/src/audit-bilingual-notes.ts` (and the per-batch auditors beside it)
+check the things a single seeding run cannot see about itself: EN/AS parity,
+15-per-set MCQ layout, contiguous slot allocation, Bengali script/digit leakage,
+lost-backslash LaTeX, figure URLs resolving, and every student question having a
+teacher-bank twin. It also renders every `$…$` through **KaTeX with
+`throwOnError`**, which is the same engine the app uses and catches failures no
+regex would anticipate.
+
+**A clean audit is not the same as correct content.** These checks catch script,
+digits, LaTeX and structure. They cannot catch a word that is spelled correctly
+and means the wrong thing — several real Assamese errors were found only by
+reading the live text after the automated checks passed.
+
+---
+
+_End of documentation. If you find something missing or outdated, update this file in the same commit as the code change._

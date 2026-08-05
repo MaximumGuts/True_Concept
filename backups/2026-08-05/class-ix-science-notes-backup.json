@@ -1,0 +1,14 @@
+[
+  {
+    "id": "note-bio-ix-c01",
+    "data": {
+      "chapterId": "bio-ix-c01",
+      "title": "The Fundamental Unit of Life – Complete Notes",
+      "content": "# The Fundamental Unit of Life\n\n## The Cell\nThe **cell** is the basic structural and functional unit of all living organisms.\n\n- **Robert Hooke** (1665) — first observed cells in cork.\n- **Schleiden & Schwann** (1839) — Cell Theory: all living things are made of cells.\n- **Virchow** (1855) — Omnis cellula e cellula (cells arise from existing cells).\n\n## Prokaryotic vs Eukaryotic Cells\n\n| Feature | Prokaryotic | Eukaryotic |\n|---------|-------------|------------|\n| Nucleus | No true nucleus (nucleoid) | True nucleus with nuclear membrane |\n| Size | 1–10 μm | 10–100 μm |\n| Membrane-bound organelles | Absent | Present |\n| Examples | Bacteria, blue-green algae | Plants, animals, fungi |\n\n## Plant Cell vs Animal Cell\n\n| Feature | Plant Cell | Animal Cell |\n|---------|-----------|-------------|\n| Cell wall | Present (cellulose) | Absent |\n| Chloroplasts | Present | Absent |\n| Large central vacuole | Present | Small/absent |\n| Centrioles | Absent | Present |\n| Plastids | Present | Absent |\n\n## Key Organelles\n\n| Organelle | Function |\n|-----------|----------|\n| **Cell membrane** | Selectively permeable boundary |\n| **Nucleus** | Controls all cellular activities, contains DNA |\n| **Mitochondria** | \"Powerhouse\" — cellular respiration, ATP production |\n| **Chloroplast** | Photosynthesis (plants only) |\n| **Ribosome** | Protein synthesis |\n| **ER (Rough)** | Protein synthesis and transport |\n| **ER (Smooth)** | Lipid synthesis |\n| **Golgi apparatus** | Packaging and secretion |\n| **Lysosome** | Intracellular digestion (\"suicide bags\") |\n| **Vacuole** | Storage; maintains turgor pressure in plants |\n\n## Osmosis and Diffusion\n\n- **Diffusion**: Movement of molecules from high to low concentration.\n- **Osmosis**: Movement of water across a semi-permeable membrane from dilute to concentrated solution.\n- **Plasmolysis**: Shrinkage of cell membrane away from cell wall in hypertonic solution.\n- **Turgidity**: Cell swells in hypotonic solution.",
+      "createdAt": {
+        "_seconds": 1777443488,
+        "_nanoseconds": 530000000
+      }
+    }
+  }
+]

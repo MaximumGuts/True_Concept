@@ -1,0 +1,14 @@
+[
+  {
+    "id": "note-phys-ix-c01",
+    "data": {
+      "chapterId": "phys-ix-c01",
+      "title": "Motion – Complete Notes",
+      "content": "# Motion\n\n## Key Definitions\n\n| Term | Definition |\n|------|-----------|\n| **Distance** | Total path length covered (scalar) |\n| **Displacement** | Shortest distance from start to end with direction (vector) |\n| **Speed** | Distance ÷ Time (scalar, SI unit: m/s) |\n| **Velocity** | Displacement ÷ Time (vector, SI unit: m/s) |\n| **Acceleration** | Change in velocity ÷ Time (vector, SI unit: m/s²) |\n\n## Equations of Uniformly Accelerated Motion\n\n$$v = u + at$$\n\n$$s = ut + \\frac{1}{2}at^2$$\n\n$$v^2 = u^2 + 2as$$\n\n$$s_n = u + \\frac{a(2n-1)}{2}$$\n\n> **u** = initial velocity, **v** = final velocity, **a** = acceleration, **t** = time, **s** = displacement\n\n## Graphical Representation\n\n- **Distance–Time graph**: Slope = speed. Straight line → uniform motion. Curve → non-uniform.\n- **Velocity–Time graph**: Slope = acceleration. Area under graph = displacement.\n\n## Uniform vs Non-Uniform Motion\n\n- **Uniform motion**: Equal distances in equal time intervals (constant speed).\n- **Non-uniform motion**: Unequal distances in equal time intervals.\n\n## Circular Motion\n\n- Object moves in a circle at constant speed but velocity continuously changes (direction changes).\n- It is **accelerated motion** even at constant speed.\n\n## Important Points\n\n- Distance ≥ |Displacement|\n- For a round trip, displacement = 0 but distance > 0\n- Average speed = Total distance / Total time\n- Average velocity = Total displacement / Total time",
+      "createdAt": {
+        "_seconds": 1777443488,
+        "_nanoseconds": 530000000
+      }
+    }
+  }
+]
